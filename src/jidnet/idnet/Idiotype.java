@@ -1,18 +1,18 @@
-package jidnet;
+package jidnet.idnet;
 
 /**
  *
  * @author sven
  */
 public class Idiotype {
-    int n;
-    double sum_n;
-    double sum_n_d;
-    double n_d;
-    int tau;
-    int b;
-    int cluster_size;
-    int total_cluster_size;
+    public int n;
+    public double sum_n;
+    public double sum_n_d;
+    public double n_d;
+    public int tau;
+    public int b;
+    public int cluster_size;
+    public int total_cluster_size;
 
     public void recalc() {
         sum_n = sum_n_d = n_d = tau = 0;
