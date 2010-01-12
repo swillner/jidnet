@@ -48,9 +48,5 @@ public class NetworkDiagramPanel extends JPanel {
             g.drawRect(i % 1024, (int)y, 1, 1);
         }
 
-        //Graphics2D g2 = (Graphics2D) g;
-
-        //draw elements
-
     }
 }
