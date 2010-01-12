@@ -26,7 +26,7 @@ public final class Application {
     private static MainWindow mainWindow;
 
     public static IdiotypicNetwork getIdiotypicNetwork() {
-        return idnetManager.getIdiotypicNetwork();
+        return idnetManager;
     }
 
     public static IdnetManager getIdnetManager() {
@@ -36,7 +36,6 @@ public final class Application {
     public static void main(String args[]) {
 
         idnetManager = new IdnetManager();
-        idnetManager.getIdiotypicNetwork().setStatCenterOfGravity(true);
 
         try {
             idnetManager.loadParams("params.xml");
