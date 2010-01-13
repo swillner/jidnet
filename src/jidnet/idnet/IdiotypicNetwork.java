@@ -183,6 +183,7 @@ public class IdiotypicNetwork {
     }
 
     // TODO int calcAllClustersRec(int i, int[] p, int[][] types) {    }
+    
     private int calcGroupOccupationRec(int maskDeterminantBit, int valuesDeterminantBits, int l, int mismatch) {
         int res = 0;
         if (l == 0) {

@@ -13,7 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jidnet.idnet.IdiotypicNetwork;
+import jidnet.idnet.IdnetManager;
 import jidnet.idnet.IdnetManager;
 
 /**
@@ -25,7 +25,7 @@ public final class Application {
     private static IdnetManager idnetManager;
     private static MainWindow mainWindow;
 
-    public static IdiotypicNetwork getIdiotypicNetwork() {
+    public static IdnetManager getIdiotypicNetwork() {
         return idnetManager;
     }
 

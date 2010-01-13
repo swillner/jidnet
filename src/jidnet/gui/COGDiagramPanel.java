@@ -65,11 +65,20 @@ public class COGDiagramPanel extends JPanel {
                 g.setColor(Color.getHSBColor((float) j/ 12f, 1.0f, 1.0f));
                 g.drawString("cog[" + j + "] = " + Math.round(idnetManager.getCOG()[j]*1000)/1000.0, 50, 50 + 20 *j);
                 g.drawString("s(" + j + ") = " + Math.round(idnetManager.getCOGStandardDeviation(j)*10000)/10000.0, 200, 50 + 20 *j);
-                if (idnetManager.getCOGStandardDeviation(j) < 0.03)
-                    if (idnetManager.getCOG()[j] > 10 * idnetManager.getCOGStandardDeviation(j))
+                if (idnetManager.getCOGStandardDeviation(j) < 0.05)
+                    if (idnetManager.getCOG()[j] > 5 * idnetManager.getCOGStandardDeviation(j))
                         g.drawString("1", 350, 50 + 20 *j);
-                    else if (idnetManager.getCOG()[j] < -10 * idnetManager.getCOGStandardDeviation(j))
-                        g.drawString("0", 350, 50 + 20 *j);
+                    else if (idnetManager.getCOG()[j] < -5 * idnetManager.getCOGStandardDeviation(j))
+                        g.drawString("0", 350, 50 + 20 *j); // TODO
         }
+
+        g.setColor(Color.BLACK);
+        IdnetManager.DeterminantBits determinantBits = idnetManager.getDeterminantBits();
+        String str = Integer.toString(determinantBits.mask, 2);
+            str = "000000000000".substring(str.length()) + str;
+        g.drawString("Determinant bits mask  = " + str, 500, 50);
+        str = Integer.toString(determinantBits.values, 2);
+            str = "000000000000".substring(str.length()) + str;
+        g.drawString("Determinant bits values = " + str, 500, 70);
     }
 }

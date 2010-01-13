@@ -3,7 +3,7 @@ package jidnet.gui;
 import java.awt.Color;
 import java.awt.Graphics;
 import javax.swing.JPanel;
-import jidnet.idnet.IdiotypicNetwork;
+import jidnet.idnet.IdnetManager;
 
 /**
  *
@@ -11,9 +11,9 @@ import jidnet.idnet.IdiotypicNetwork;
  */
 public class NetworkDiagramPanel extends JPanel {
 
-    private IdiotypicNetwork idiotypicNetwork;
+    private IdnetManager idiotypicNetwork;
 
-    public NetworkDiagramPanel(IdiotypicNetwork idnetManager) {
+    public NetworkDiagramPanel(IdnetManager idnetManager) {
         super();
         this.idiotypicNetwork = idnetManager;
     }

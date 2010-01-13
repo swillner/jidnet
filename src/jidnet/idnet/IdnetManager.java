@@ -18,6 +18,12 @@ public class IdnetManager extends IdiotypicNetwork {
     private double[][] cogWindow;
     private int cogWindowSize = 100;
 
+    public class DeterminantBits {
+
+        public int mask = 0;
+        public int values = 0;
+    }
+
     public IdnetManager() {
         super(12, 0.027, 1, 10, 1);
 
@@ -99,6 +105,21 @@ public class IdnetManager extends IdiotypicNetwork {
             s += (cogWindow[i][c] - mean) * (cogWindow[i][c] - mean);
         s = Math.sqrt(s / (cogWindowSize - 1));
         return s;
+    }
+
+    public DeterminantBits getDeterminantBits() {
+        DeterminantBits result = new DeterminantBits();
+        for (int j = 0; j < d; j++) {
+            double s = getCOGStandardDeviation(j);
+            if (s < 0.05)
+                if (cog[j] > 5 * s) {
+                    result.mask |= 1 << j;
+                    result.values |= 1 << j;
+                } else if (cog[j] < -5 * s)
+                    result.mask |= 1 << j;
+            // TODO : Parameter
+        }
+        return result;
     }
 
     public void createHistogram(String configFileName) throws Exception {
