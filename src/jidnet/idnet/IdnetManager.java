@@ -17,16 +17,19 @@ public class IdnetManager extends IdiotypicNetwork {
     private int[] histogramMO, histogramLT, histogramON;
     private double[][] cogWindow;
     private int cogWindowSize = 100;
+    private double max_s;
 
     public class DeterminantBits {
 
         public int mask = 0;
         public int values = 0;
+
     }
 
     public IdnetManager() {
         super(12, 0.027, 1, 10, 1);
 
+        max_s = 0.04;
         setStatCenterOfGravity(true);
 
         cogWindow = new double[cogWindowSize][d];
@@ -37,6 +40,7 @@ public class IdnetManager extends IdiotypicNetwork {
         params.setProperty("t_l", "1");
         params.setProperty("t_u", "10");
         params.setProperty("N", "1");
+        params.setProperty("max_s", "0.04");
     }
 
     public void loadParams(String fileName) throws FileNotFoundException,
@@ -46,6 +50,7 @@ public class IdnetManager extends IdiotypicNetwork {
         this.sett_l(Integer.parseInt(params.getProperty("t_l")));
         this.sett_u(Integer.parseInt(params.getProperty("t_u")));
         this.setN(Integer.parseInt(params.getProperty("N")));
+        this.setMax_s(Double.parseDouble(params.getProperty("max_s")));
     }
 
     public void saveParams(String fileName) throws IOException {
@@ -54,6 +59,7 @@ public class IdnetManager extends IdiotypicNetwork {
         params.setProperty("t_l", Integer.toString(this.gett_l()));
         params.setProperty("t_u", Integer.toString(this.gett_u()));
         params.setProperty("N", Integer.toString(this.getN()));
+        params.setProperty("max_s", Double.toString(this.getMax_s()));
         params.storeToXML(new FileOutputStream(fileName),
                 "Idiotypic network parameters");
     }
@@ -111,7 +117,7 @@ public class IdnetManager extends IdiotypicNetwork {
         DeterminantBits result = new DeterminantBits();
         for (int j = 0; j < d; j++) {
             double s = getCOGStandardDeviation(j);
-            if (s < 0.05)
+            if (s < max_s)
                 if (cog[j] > 5 * s) {
                     result.mask |= 1 << j;
                     result.values |= 1 << j;
@@ -120,6 +126,14 @@ public class IdnetManager extends IdiotypicNetwork {
             // TODO : Parameter
         }
         return result;
+    }
+
+    public double getMax_s() {
+        return max_s;
+    }
+
+    public void setMax_s(double detBitsMaxDeviation) {
+        this.max_s = detBitsMaxDeviation;
     }
 
     public void createHistogram(String configFileName) throws Exception {

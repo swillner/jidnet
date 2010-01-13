@@ -25,10 +25,6 @@ public final class Application {
     private static IdnetManager idnetManager;
     private static MainWindow mainWindow;
 
-    public static IdnetManager getIdiotypicNetwork() {
-        return idnetManager;
-    }
-
     public static IdnetManager getIdnetManager() {
         return idnetManager;
     }
