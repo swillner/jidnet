@@ -1,28 +1,35 @@
 package jidnet.idnet;
 
+import java.util.Random;
+
+/**
+ * Idiotypic network with very simple statistic and analysis, for more analysis extend
+ *
+ * @author Sven Willner
+ */
 public class IdiotypicNetwork {
 
-    int total_sum_n;
-    double[] cog;
-    int N;
-    int d;
-    double p;
-    int t_l, t_u;
-    Idiotype[] idiotypes, idiotypes_ng, idiotypes_lg;
-    int t;
-    int[] clusters, cluster_sizes;
-    int[][] types;
+    int total_sum_n; // Sum of total occupation
+    double[] cog; // Center of gravity vector
+    int N; // Highest possible occupation
+    int d; // Length of bitstrings
+    double p; // Influx propability
+    int t_l, t_u; // Lower and upper range for update rule
+    Idiotype[] idiotypes, idiotypes_ng, idiotypes_lg; // Idiotypes of current, next (ng) and last (lg) generation
+    int t; // Time / generation
     double[] linkWeighting = {1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     boolean statNeighbourOccupations = false;
     boolean statCenterOfGravity = false;
     boolean statClusters = false;
+    Random rng;
 
     protected final void influx() {
         for (int i = 0; i < (1 << d); i++) {
             idiotypes_lg[i].n = idiotypes[i].n; // TODO
-            if (idiotypes[i].n < N && Math.random() < p) {
+            if (idiotypes[i].n < N && rng.nextDouble() < p) {
+                if (idiotypes[i].n == 0)
+                    idiotypes[i].b++;
                 idiotypes[i].n++;
-                idiotypes[i].b++; // TODO
             }
         }
     }
@@ -32,9 +39,8 @@ public class IdiotypicNetwork {
         while (mismatch != 0) {
             mismatch >>= 1;
             res += idiotypes[j ^ mismatch].n * linkWeighting[dist];
-            if (linkWeighting[dist + 1] > 0) {
+            if (linkWeighting[dist + 1] > 0)
                 res += calcWeightedLinkSumRec(j ^ mismatch, mismatch, dist + 1);
-            }
         }
         return res;
     }
@@ -51,35 +57,29 @@ public class IdiotypicNetwork {
 
             double sum_n_d = calcWeightedLinkSum(i);
 
-            if (idiotypes[i].n > 0) {
-                if (sum_n_d / idiotypes[i].n >= t_l && sum_n_d / idiotypes[i].n <= t_u) {
-                    idiotypes_ng[i].n = Math.min(idiotypes[i].n + 1, N);
-                } else {
+            if (idiotypes[i].n > 0)
+                if (sum_n_d / idiotypes[i].n >= t_l && sum_n_d / idiotypes[i].n <= t_u)
+                    idiotypes_ng[i].n = idiotypes[i].n;
+                else
                     idiotypes_ng[i].n = idiotypes[i].n - 1;
-                }
-            } else {
+            else
                 idiotypes_ng[i].n = 0;
-            }
 
             if (idiotypes_ng[i].n > 0) {
                 idiotypes_ng[i].sum_n = idiotypes[i].sum_n + idiotypes_ng[i].n;
                 idiotypes_ng[i].tau = idiotypes[i].tau + 1;
                 total_sum_n += idiotypes_ng[i].n;
 
-                if (statCenterOfGravity) {
-                    for (int j = 0; j < d; j++) {
-                        if ((i & (1 << j)) != 0) {
+                if (statCenterOfGravity)
+                    for (int j = 0; j < d; j++)
+                        if ((i & (1 << j)) != 0)
                             cog[j]++;
-                        } else {
+                        else
                             cog[j]--;
-                        }
-                    }
-                }
 
             } else {
-                if (idiotypes_lg[i].n > 0) { // Nötig??
+                if (idiotypes_lg[i].n > 0) // Nötig??
                     idiotypes_ng[i].tau = 0;
-                }
 
                 idiotypes_ng[i].cluster_size = 0;
             }
@@ -94,11 +94,9 @@ public class IdiotypicNetwork {
     idiotypes_ng = vorletzte Generation (t-1)
      */
     public void iterate() {
-        if (statCenterOfGravity) {
-            for (int i = 0; i < d; i++) {
+        if (statCenterOfGravity)
+            for (int i = 0; i < d; i++)
                 cog[i] = 0;
-            }
-        }
 
         influx();
         /*
@@ -109,11 +107,9 @@ public class IdiotypicNetwork {
          */
         update();
 
-        if (statCenterOfGravity) {
-            for (int i = 0; i < d; i++) {
+        if (statCenterOfGravity)
+            for (int i = 0; i < d; i++)
                 cog[i] /= total_sum_n;
-            }
-        }
 
         // Permutiere
         // idiotypes wird idiotypes_ng wird idiotypes_lg wird idiotypes
@@ -122,13 +118,12 @@ public class IdiotypicNetwork {
         idiotypes = idiotypes_ng;
         idiotypes_ng = tmp;
 
-        if (statNeighbourOccupations) {
+        if (statNeighbourOccupations)
             for (int i = 0; i < (1 << d); i++) {
                 double sum_n_d = calcWeightedLinkSum(i);
                 idiotypes[i].n_d = sum_n_d;
                 idiotypes[i].sum_n_d += sum_n_d;
             }
-        }
 
         /*if (statClusters) {
         for (int j = 0; j < (1 << d); j++) {
@@ -157,9 +152,8 @@ public class IdiotypicNetwork {
     }
 
     public void iterate(int n) {
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++)
             iterate();
-        }
     }
 
     public void reset() {
@@ -183,21 +177,17 @@ public class IdiotypicNetwork {
     }
 
     // TODO int calcAllClustersRec(int i, int[] p, int[][] types) {    }
-    
     private int calcGroupOccupationRec(int maskDeterminantBit, int valuesDeterminantBits, int l, int mismatch) {
         int res = 0;
         if (l == 0) {
-            for (int i = 0; i < (1 << d); i++) {
-                if ((i & maskDeterminantBit) == valuesDeterminantBits) {
+            for (int i = 0; i < (1 << d); i++)
+                if ((i & maskDeterminantBit) == valuesDeterminantBits)
                     res += idiotypes[i].n;
-                }
-            }
-        } else {
+        } else
             while (mismatch > (1 << (l - 1))) {
                 mismatch = mismatch >> 1;
                 res += calcGroupOccupationRec(maskDeterminantBit, valuesDeterminantBits ^ mismatch, l - 1, mismatch);
             }
-        }
         return res;
     }
 
@@ -222,12 +212,19 @@ public class IdiotypicNetwork {
             idiotypes_lg[i] = new Idiotype();
         }
 
-        cluster_sizes = new int[1 << d];
-        clusters = new int[1 << d];
+        rng = new Random();
 
         reset();
 
         cog = new double[d];
+    }
+
+    public double[] getLinkWeighting() {
+        return linkWeighting;
+    }
+
+    public void setLinkWeighting(double[] linkWeighting) {
+        this.linkWeighting = linkWeighting;
     }
 
     public double getp() {
@@ -305,4 +302,5 @@ public class IdiotypicNetwork {
     public void setN(int N) {
         this.N = N;
     }
+
 }

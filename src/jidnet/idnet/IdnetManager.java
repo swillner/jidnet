@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.Random;
 
 /**
  *
@@ -41,6 +42,18 @@ public class IdnetManager extends IdiotypicNetwork {
         params.setProperty("t_u", "10");
         params.setProperty("N", "1");
         params.setProperty("max_s", "0.04");
+        params.setProperty("lw0", "1");
+        params.setProperty("lw1", "1");
+        params.setProperty("lw2", "1");
+        params.setProperty("lw3", "0");
+        params.setProperty("lw4", "0");
+        params.setProperty("lw5", "0");
+        params.setProperty("lw6", "0");
+        params.setProperty("lw7", "0");
+        params.setProperty("lw8", "0");
+        params.setProperty("lw9", "0");
+        params.setProperty("lw10", "0");
+        params.setProperty("lw11", "0");
     }
 
     public void loadParams(String fileName) throws FileNotFoundException,
@@ -51,6 +64,18 @@ public class IdnetManager extends IdiotypicNetwork {
         this.sett_u(Integer.parseInt(params.getProperty("t_u")));
         this.setN(Integer.parseInt(params.getProperty("N")));
         this.setMax_s(Double.parseDouble(params.getProperty("max_s")));
+        linkWeighting[0] = Double.parseDouble(params.getProperty("lw0"));
+        linkWeighting[1] = Double.parseDouble(params.getProperty("lw1"));
+        linkWeighting[2] = Double.parseDouble(params.getProperty("lw2"));
+        linkWeighting[3] = Double.parseDouble(params.getProperty("lw3"));
+        linkWeighting[4] = Double.parseDouble(params.getProperty("lw4"));
+        linkWeighting[5] = Double.parseDouble(params.getProperty("lw5"));
+        linkWeighting[6] = Double.parseDouble(params.getProperty("lw6"));
+        linkWeighting[7] = Double.parseDouble(params.getProperty("lw7"));
+        linkWeighting[8] = Double.parseDouble(params.getProperty("lw8"));
+        linkWeighting[9] = Double.parseDouble(params.getProperty("lw9"));
+        linkWeighting[10] = Double.parseDouble(params.getProperty("lw10"));
+        linkWeighting[11] = Double.parseDouble(params.getProperty("lw11"));
     }
 
     public void saveParams(String fileName) throws IOException {
@@ -60,8 +85,25 @@ public class IdnetManager extends IdiotypicNetwork {
         params.setProperty("t_u", Integer.toString(this.gett_u()));
         params.setProperty("N", Integer.toString(this.getN()));
         params.setProperty("max_s", Double.toString(this.getMax_s()));
+        params.setProperty("lw0", Double.toString(linkWeighting[0]));
+        params.setProperty("lw1", Double.toString(linkWeighting[1]));
+        params.setProperty("lw2", Double.toString(linkWeighting[2]));
+        params.setProperty("lw3", Double.toString(linkWeighting[3]));
+        params.setProperty("lw4", Double.toString(linkWeighting[4]));
+        params.setProperty("lw5", Double.toString(linkWeighting[5]));
+        params.setProperty("lw6", Double.toString(linkWeighting[6]));
+        params.setProperty("lw7", Double.toString(linkWeighting[7]));
+        params.setProperty("lw8", Double.toString(linkWeighting[8]));
+        params.setProperty("lw9", Double.toString(linkWeighting[9]));
+        params.setProperty("lw10", Double.toString(linkWeighting[10]));
+        params.setProperty("lw11", Double.toString(linkWeighting[11]));
+
         params.storeToXML(new FileOutputStream(fileName),
                 "Idiotypic network parameters");
+    }
+
+    public void reseed(long seed) {
+        rng.setSeed(seed);
     }
 
     private void calcHistogramStep(int numLoops, int tWait, int tWindow,

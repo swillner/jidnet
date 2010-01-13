@@ -11,18 +11,23 @@ import jidnet.idnet.IdnetManager;
 import jidnet.idnet.IdnetManager.DeterminantBits;
 
 /**
+ * Swing component, that shows a 2D grid of idnetManager's nodes and their occupation.
+ * Grid can be arranged by det. bit groups
  *
- * @author sven
+ * @author Sven Willner
  */
 public class Network2DPanel extends JPanel {
 
     private IdnetManager idnetManager;
+    // Coordinates of mouse pointer in component
     private int mouseX = -1, mouseY = -1;
-    private int d_m = 0;
-    private int[] order, reverseOrder, values;
-    private int[] inBlockX, inBlockY, outBlockX, outBlockY;
     private DeterminantBits detBits;
-    private int xBlockSize, yBlockSize, yBlockCount, xBlockCount;
+    private int d_m = 0;
+    // Permutation of bits to arrange nodes by det. bit group
+    private int[] order;
+    // Determinated/undet. bits of rows and cols in grid (arranged in blocks, whose nodes only differ in undet. bits)
+    private int[] undetRow, undetCol, detRow, detCol;
+    private int undetBlockWidth, undetBlockHeight, undetBlockColCount, undetBlockRowCount;
 
     public Network2DPanel(IdnetManager idnetManager) {
         super();
@@ -39,37 +44,42 @@ public class Network2DPanel extends JPanel {
             }
 
         });
+
         order = new int[12];
-        reverseOrder = new int[12];
-        values = new int[12];
-        for (int i = 0; i < 12; i++) {
-            order[i] = reverseOrder[i] = i;
-            values[i] = 0;
-        }
-    }
 
-    private int remapBits(int v) {
-        //System.out.println(getBitString(v));
-        int res = 0;
+        // Default order: identity
         for (int i = 0; i < 12; i++)
-            res |= ((((v >> i) & 1) ^ values[i]) << order[i]);
-        return res;
+            order[i] = i;
     }
 
-    private int coordsToIndex(int x, int y) {
-        /*return ((((y >> 0) & 1) ^ values[0]) << order[0]) | ((((x >> 0) & 1) ^
-        values[1]) << order[1]) | ((((y >> 1) & 1) ^ values[2]) <<
-        order[2]) | ((((x >> 1) & 1) ^ values[3]) << order[3]) |
-        ((((y >> 2) & 1) ^ values[4]) << order[4]) | ((((x >> 2) & 1) ^
-        values[5]) << order[5]) | ((((y >> 3) & 1) ^ values[6]) <<
-        order[6]) | ((((x >> 3) & 1) ^ values[7]) << order[7]) |
-        ((((y >> 4) & 1) ^ values[8]) << order[8]) | ((((x >> 4) & 1) ^
-        values[9]) << order[9]) | ((((y >> 5) & 1) ^ values[10]) <<
-        order[10]) | ((((x >> 5) & 1) ^ values[11]) << order[11]);*/
+    /**
+     * Arrange bits by order and set variations/accordances to det. bits
+     *
+     * @param v Bitstring to remap (1 for variation from det. bit, 0 for none)
+     * @return Remapped bitstring
+     */
+    private int remapBits(int v) {
+        int res = 0;
+        // Reorder
+        for (int i = 0; i < 12; i++)
+            // res |= ((((v >> i) & 1) ^ values[i]) << order[i]);
+            res |= (((v >> i) & 1) << order[i]);
+        // Set variations/accordances to det. bits
+        return res ^ detBits.values;
+    }
+
+    /**
+     * Maps coordinates in grid (by position in grid, not screen pixels) to node
+     *
+     * @param x x position in grid (between 0 and 63)
+     * @param y y position in grid (between 0 and 63)
+     * @return Node at given position
+     */
+    private int coordsToNode(int x, int y) {
         if (detBits != null)
-            return remapBits(inBlockX[x % xBlockSize] | inBlockY[y % yBlockSize] |
-                    outBlockX[x / xBlockSize] | outBlockY[y /
-                    yBlockSize]);
+            return remapBits(undetRow[x % undetBlockWidth] | undetCol[y % undetBlockHeight] |
+                    detRow[x / undetBlockWidth] | detCol[y /
+                    undetBlockHeight]);
         else
             return ((y & (1 << 0)) << 0) | ((x & (1 << 0)) << 1) |
                     ((y & (1 << 1)) << 1) | ((x & (1 << 1)) <<
@@ -80,21 +90,14 @@ public class Network2DPanel extends JPanel {
                     ((y & (1 << 5)) << 5) | ((x & (1 << 5)) << 6);
     }
 
-    private Point indexToCoords(int i) {
-        /*int y = ((i & (1 << 0)) >> 0) | ((i & (1 << 2)) >> 1) |
-        ((i & (1 << 4)) >> 2) | ((i & (1 << 6)) >> 3) |
-        ((i & (1 << 8)) >> 4) | ((i & (1 << 10)) >> 5);
-        int x = ((i & (1 << 1)) >> 1) | ((i & (1 << 3)) >> 2) |
-        ((i & (1 << 5)) >> 3) | ((i & (1 << 7)) >> 4) |
-        ((i & (1 << 9)) >> 5) | ((i & (1 << 11)) >> 6);*/
-        // TODO : Achtung ab hier dirty-Lösung!
-        for (int x = 0; x < 64; x++)
-            for (int y = 0; y < 64; y++)
-                if (coordsToIndex(x, y) == i)
-                    return new Point(x, y);
-        return null;
-    }
-
+    /**
+     * Fills array masked by size-1 with shifted bitstrings
+     * (first array element 0, followed by all bitstrings with 1 bit, those with 2, ...)
+     * 
+     * @param size Size of array (must be power of 2 => sum of bin. coeff. = 2 ^ n)
+     * @param array Array to be filled
+     * @param shift Shift to be applied to every array element
+     */
     private void fillOrderedArray(int size, int[] array, int shift) {
         int mask = size - 1;
         /*for (int i = 11; i >= 0; i--)
@@ -104,46 +107,60 @@ public class Network2DPanel extends JPanel {
         array[0] = 0;
         for (int i = 1; i < size; i++) {
             array[i] = v << shift;
+            // Get next Permutation of bits in v
             v = Helper.nextPermutation(v);
             if (v > mask)
-                v = ((v & mask) << 2) + 3;
+                // All permutations in mask done, shift by 2
+                // (highest order bit vanishes by masking, next is 0),
+                // set least significant bits => number of set bits in v inreased by 1
+                v = ((v & mask) << 2) | 3;
         }
     }
 
-    public void sortByDetBits() {
+    /**
+     * Arrange back to default: order = identity
+     */
+    public void arrangeDefault() {
+        for (int i = 0; i < 12; i++)
+            order[i] = i;
+        d_m = 0;
+        detBits = null;
+    }
+
+    /**
+     *  Generates order-array and blocks to rearrange nodes by determinant bit group (S_0, ...)
+     */
+    public void arrangeByDetBitGroups() {
         detBits = idnetManager.getDeterminantBits();
         int orderIndexLow = 0, orderIndexHigh = 11;
         for (int i = 0; i < 12; i++)
             if ((detBits.mask & (1 << i)) == 0) {
                 order[orderIndexLow] = i;
-                values[orderIndexLow] = 0;
-                reverseOrder[i] = orderIndexLow;
                 orderIndexLow++;
             } else {
                 order[orderIndexHigh] = i;
-                reverseOrder[i] = orderIndexHigh;
-                if ((detBits.values & (1 << i)) != 0)
-                    values[orderIndexHigh] = 1;
-                else
-                    values[orderIndexHigh] = 0;
                 orderIndexHigh--;
             }
+
+        // Set number of determinant bits (d_m) and determine size of blocks, that differ only in not det. bits
         d_m = Helper.hammingWeight(detBits.mask);
-        xBlockSize = 1 << (6 - (d_m / 2) - (d_m % 2));
-        yBlockSize = 1 << (6 - (d_m / 2));
+        undetBlockWidth = 1 << (6 - (d_m / 2) - (d_m % 2));
+        undetBlockHeight = 1 << (6 - (d_m / 2));
 
-        xBlockCount = 64 / xBlockSize;
-        yBlockCount = 64 / yBlockSize;
+        // Determine number of undet. bit blocks, grid size is 64x64
+        undetBlockRowCount = 64 / undetBlockWidth;
+        undetBlockColCount = 64 / undetBlockHeight;
 
-        inBlockX = new int[xBlockSize];
-        inBlockY = new int[yBlockSize];
-        outBlockX = new int[xBlockCount];
-        outBlockY = new int[yBlockCount];
+        undetRow = new int[undetBlockWidth];
+        undetCol = new int[undetBlockHeight];
+        detRow = new int[undetBlockRowCount];
+        detCol = new int[undetBlockColCount];
 
-        fillOrderedArray(xBlockSize, inBlockX, (6 - (d_m / 2)));
-        fillOrderedArray(yBlockSize, inBlockY, 0);
-        fillOrderedArray(xBlockCount, outBlockX, (d_m / 2) + (12 - d_m));
-        fillOrderedArray(yBlockCount, outBlockY, (12 - d_m));
+        // Fill column and row arrays
+        fillOrderedArray(undetBlockHeight, undetCol, 0); // least significant bits
+        fillOrderedArray(undetBlockWidth, undetRow, (6 - (d_m / 2))); // shifted by log2(undetBlockHeight)
+        fillOrderedArray(undetBlockColCount, detCol, (12 - d_m)); // shifted some more by log2(undetBlockWidth)
+        fillOrderedArray(undetBlockRowCount, detRow, (d_m / 2) + (12 - d_m)); // shifted some more by log2(undetBlockColCount) => most significant bits
 
         repaint();
     }
@@ -153,83 +170,79 @@ public class Network2DPanel extends JPanel {
         super.paintComponent(g);
 
         int xOffset = 50;
-        int yOffset = 50;
-        int size = 8;
+        int yOffset = 20; // Offsets of grid
+        int squareSize = 11; // Width/height of grid's squares
 
+        // Draw grid outline
         g.setColor(Color.GRAY);
-        g.drawRect(xOffset - 1, yOffset - 1, 64 * size + 1, 64 * size + 1);
+        g.drawRect(xOffset - 1, yOffset - 1, 64 * squareSize + 1, 64 * squareSize + 1);
 
         if (detBits != null) {
+            // Arranged by determinant bits => Draw groups
             g.setColor(Color.BLUE);
             for (int x = 0; x < 64; x++)
                 for (int y = 0; y < 64; y++) {
-                    int i = coordsToIndex(x, y);
+                    int i = coordsToNode(x, y);
                     g.setColor(Color.getHSBColor(Helper.hammingWeight(
                             (detBits.mask & i) ^ detBits.values) / (float) d_m, 1.0f, 1.0f));
-                    g.fillRect(x * size + xOffset, y * size + yOffset, size, size);
+                    g.fillRect(x * squareSize + xOffset, y * squareSize + yOffset, squareSize, squareSize);
                 }
         } else {
+            // Not arranged => Draw grid's background monochrome
             g.setColor(Color.CYAN);
-            g.fillRect(xOffset, yOffset, 64 * size, 64 * size);
+            g.fillRect(xOffset, yOffset, 64 * squareSize, 64 * squareSize);
         }
 
-        g.setColor(Color.BLACK);
+        if (mouseX > xOffset && mouseY > yOffset && mouseX < xOffset + 64 * squareSize && mouseY <
+                yOffset + 64 * squareSize) {
+            // If mouse pointer in grid
+            g.setColor(Color.BLACK);
 
-        if (mouseX > xOffset && mouseY > yOffset && mouseX < xOffset + 64 * size && mouseY <
-                yOffset + 64 * size) {
-            int i = coordsToIndex((mouseX - xOffset) /
-                    size, (mouseY - yOffset) / size);
-            g.drawString(Helper.getBitString(i), xOffset, yOffset + 64 * size +
-                    30);
+            // Index of node below mouse pointer
+            int i = coordsToNode((mouseX - xOffset) /
+                    squareSize, (mouseY - yOffset - 2) / squareSize);
+
+            g.drawString(Helper.getBitString(i), xOffset, yOffset + 64 * squareSize + 30);
             if (detBits != null)
                 g.drawString("belongs to S_" + Helper.hammingWeight(
                         (detBits.mask & i) ^ detBits.values),
-                        xOffset, yOffset + 64 * size + 50);
+                        xOffset, yOffset + 64 * squareSize + 50);
 
-            Point p = indexToCoords(i);
-            g.setColor(Color.GRAY);
-            g.fillRect(p.x * size + xOffset, p.y * size + yOffset, size,
-                    size);
-
-            int c = ~i & 4095;
-            p = indexToCoords(c);
-            g.setColor(Color.WHITE);
-            g.fillRect(p.x * size + xOffset, p.y * size + yOffset, size,
-                    size);
-
-            int m1, m2;
-            m1 = 4096 >> 1;
-            while (m1 != 0) {
-                p = indexToCoords(c ^ m1);
-                g.setColor(Color.WHITE);
-                g.fillRect(p.x * size + xOffset, p.y * size + yOffset,
-                        size,
-                        size);
-                g.setColor(Color.LIGHT_GRAY);
-
-                m2 = m1 >> 1;
-                while (m2 != 0) {
-                    p = indexToCoords((c ^ m1) ^ m2);
-                    g.fillRect(p.x * size + xOffset, p.y * size +
-                            yOffset, size,
-                            size);
-
-                    m2 = m2 >> 1;
+            // Draw neighbours, brigthness determined by link weighting
+            int c = ~i & ((1 << 12) - 1);
+            for (int x = 0; x < 64; x++)
+                for (int y = 0; y < 64; y++) {
+                    int v = coordsToNode(x, y);
+                    int diff = Helper.hammingWeight(v ^ c);
+                    if (idnetManager.getLinkWeighting()[diff] > 0) {
+                        if (detBits != null)
+                            g.setColor(Color.getHSBColor(Helper.hammingWeight((detBits.mask & v) ^ detBits.values) /
+                                    (float) d_m, 1f - (float) idnetManager.getLinkWeighting()[diff], 1f));
+                        else
+                            g.setColor(Color.getHSBColor(0f, 1f - (float) idnetManager.getLinkWeighting()[diff], 1f));
+                        g.fillRect(x * squareSize + xOffset, y * squareSize + yOffset, squareSize, squareSize);
+                    }
                 }
-                m1 = m1 >> 1;
-            }
+
+            // Mark node below mouse pointer
+            g.setColor(Color.WHITE);
+            g.fillRect(((mouseX - xOffset) / squareSize) * squareSize + xOffset, ((mouseY - yOffset - 2) / squareSize) *
+                    squareSize + yOffset,
+                    squareSize, squareSize);
+
         }
 
+        // Draw dots for nodes' occupations
         g.setColor(Color.BLACK);
         for (int x = 0; x < 64; x++)
             for (int y = 0; y < 64; y++) {
-                int i = coordsToIndex(x, y);
-                if (idnetManager.getIdiotypes()[i].n > 0)
-                    g.fillRect(x * size + xOffset + 2, y * size + yOffset +
-                            2, size - 4, size - 4);
+                int i = coordsToNode(x, y);
+                if (idnetManager.getIdiotypes()[i].n > 0) {
+                    int size = (idnetManager.getIdiotypes()[i].n * (squareSize - 4)) / idnetManager.getN();
+                    g.fillRect(x * squareSize + xOffset + (squareSize - size) / 2, y * squareSize + yOffset +
+                            (squareSize - size) / 2, size, size);
+                }
             }
-
-
 
     }
 
