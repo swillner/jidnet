@@ -3,6 +3,7 @@ package jidnet.idnet;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
@@ -27,7 +28,6 @@ public class IdnetManager extends IdiotypicNetwork {
 
         public int mask = 0;
         public int values = 0;
-
     }
 
     public IdnetManager() {
@@ -130,7 +130,6 @@ public class IdnetManager extends IdiotypicNetwork {
             params.setProperty("lw" + component, Double.toString(weighting));
         }
     }
-
 
     /**
      * Saves parameters to XML-file
@@ -289,10 +288,8 @@ public class IdnetManager extends IdiotypicNetwork {
             histogramLT = new int[ySteps];
         if (fileNameMO != null)
             histogramMO = new int[ySteps];
-        if (fileNameON != null) {
+        if (fileNameON != null)
             histogramON = new int[ySteps];
-            //setStatNeighbourOccupations(true);
-        }
 
         FileWriter fileWriterLT = null, fileWriterMO = null, fileWriterON = null;
         if (fileNameLT != null)
@@ -353,6 +350,30 @@ public class IdnetManager extends IdiotypicNetwork {
             System.out.println(i_p);
 
         }
+    }
+
+    public void saveNetwork(String fileName) throws IOException {
+        FileWriter writer = new FileWriter(fileName);
+        for (int i = 0; i < (1 << d); i++)
+            writer.write(i + " " + idiotypes[i].n + "\n");
+        writer.close();
+    }
+
+    public void loadNetwork(String fileName) throws IOException {
+        reset();
+        if (d != 12)
+            return;
+        FileReader reader = new FileReader(fileName);
+        // TODO : d auslesen
+        for (int i = 0; i < (1 << d); i++) {
+            while (reader.read() != ' ') { }
+            String s = "";
+            char c;
+            while ((c = (char)reader.read()) != '\n')
+                s += c;
+            idiotypes[i].n = Integer.parseInt(s);
+        }
+        reader.close();
     }
 
 }

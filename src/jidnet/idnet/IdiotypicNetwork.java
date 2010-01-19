@@ -81,9 +81,9 @@ public class IdiotypicNetwork {
                 if (statCenterOfGravity)
                     for (int j = 0; j < d; j++)
                         if ((i & (1 << j)) != 0)
-                            cog[j]++;
+                            cog[j] += idiotypes_ng[i].n;
                         else
-                            cog[j]--;
+                            cog[j] -= idiotypes_ng[i].n;
 
             } else {
                 idiotypes_ng[i].tau = 0;
