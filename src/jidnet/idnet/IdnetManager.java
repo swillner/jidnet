@@ -7,7 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.Random;
+import java.util.Vector;
 
 /**
  * Extended IdiotypicNetwork, implements analysis of determinant bits, 
@@ -17,11 +17,17 @@ import java.util.Random;
  */
 public class IdnetManager extends IdiotypicNetwork {
 
+    /** Parameters (for saving / loading) */
     private Properties params;
+    /** Histogram information for one <code>p</code> value */
     private int[] histogramMO, histogramLT, histogramON;
+    /** History of center of gravity */
     private double[][] cogWindow;
-    private int cogWindowSize = 100;
+    /** Size of center of gravity history */
+    private final int cogWindowSize = 100;
+    /** Maximal standard deviation of center of gravity component to be assumed to be constant */
     private double max_s;
+    /** Currently used seed for random number generator */
     private long seed;
 
     public class DeterminantBits {
@@ -30,6 +36,10 @@ public class IdnetManager extends IdiotypicNetwork {
         public int values = 0;
     }
 
+    /**
+     * Default parameters: <code>d<code> = 12, <code>p</code> = 0.027, <code>t_l</code> = 1, <code>t_u</code> = 10,
+     * <code>N</code> = 1, <code>max_s</code> = 0.04
+     */
     public IdnetManager() {
         super(12, 0.027, 1, 10, 1);
 
@@ -73,6 +83,10 @@ public class IdnetManager extends IdiotypicNetwork {
         loadParams(params);
     }
 
+    /**
+     * Loads parameters from other <code>Properties</code>-Object
+     * @param params
+     */
     public void loadParams(Properties params) {
         this.params.putAll(params);
         this.setp(Double.parseDouble(params.getProperty("p")));
@@ -95,6 +109,11 @@ public class IdnetManager extends IdiotypicNetwork {
         linkWeighting[11] = Double.parseDouble(params.getProperty("lw11"));
     }
 
+    /**
+     * Gets parameters
+     * 
+     * @return
+     */
     public Properties getParams() {
         return params;
     }
@@ -134,7 +153,7 @@ public class IdnetManager extends IdiotypicNetwork {
     /**
      * Saves parameters to XML-file
      *
-     * @param fileName
+     * @param fileName File name
      * @throws IOException
      */
     public void saveParams(String fileName) throws IOException {
@@ -143,9 +162,9 @@ public class IdnetManager extends IdiotypicNetwork {
     }
 
     /**
-     * Sets seed of random number generator
+     * Sets <code>seed</code> of random number generator
      *
-     * @param seed
+     * @param seed Seed
      */
     public void reseed(long seed) {
         params.setProperty("seed", Long.toString(seed));
@@ -153,12 +172,18 @@ public class IdnetManager extends IdiotypicNetwork {
         this.seed = seed;
     }
 
+    /**
+     * Gets currently used <code>seed</code>
+     *
+     * @return
+     */
     public long getSeed() {
         return seed;
     }
 
     /**
-     * Calculates a step in the histogram (for one p value)
+     * Calculates a step in the histogram (for one <code>p</code> value)
+     *
      * @param numLoops Number of loops (reset for each loop) to take the mean of
      * @param tWait Number of iterations to wait before doing the statistics
      * @param tWindow Number of iterations to do the statistics on
@@ -181,7 +206,7 @@ public class IdnetManager extends IdiotypicNetwork {
                             1) / (double) tWindow)]++;
 
                 if (histogramON != null)
-                    if ((double) this.getSum_n() / (double) tWindow < 80.)
+                    if ((double) this.gettotal_sum_n() / (double) tWindow < 80.)
                         histogramON[(int) ((double) node.sum_n_d / 80. *
                                 (double) (ySteps - 1) / (double) tWindow)]++;
 
@@ -207,7 +232,8 @@ public class IdnetManager extends IdiotypicNetwork {
     }
 
     /**
-     * Calculates the standard deviation of center of gravity component c
+     * Calculates the standard deviation of center of gravity component <code>c</code>
+     *
      * @param c Component of cog-vector
      * @return Standard deviation
      */
@@ -224,6 +250,7 @@ public class IdnetManager extends IdiotypicNetwork {
 
     /**
      * Tries do determine determinant bits
+     *
      * @return
      */
     public DeterminantBits getDeterminantBits() {
@@ -236,22 +263,83 @@ public class IdnetManager extends IdiotypicNetwork {
                     result.values |= 1 << j;
                 } else if (cog[j] < -5 * s)
                     result.mask |= 1 << j;
-            // TODO : Parameter
+            // TODO : Proper recognision of determinant bits
         }
         return result;
     }
 
-    public double getMax_s() {
+    /**
+     * Gets maximal standard deviation of center of gravity component to be assumed to be constant
+     *
+     * @return
+     */
+    public double getmax_s() {
         return max_s;
     }
 
-    public void setmax_s(double detBitsMaxDeviation) {
-        this.max_s = detBitsMaxDeviation;
+    /**
+     * Sets maximal standard deviation of center of gravity component to be assumed to be constant
+     *
+     * @param detBitsMaxDeviation
+     */
+    public void setmax_s(double max_s) {
+        this.max_s = max_s;
         params.setProperty("max_s", Double.toString(max_s));
     }
 
     /**
+     * Calculates cluster of <code>j</code>
+     *
+     * @param j
+     * @param cluster Cluster of <code>j</code>
+     * @param visited Saves what idiotypes have been counted already
+     * @param mismatchMask Missmatches to last <code>j</code>
+     * @param dist Distance to original <code>j</code>
+     */
+    private void calcClusterRec(int j, Vector<Idiotype> cluster, boolean[] visited, int mismatchMask, int dist) {
+        while (mismatchMask != 0) {
+            mismatchMask >>= 1;
+            if (idiotypes[j ^ mismatchMask].n > 0) {
+                visited[j ^ mismatchMask] = true;
+                idiotypes[j ^ mismatchMask].cluster = cluster;
+                cluster.add(idiotypes[j ^ mismatchMask]);
+            }
+            if (linkWeighting[dist + 1] > 0)
+                calcClusterRec(j ^ mismatchMask, cluster, visited, mismatchMask, dist + 1);
+        }
+    }
+
+    /**
+     * Calculates clusters and their sizes
+     *
+     * @return Vector of all clusters in network
+     */
+    public Vector<Vector<Idiotype>> calcClusters() {
+        Vector<Vector<Idiotype>> res = new Vector<Vector<Idiotype>>();
+        boolean[] visited = new boolean[1 << d];
+        for (int i = 0; i < (1 << d); i++)
+            if (!visited[i] && idiotypes[i].n > 0) {
+                visited[i] = true;
+                Vector<Idiotype> cluster = new Vector<Idiotype>();
+                res.add(cluster);
+                cluster.add(idiotypes[i]);
+                idiotypes[i].cluster = cluster;
+
+                int complement = ~i & ((1 << d) - 1);
+                if (idiotypes[complement].n > 0) {
+                    visited[complement] = true;
+                    idiotypes[complement].cluster = cluster;
+                    cluster.add(idiotypes[complement]);
+                }
+
+                calcClusterRec(complement, cluster, visited, 1 << d, 1);
+            }
+        return res;
+    }
+
+    /**
      * Creates histogram, reads settings from config file
+     *
      * @param configFileName Name of config file
      * @throws Exception
      */
@@ -352,6 +440,12 @@ public class IdnetManager extends IdiotypicNetwork {
         }
     }
 
+    /**
+     * Saves network snapshot to file
+     *
+     * @param fileName File name
+     * @throws IOException
+     */
     public void saveNetwork(String fileName) throws IOException {
         FileWriter writer = new FileWriter(fileName);
         for (int i = 0; i < (1 << d); i++)
@@ -359,17 +453,25 @@ public class IdnetManager extends IdiotypicNetwork {
         writer.close();
     }
 
+    /**
+     * Loads network snapshot from file
+     *
+     * TODO : Proper parsing, read out d
+     *
+     * @param fileName File name
+     * @throws IOException
+     */
     public void loadNetwork(String fileName) throws IOException {
         reset();
         if (d != 12)
             return;
         FileReader reader = new FileReader(fileName);
-        // TODO : d auslesen
         for (int i = 0; i < (1 << d); i++) {
-            while (reader.read() != ' ') { }
+            while (reader.read() != ' ') {
+            }
             String s = "";
             char c;
-            while ((c = (char)reader.read()) != '\n')
+            while ((c = (char) reader.read()) != '\n')
                 s += c;
             idiotypes[i].n = Integer.parseInt(s);
         }
