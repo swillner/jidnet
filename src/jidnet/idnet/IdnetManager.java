@@ -9,8 +9,10 @@ import java.util.Properties;
 import java.util.Random;
 
 /**
+ * Extended IdiotypicNetwork, implements analysis of determinant bits, 
+ * loading and storage of parameters, center of gravity
  *
- * @author sven
+ * @author Sven Willner
  */
 public class IdnetManager extends IdiotypicNetwork {
 
@@ -19,6 +21,7 @@ public class IdnetManager extends IdiotypicNetwork {
     private double[][] cogWindow;
     private int cogWindowSize = 100;
     private double max_s;
+    private long seed;
 
     public class DeterminantBits {
 
@@ -42,6 +45,7 @@ public class IdnetManager extends IdiotypicNetwork {
         params.setProperty("t_u", "10");
         params.setProperty("N", "1");
         params.setProperty("max_s", "0.04");
+        params.setProperty("seed", "0");
         params.setProperty("lw0", "1");
         params.setProperty("lw1", "1");
         params.setProperty("lw2", "1");
@@ -56,14 +60,27 @@ public class IdnetManager extends IdiotypicNetwork {
         params.setProperty("lw11", "0");
     }
 
+    /**
+     * Loads parameters from file
+     *
+     * @param fileName
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
     public void loadParams(String fileName) throws FileNotFoundException,
                                                    IOException {
         params.loadFromXML(new FileInputStream(fileName));
+        loadParams(params);
+    }
+
+    public void loadParams(Properties params) {
+        this.params.putAll(params);
         this.setp(Double.parseDouble(params.getProperty("p")));
         this.sett_l(Integer.parseInt(params.getProperty("t_l")));
         this.sett_u(Integer.parseInt(params.getProperty("t_u")));
         this.setN(Integer.parseInt(params.getProperty("N")));
-        this.setMax_s(Double.parseDouble(params.getProperty("max_s")));
+        this.setmax_s(Double.parseDouble(params.getProperty("max_s")));
+        this.reseed(Long.parseLong(params.getProperty("seed")));
         linkWeighting[0] = Double.parseDouble(params.getProperty("lw0"));
         linkWeighting[1] = Double.parseDouble(params.getProperty("lw1"));
         linkWeighting[2] = Double.parseDouble(params.getProperty("lw2"));
@@ -78,34 +95,77 @@ public class IdnetManager extends IdiotypicNetwork {
         linkWeighting[11] = Double.parseDouble(params.getProperty("lw11"));
     }
 
-    public void saveParams(String fileName) throws IOException {
-        params.setProperty("d", Integer.toString(this.getd()));
-        params.setProperty("p", Double.toString(this.getp()));
-        params.setProperty("t_l", Integer.toString(this.gett_l()));
-        params.setProperty("t_u", Integer.toString(this.gett_u()));
-        params.setProperty("N", Integer.toString(this.getN()));
-        params.setProperty("max_s", Double.toString(this.getMax_s()));
-        params.setProperty("lw0", Double.toString(linkWeighting[0]));
-        params.setProperty("lw1", Double.toString(linkWeighting[1]));
-        params.setProperty("lw2", Double.toString(linkWeighting[2]));
-        params.setProperty("lw3", Double.toString(linkWeighting[3]));
-        params.setProperty("lw4", Double.toString(linkWeighting[4]));
-        params.setProperty("lw5", Double.toString(linkWeighting[5]));
-        params.setProperty("lw6", Double.toString(linkWeighting[6]));
-        params.setProperty("lw7", Double.toString(linkWeighting[7]));
-        params.setProperty("lw8", Double.toString(linkWeighting[8]));
-        params.setProperty("lw9", Double.toString(linkWeighting[9]));
-        params.setProperty("lw10", Double.toString(linkWeighting[10]));
-        params.setProperty("lw11", Double.toString(linkWeighting[11]));
+    public Properties getParams() {
+        return params;
+    }
 
+    @Override
+    public void setp(double p) {
+        super.setp(p);
+        params.setProperty("p", Double.toString(p));
+    }
+
+    @Override
+    public void sett_l(int t_l) {
+        super.sett_l(t_l);
+        params.setProperty("t_l", Integer.toString(t_l));
+    }
+
+    @Override
+    public void sett_u(int t_u) {
+        super.sett_u(t_u);
+        params.setProperty("t_u", Integer.toString(t_u));
+    }
+
+    @Override
+    public void setN(int N) {
+        super.setN(N);
+        params.setProperty("N", Integer.toString(N));
+    }
+
+    @Override
+    public void setLinkWeighting(int component, double weighting) {
+        if (component < d) {
+            super.setLinkWeighting(component, weighting);
+            params.setProperty("lw" + component, Double.toString(weighting));
+        }
+    }
+
+
+    /**
+     * Saves parameters to XML-file
+     *
+     * @param fileName
+     * @throws IOException
+     */
+    public void saveParams(String fileName) throws IOException {
         params.storeToXML(new FileOutputStream(fileName),
                 "Idiotypic network parameters");
     }
 
+    /**
+     * Sets seed of random number generator
+     *
+     * @param seed
+     */
     public void reseed(long seed) {
+        params.setProperty("seed", Long.toString(seed));
         rng.setSeed(seed);
+        this.seed = seed;
     }
 
+    public long getSeed() {
+        return seed;
+    }
+
+    /**
+     * Calculates a step in the histogram (for one p value)
+     * @param numLoops Number of loops (reset for each loop) to take the mean of
+     * @param tWait Number of iterations to wait before doing the statistics
+     * @param tWindow Number of iterations to do the statistics on
+     * @param ySteps Number of steps to devide the y-axis into
+     * @throws IOException
+     */
     private void calcHistogramStep(int numLoops, int tWait, int tWindow,
                                    int ySteps) throws IOException {
         for (int loop = 0; loop < numLoops; loop++) {
@@ -137,6 +197,9 @@ public class IdnetManager extends IdiotypicNetwork {
 
     }
 
+    /**
+     * Do one iteration step (overridden to do center of gravity statistics)
+     */
     @Override
     public void iterate() {
         super.iterate();
@@ -144,6 +207,11 @@ public class IdnetManager extends IdiotypicNetwork {
             cogWindow[t % cogWindowSize][i] = cog[i];
     }
 
+    /**
+     * Calculates the standard deviation of center of gravity component c
+     * @param c Component of cog-vector
+     * @return Standard deviation
+     */
     public double getCOGStandardDeviation(int c) {
         double mean = 0, s = 0;
         for (int i = 0; i < cogWindowSize; i++)
@@ -155,6 +223,10 @@ public class IdnetManager extends IdiotypicNetwork {
         return s;
     }
 
+    /**
+     * Tries do determine determinant bits
+     * @return
+     */
     public DeterminantBits getDeterminantBits() {
         DeterminantBits result = new DeterminantBits();
         for (int j = 0; j < d; j++) {
@@ -174,10 +246,16 @@ public class IdnetManager extends IdiotypicNetwork {
         return max_s;
     }
 
-    public void setMax_s(double detBitsMaxDeviation) {
+    public void setmax_s(double detBitsMaxDeviation) {
         this.max_s = detBitsMaxDeviation;
+        params.setProperty("max_s", Double.toString(max_s));
     }
 
+    /**
+     * Creates histogram, reads settings from config file
+     * @param configFileName Name of config file
+     * @throws Exception
+     */
     public void createHistogram(String configFileName) throws Exception {
         Properties config = new Properties();
         config.loadFromXML(new FileInputStream(configFileName));
@@ -211,8 +289,10 @@ public class IdnetManager extends IdiotypicNetwork {
             histogramLT = new int[ySteps];
         if (fileNameMO != null)
             histogramMO = new int[ySteps];
-        if (fileNameON != null)
+        if (fileNameON != null) {
             histogramON = new int[ySteps];
+            //setStatNeighbourOccupations(true);
+        }
 
         FileWriter fileWriterLT = null, fileWriterMO = null, fileWriterON = null;
         if (fileNameLT != null)

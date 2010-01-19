@@ -1,30 +1,39 @@
 package jidnet;
 
+import java.io.FileInputStream;
+import java.util.Properties;
 import jidnet.idnet.IdnetManager;
 
 /**
  *
- * @author sven
+ * @author Sven Willner
  */
 public class Main {
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) throws Exception {
-	/*IdiotypicNetwork im = new IdiotypicNetwork(12, 0.027, 1, 10, 1);
-        im.reset();
-        long t0 = System.currentTimeMillis();
-	for (int i = 0; i < 10000; i++)
-		im.iterate();
-        long t1 = System.currentTimeMillis();
-        System.out.println(t1 - t0);
-        OutputStreamWriter w = new FileWriter("test.dat");
-        for (int i = 0; i < 4096; i++)
-            w.write(i + " " + im.getIdiotypes()[i].sum_n / 10000 + "\n");
-        w.close();*/
         IdnetManager idnetManager = new IdnetManager();
-        idnetManager.createHistogram("histogram.xml");
+
+        Properties config = new Properties();
+        try {
+            config.loadFromXML(new FileInputStream("config.xml"));
+        } catch (Exception e) {
+            System.err.println("Couldn't load config file 'config.xml', terminating");
+            System.exit(-1);
+        }
+
+        if (config.getProperty("action") == null)
+            System.out.println("No action defined");
+        else {
+            long t0 = System.currentTimeMillis();
+
+            if (config.getProperty("action").equals("histogram"))
+                idnetManager.createHistogram("histogram.xml");
+            else
+                System.out.println("Action unknown");
+
+            long t1 = System.currentTimeMillis();
+            System.out.println("Time needed: " + (t1 - t0) / 60000 + "min");
+        }
     }
 
 }

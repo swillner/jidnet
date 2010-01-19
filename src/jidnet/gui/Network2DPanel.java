@@ -214,12 +214,12 @@ public class Network2DPanel extends JPanel {
                 for (int y = 0; y < 64; y++) {
                     int v = coordsToNode(x, y);
                     int diff = Helper.hammingWeight(v ^ c);
-                    if (idnetManager.getLinkWeighting()[diff] > 0) {
+                    if (idnetManager.getLinkWeighting(diff) > 0) {
                         if (detBits != null)
                             g.setColor(Color.getHSBColor(Helper.hammingWeight((detBits.mask & v) ^ detBits.values) /
-                                    (float) d_m, 1f - (float) idnetManager.getLinkWeighting()[diff], 1f));
+                                    (float) d_m, 1f - (float) idnetManager.getLinkWeighting(diff), 1f));
                         else
-                            g.setColor(Color.getHSBColor(0f, 1f - (float) idnetManager.getLinkWeighting()[diff], 1f));
+                            g.setColor(Color.getHSBColor(0f, 1f - (float) idnetManager.getLinkWeighting(diff), 1f));
                         g.fillRect(x * squareSize + xOffset, y * squareSize + yOffset, squareSize, squareSize);
                     }
                 }

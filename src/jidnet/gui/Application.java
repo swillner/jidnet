@@ -1,42 +1,49 @@
 package jidnet.gui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
+import java.util.Vector;
 import javax.swing.JFrame;
-import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import jidnet.idnet.IdnetManager;
 import jidnet.idnet.IdnetManager;
 
 /**
  *
- * @author sven
+ * @author Sven Willner
  */
 public final class Application {
 
     private static IdnetManager idnetManager;
     private static MainWindow mainWindow;
-
-    public static IdnetManager getIdnetManager() {
-        return idnetManager;
-    }
+    private static Properties config;
+    private static Vector<Properties> configurations;
 
     public static void main(String args[]) {
 
         idnetManager = new IdnetManager();
+        config = new Properties();
 
         try {
             idnetManager.loadParams("params.xml");
         } catch (Exception e) {
             //
+        }
+
+        try {
+            config.loadFromXML(new FileInputStream("config.xml"));
+        } catch (Exception e) {
+            //
+        }
+
+        try {
+            loadConfigurations("configs.dat");
+        } catch (Exception e) {
+            configurations = new Vector<Properties>();
         }
 
         try {
@@ -61,11 +68,23 @@ public final class Application {
                     mainWindow.setState(JFrame.MAXIMIZED_BOTH);
                     mainWindow.setVisible(true);
                 }
+
             });
         } catch (InterruptedException e1) {
         } catch (InvocationTargetException e2) {
         }
 
+    }
+
+    private static void loadConfigurations(String fileName) throws Exception {
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName));
+        configurations = (Vector) ois.readObject();
+    }
+
+    private static void saveConfigurations(String fileName) throws Exception {
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName));
+        oos.writeObject(configurations);
+        oos.close();
     }
 
     public static void closing() {
@@ -74,5 +93,30 @@ public final class Application {
         } catch (Exception ex) {
             //
         }
+
+        try {
+            config.storeToXML(new FileOutputStream("config.xml"), "Configuration of jIdNet Application");
+        } catch (Exception e) {
+            //
+        }
+        try {
+            saveConfigurations("configs.dat");
+        } catch (Exception e) {
+            //
+        }
+
     }
+
+    public static IdnetManager getIdnetManager() {
+        return idnetManager;
+    }
+
+    public static Properties getConfiguration() {
+        return config;
+    }
+
+    public static Vector<Properties> getConfigurations() {
+        return configurations;
+    }
+
 }

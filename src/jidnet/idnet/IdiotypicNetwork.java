@@ -17,7 +17,7 @@ public class IdiotypicNetwork {
     int t_l, t_u; // Lower and upper range for update rule
     Idiotype[] idiotypes, idiotypes_ng, idiotypes_lg; // Idiotypes of current, next (ng) and last (lg) generation
     int t; // Time / generation
-    double[] linkWeighting = {1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    double[] linkWeighting;
     boolean statNeighbourOccupations = false;
     boolean statCenterOfGravity = false;
     boolean statClusters = false;
@@ -65,6 +65,14 @@ public class IdiotypicNetwork {
             else
                 idiotypes_ng[i].n = 0;
 
+            idiotypes_ng[i].b = idiotypes[i].b;
+
+            if (!statNeighbourOccupations) {
+                // If no extra-statistics about neighbour occupations is needed, set simple statistics (has errors in it!)
+                idiotypes_ng[i].n_d = sum_n_d;
+                idiotypes_ng[i].sum_n_d = idiotypes[i].sum_n_d + sum_n_d;
+            }
+
             if (idiotypes_ng[i].n > 0) {
                 idiotypes_ng[i].sum_n = idiotypes[i].sum_n + idiotypes_ng[i].n;
                 idiotypes_ng[i].tau = idiotypes[i].tau + 1;
@@ -78,9 +86,7 @@ public class IdiotypicNetwork {
                             cog[j]--;
 
             } else {
-                if (idiotypes_lg[i].n > 0) // Nötig??
-                    idiotypes_ng[i].tau = 0;
-
+                idiotypes_ng[i].tau = 0;
                 idiotypes_ng[i].cluster_size = 0;
             }
 
@@ -214,17 +220,28 @@ public class IdiotypicNetwork {
 
         rng = new Random();
 
+        linkWeighting = new double[d];
+        linkWeighting[0] = 1;
+        if (d > 1)
+            linkWeighting[1] = 1;
+        if (d > 2)
+            linkWeighting[2] = 1;
+
         reset();
 
         cog = new double[d];
     }
 
-    public double[] getLinkWeighting() {
-        return linkWeighting;
+    public double getLinkWeighting(int component) {
+        if (component < d)
+            return linkWeighting[component];
+        else
+            return -1;
     }
 
-    public void setLinkWeighting(double[] linkWeighting) {
-        this.linkWeighting = linkWeighting;
+    public void setLinkWeighting(int component, double weighting) {
+        if (component < d)
+            linkWeighting[component] = weighting;
     }
 
     public double getp() {
