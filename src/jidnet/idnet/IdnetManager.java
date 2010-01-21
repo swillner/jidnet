@@ -109,6 +109,11 @@ public class IdnetManager extends IdiotypicNetwork {
         linkWeighting[11] = Double.parseDouble(params.getProperty("lw11"));
     }
 
+    public int calcGroupOccupation(int l) {
+        DeterminantBits detBits = getDeterminantBits();
+        return calcGroupOccupation(detBits.mask, detBits.values, l);
+    }
+
     /**
      * Gets parameters
      * 
@@ -292,14 +297,14 @@ public class IdnetManager extends IdiotypicNetwork {
      *
      * @param j
      * @param cluster Cluster of <code>j</code>
-     * @param visited Saves what idiotypes have been counted already
+     * @param visited Boolean-Array which idiotypes have been counted already
      * @param mismatchMask Missmatches to last <code>j</code>
      * @param dist Distance to original <code>j</code>
      */
     private void calcClusterRec(int j, Vector<Idiotype> cluster, boolean[] visited, int mismatchMask, int dist) {
         while (mismatchMask != 0) {
             mismatchMask >>= 1;
-            if (idiotypes[j ^ mismatchMask].n > 0) {
+            if (idiotypes[j ^ mismatchMask].n > 0 && !visited[j ^ mismatchMask]) {
                 visited[j ^ mismatchMask] = true;
                 idiotypes[j ^ mismatchMask].cluster = cluster;
                 cluster.add(idiotypes[j ^ mismatchMask]);
@@ -332,7 +337,8 @@ public class IdnetManager extends IdiotypicNetwork {
                     cluster.add(idiotypes[complement]);
                 }
 
-                calcClusterRec(complement, cluster, visited, 1 << d, 1);
+                if (linkWeighting[0] > 0)
+                    calcClusterRec(complement, cluster, visited, 1 << d, 1);
             }
         return res;
     }

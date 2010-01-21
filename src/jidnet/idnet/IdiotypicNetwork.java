@@ -33,6 +33,8 @@ public class IdiotypicNetwork {
     protected boolean statNeighbourOccupations = false;
     /** Calculate center of gravity */
     protected boolean statCenterOfGravity = false;
+    /** Array of idiotpye indices to be kept occupied as external influx */
+    protected int[] externalInflux;
     /** Random number generator */
     protected Random rng;
 
@@ -48,6 +50,16 @@ public class IdiotypicNetwork {
                 idiotypes[i].n++;
             }
         }
+    }
+
+    /**
+     * Does external influx to keep certain idiotypes occupied
+     */
+    protected final void externalInflux() {
+        if (externalInflux != null)
+            for (int i = 0; i < externalInflux.length; i++)
+                if (idiotypes[externalInflux[i]].n < N)
+                    idiotypes[externalInflux[i]].n++;
     }
 
     /**
@@ -153,6 +165,8 @@ public class IdiotypicNetwork {
          *      <code>idiotypes</code>    = last generation (<code>t</code>) + influx
          *      <code>idiotypes_ng</code> = prelast generation (<code>t-1</code>)
          */
+        if (externalInflux != null)
+            externalInflux();
         update();
 
         // Norm center of gravity
@@ -314,8 +328,13 @@ public class IdiotypicNetwork {
      * @param weighting
      */
     public void setLinkWeighting(int dist, double weighting) {
-        if (dist < d)
+        if (dist < d) {
             linkWeighting[dist] = weighting;
+            if (weighting == 0) {
+                for (int i = dist; i < d; i++)
+                    linkWeighting[i] = 0;
+            }
+        }
     }
 
     /**
@@ -397,6 +416,24 @@ public class IdiotypicNetwork {
      */
     public int gettotal_sum_n() {
         return total_sum_n;
+    }
+
+    /**
+     * Gets the external influx
+     *
+     * @return
+     */
+    public int[] getExternalInflux() {
+        return externalInflux;
+    }
+
+    /**
+     * Sets the external influx
+     * 
+     * @param externalInflux
+     */
+    public void setExternalInflux(int[] externalInflux) {
+        this.externalInflux = externalInflux;
     }
 
     /**

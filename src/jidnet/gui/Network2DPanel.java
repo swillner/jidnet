@@ -28,6 +28,9 @@ public class Network2DPanel extends JPanel {
     // Determinated/undet. bits of rows and cols in grid (arranged in blocks, whose nodes only differ in undet. bits)
     private int[] undetRow, undetCol, detRow, detCol;
     private int undetBlockWidth, undetBlockHeight, undetBlockColCount, undetBlockRowCount;
+    public final static int DRAW_CURRENT = 0;
+    public final static int DRAW_MEAN_OCCUPATIONS = 1;
+    private int drawType = DRAW_CURRENT;
 
     public Network2DPanel(IdnetManager idnetManager) {
         super();
@@ -165,6 +168,14 @@ public class Network2DPanel extends JPanel {
         repaint();
     }
 
+    public int getDrawType() {
+        return drawType;
+    }
+
+    public void setDrawType(int drawType) {
+        this.drawType = drawType;
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -233,16 +244,34 @@ public class Network2DPanel extends JPanel {
         }
 
         // Draw dots for nodes' occupations
-        g.setColor(Color.BLACK);
-        for (int x = 0; x < 64; x++)
-            for (int y = 0; y < 64; y++) {
-                int i = coordsToNode(x, y);
-                if (idnetManager.getIdiotypes()[i].n > 0) {
-                    int size = (idnetManager.getIdiotypes()[i].n * (squareSize - 4)) / idnetManager.getN();
-                    g.fillRect(x * squareSize + xOffset + (squareSize - size) / 2, y * squareSize + yOffset +
-                            (squareSize - size) / 2, size, size);
-                }
-            }
+        switch (drawType) {
+            case DRAW_CURRENT:
+                g.setColor(Color.BLACK);
+                for (int x = 0; x < 64; x++)
+                    for (int y = 0; y < 64; y++) {
+                        int i = coordsToNode(x, y);
+                        if (idnetManager.getIdiotypes()[i].n > 0) {
+                            int size = (idnetManager.getIdiotypes()[i].n * (squareSize - 4)) / idnetManager.getN();
+                            g.fillRect(x * squareSize + xOffset + (squareSize - size) / 2, y * squareSize + yOffset +
+                                    (squareSize - size) / 2, size, size);
+                        }
+                    }
+                break;
+
+            case DRAW_MEAN_OCCUPATIONS:
+                g.setColor(Color.BLACK);
+                for (int x = 0; x < 64; x++)
+                    for (int y = 0; y < 64; y++) {
+                        int i = coordsToNode(x, y);
+                        if (idnetManager.gett() > 0) {
+                            int size = (idnetManager.getIdiotypes()[i].sum_n * (squareSize - 4)) / idnetManager.getN() /
+                                    idnetManager.gett();
+                            g.fillRect(x * squareSize + xOffset + (squareSize - size) / 2, y * squareSize + yOffset +
+                                    (squareSize - size) / 2, size, size);
+                        }
+                    }
+                break;
+        }
 
     }
 

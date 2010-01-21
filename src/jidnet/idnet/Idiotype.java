@@ -14,7 +14,7 @@ public class Idiotype {
     /** Current occupation */
     public int n;
     /** Sum of occupation over all time */
-    public double sum_n;
+    public int sum_n;
     /** Sum of occupied neighbours (weighted) over all time */
     public double sum_n_d;
     /** Sum of currently occupied neighbours (weighted) */
@@ -30,7 +30,8 @@ public class Idiotype {
      * Resets all statistics like sum of occupied neighbours, ...
      */
     public void recalc() {
-        sum_n = sum_n_d = n_d = tau = 0;
+        sum_n = tau = 0;
+        sum_n_d = n_d = 0;
         b = (n > 0) ? 1 : 0;
         cluster = null;
     }
