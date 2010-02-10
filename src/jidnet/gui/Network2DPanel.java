@@ -8,7 +8,7 @@ import java.awt.event.MouseMotionListener;
 import javax.swing.JPanel;
 import jidnet.idnet.Helper;
 import jidnet.idnet.IdnetManager;
-import jidnet.idnet.IdnetManager.DeterminantBits;
+import jidnet.idnet.DeterminantBits;
 
 /**
  * Swing component, that shows a 2D grid of idnetManager's nodes and their occupation.
@@ -91,6 +91,18 @@ public class Network2DPanel extends JPanel {
                     ((x & (1 << 3)) << 4) | ((y & (1 << 4)) << 4) |
                     ((x & (1 << 4)) << 5) |
                     ((y & (1 << 5)) << 5) | ((x & (1 << 5)) << 6);
+// for "mytest"
+        //values = 100101011101
+        // most sign to less : 8 -1 -10 0 3 -9 -7 11 2 4 -5 6
+        // most sign to less : 8 -1 -10 3 0 -9 -7 11 2 4 -5 6
+/*            return Integer.parseInt("100101011101",2) ^(((y & (1 << 0)) << 6) | ((x & (1 << 0)) << 5) |
+                    ((y & (1 << 1)) << (4-1)) | ((x & (1 << 1)) <<
+                    (2-1)) | ((y & (1 << 2)) << (11-2)) | ((x & (1 << 2)) << (9-2)) | ((y & (1 <<
+                    3)) << (7-3)) |
+                            ((x & (1 << 3)) << (0-3)) | ((y & (1 << 4)) << (3-4)) |
+                    ((x & (1 << 4)) << (10-4)) |
+                    ((y & (1 << 5)) << (1-5)) | ((x & (1 << 5)) << (8-5)));*/
+
     }
 
     /**
@@ -130,11 +142,15 @@ public class Network2DPanel extends JPanel {
         detBits = null;
     }
 
+    public void arrangeByDetBitGroups() {
+        arrangeByDetBitGroups(idnetManager.calcDeterminantBits());
+    }
+    
     /**
      *  Generates order-array and blocks to rearrange nodes by determinant bit group (S_0, ...)
      */
-    public void arrangeByDetBitGroups() {
-        detBits = idnetManager.getDeterminantBits();
+    public void arrangeByDetBitGroups(DeterminantBits detBits) {
+        this.detBits = detBits;
         int orderIndexLow = 0, orderIndexHigh = 11;
         for (int i = 0; i < 12; i++)
             if ((detBits.mask & (1 << i)) == 0) {

@@ -29,12 +29,14 @@ public class IdnetManager extends IdiotypicNetwork {
     private double max_s;
     /** Currently used seed for random number generator */
     private long seed;
-
-    public class DeterminantBits {
-
-        public int mask = 0;
-        public int values = 0;
-    }
+    /** Saves number of determinant bits, after they have been calculated */
+    private int d_m = 0;
+    /** Calculate mean occupations of S_l groups */
+    private boolean calcMeanGroupOccs = false;
+    /** Saves total occupation of determinant bit groups */
+    private int[] totalGroupOccs;
+    /** Saves last calculated determinat bits */
+    DeterminantBits detBits;
 
     /**
      * Default parameters: <code>d<code> = 12, <code>p</code> = 0.027, <code>t_l</code> = 1, <code>t_u</code> = 10,
@@ -109,9 +111,61 @@ public class IdnetManager extends IdiotypicNetwork {
         linkWeighting[11] = Double.parseDouble(params.getProperty("lw11"));
     }
 
-    public int calcGroupOccupation(int l) {
-        DeterminantBits detBits = getDeterminantBits();
+    /**
+     * Gets current occupation of determinant bit group S_<code>l</code>
+     * (No recalculation of determinant bits!)
+     *
+     * @param l
+     * @return
+     */
+    public int getGroupOccupation(int l) {
         return calcGroupOccupation(detBits.mask, detBits.values, l);
+    }
+
+    /**
+     * Returns size of determinant bit group S_<code>l</code>
+     * (Not current occupation of that group!)
+     *
+     * @param l
+     * @param d_m
+     * @return
+     */
+    public int calcGroupSize(int l, int d_m) {
+        if (l > d_m || l < 0)
+            return 0;
+        return (1 << (d - d_m)) * Helper.binomial(d_m, l);
+    }
+
+    public static int calcLinkMatrixElem(int i, int j, int d_m, int m, int d) {
+        i++;
+        j++;
+        int sum = 0;
+        int delta_i_j = d_m - i - j + 2;
+        if (delta_i_j == 0) {
+            int l_max = Math.min(d - d_m, m);
+            for (int l = 0; l <= l_max; l++) {
+                int k_max = Math.min(i - 1, Math.min(d_m - i + 1, (m - l) / 2));
+                for (int k = 0; k <= k_max; k++)
+                    sum += Helper.binomial(d - d_m, l) * Helper.binomial(i - 1, k) * Helper.binomial(d_m - i + 1, k);
+            }
+        } else if (delta_i_j > 0) {
+            int l_max = Math.min(d - d_m, m - delta_i_j);
+            for (int l = 0; l <= l_max; l++) {
+                int k_max = Math.min(i - 1, Math.min(d_m - i + 1 - delta_i_j, (m - l - delta_i_j) / 2));
+                for (int k = 0; k <= k_max; k++)
+                    sum += Helper.binomial(d - d_m, l) * Helper.binomial(i - 1, k) * Helper.binomial(d_m - i + 1, k +
+                            delta_i_j);
+            }
+        } else { // delta_i_j < 0
+            int l_max = Math.min(d - d_m, m + delta_i_j);
+            for (int l = 0; l <= l_max; l++) {
+                int k_max = Math.min(i - 1 + delta_i_j, Math.min(d_m - i + 1, (m - l + delta_i_j) / 2));
+                for (int k = 0; k <= k_max; k++)
+                    sum += Helper.binomial(d - d_m, l) * Helper.binomial(i - 1, k - delta_i_j) * Helper.binomial(
+                            d_m - i + 1, k);
+            }
+        }
+        return sum;
     }
 
     /**
@@ -123,6 +177,39 @@ public class IdnetManager extends IdiotypicNetwork {
         return params;
     }
 
+    /**
+     * Gets total occupation of determinat bit groups
+     *
+     * @return
+     */
+    public int[] getTotalGroupOccs() {
+        return totalGroupOccs;
+    }
+
+    /**
+     * Gets number of last calculated determinant bits (does not recalculate!)
+     * 
+     * @return
+     */
+    public int getd_m() {
+        return d_m;
+    }
+
+    /**
+     * Sets if mean occupations of determinant bit groups should be calculated
+     * 
+     * @param calcMeanGroupOccs
+     */
+    public void setCalcMeanGroupOccs(boolean calcMeanGroupOccs) {
+        this.calcMeanGroupOccs = calcMeanGroupOccs;
+        if (calcMeanGroupOccs) {
+            detBits = calcDeterminantBits();
+            d_m = Helper.hammingWeight(detBits.mask);
+            totalGroupOccs = new int[d_m + 1];
+            recalc();
+        }
+    }
+
     @Override
     public void setp(double p) {
         super.setp(p);
@@ -130,15 +217,15 @@ public class IdnetManager extends IdiotypicNetwork {
     }
 
     @Override
-    public void sett_l(int t_l) {
+    public void sett_l(double t_l) {
         super.sett_l(t_l);
-        params.setProperty("t_l", Integer.toString(t_l));
+        params.setProperty("t_l", Double.toString(t_l));
     }
 
     @Override
-    public void sett_u(int t_u) {
+    public void sett_u(double t_u) {
         super.sett_u(t_u);
-        params.setProperty("t_u", Integer.toString(t_u));
+        params.setProperty("t_u", Double.toString(t_u));
     }
 
     @Override
@@ -232,8 +319,11 @@ public class IdnetManager extends IdiotypicNetwork {
     @Override
     public void iterate() {
         super.iterate();
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < d; i++)
             cogWindow[t % cogWindowSize][i] = cog[i];
+        if (calcMeanGroupOccs)
+            for (int l = 0; l <= d_m; l++)
+                totalGroupOccs[l] += getGroupOccupation(l);
     }
 
     /**
@@ -258,7 +348,7 @@ public class IdnetManager extends IdiotypicNetwork {
      *
      * @return
      */
-    public DeterminantBits getDeterminantBits() {
+    public DeterminantBits calcDeterminantBits() {
         DeterminantBits result = new DeterminantBits();
         for (int j = 0; j < d; j++) {
             double s = getCOGStandardDeviation(j);

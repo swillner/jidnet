@@ -3,6 +3,7 @@ package jidnet.gui;
 import java.awt.Color;
 import java.awt.Graphics;
 import javax.swing.JPanel;
+import jidnet.idnet.DeterminantBits;
 import jidnet.idnet.Helper;
 import jidnet.idnet.IdnetManager;
 
@@ -58,7 +59,7 @@ public class COGDiagramPanel extends JPanel {
         g.drawLine(x_offset + Application.getIdnetManager().gett() % historySize, y_offset,
                 x_offset + Application.getIdnetManager().gett() % historySize, y_offset + 2 * halfHeight);
 
-        IdnetManager.DeterminantBits determinantBits = idnetManager.getDeterminantBits();
+        DeterminantBits determinantBits = idnetManager.calcDeterminantBits();
         for (int j = 0; j < 12; j++) {
             g.setColor(Color.getHSBColor((float) j / 12f, 1.0f, 1.0f));
             g.drawString("cog[" + j + "] = " + Math.round(idnetManager.getCOG()[j] * 1000) / 1000.0, 50, 50 + 20 * j);

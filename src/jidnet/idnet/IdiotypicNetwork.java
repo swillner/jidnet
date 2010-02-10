@@ -20,9 +20,9 @@ public class IdiotypicNetwork {
     /** Influx propability */
     protected double p;
     /** Lower range for update window rule */
-    protected int t_l;
+    protected double t_l;
     /** Upper range for update window rule */
-    protected int t_u;
+    protected double t_u;
     /** Idiotypes of current, next (ng) and last (lg) timestep */
     protected Idiotype[] idiotypes, idiotypes_ng, idiotypes_lg;
     /** Time (generation) */
@@ -63,7 +63,7 @@ public class IdiotypicNetwork {
     }
 
     /**
-     * Calculates the neighbour occupation (weighted) of j with
+     * Calculates the neighbour occupation (weighted) of <code>j</code> with
      * mismatches on <code>mismatchMask</code> >> 1 to <code>mismatchMask</code> == 1
      * (distance to original node is <code>dist</code>)
      *
@@ -74,6 +74,8 @@ public class IdiotypicNetwork {
      */
     private double calcWeightedNeighboutOccSumRec(int j, int mismatchMask, int dist) {
         double res = 0;
+        if (dist >= d)
+            return 0;
         while (mismatchMask != 0) {
             mismatchMask >>= 1;
             res += idiotypes[j ^ mismatchMask].n * linkWeighting[dist];
@@ -378,7 +380,7 @@ public class IdiotypicNetwork {
      *
      * @return
      */
-    public int gett_l() {
+    public double gett_l() {
         return t_l;
     }
 
@@ -387,7 +389,7 @@ public class IdiotypicNetwork {
      *
      * @return
      */
-    public int gett_u() {
+    public double gett_u() {
         return t_u;
     }
 
@@ -469,7 +471,7 @@ public class IdiotypicNetwork {
      *
      * @param t_l
      */
-    public void sett_l(int t_l) {
+    public void sett_l(double t_l) {
         this.t_l = t_l;
     }
 
@@ -478,7 +480,7 @@ public class IdiotypicNetwork {
      *
      * @param t_u
      */
-    public void sett_u(int t_u) {
+    public void sett_u(double t_u) {
         this.t_u = t_u;
     }
 
