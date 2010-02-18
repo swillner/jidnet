@@ -26,6 +26,10 @@ public class Idiotype {
     /** Cluster this idiotype lives in */
     public Vector<Idiotype> cluster;
 
+    public Idiotype(int i) {
+        this.i = i;
+    }
+
     /**
      * Resets all statistics like sum of occupied neighbours, ...
      */

@@ -37,6 +37,8 @@ public class IdnetManager extends IdiotypicNetwork {
     private int[] totalGroupOccs;
     /** Saves last calculated determinat bits */
     DeterminantBits detBits;
+    private int[] totalNeighbours;
+    private static final int MAX_NEIGHBOURS = 80;
 
     /**
      * Default parameters: <code>d<code> = 12, <code>p</code> = 0.027, <code>t_l</code> = 1, <code>t_u</code> = 10,
@@ -70,6 +72,8 @@ public class IdnetManager extends IdiotypicNetwork {
         params.setProperty("lw9", "0");
         params.setProperty("lw10", "0");
         params.setProperty("lw11", "0");
+
+        totalNeighbours = new int[MAX_NEIGHBOURS + 1];
     }
 
     /**
@@ -325,6 +329,12 @@ public class IdnetManager extends IdiotypicNetwork {
             for (int l = 0; l <= d_m; l++)
                 totalGroupOccs[l] += getGroupOccupation(l);
     }
+
+    public int[] getTotalNeighbours() {
+        return totalNeighbours;
+    }
+
+
 
     /**
      * Calculates the standard deviation of center of gravity component <code>c</code>

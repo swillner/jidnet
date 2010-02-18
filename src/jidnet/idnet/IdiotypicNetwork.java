@@ -291,9 +291,9 @@ public class IdiotypicNetwork {
         cog = new double[d];
 
         for (int i = 0; i < (1 << d); i++) {
-            idiotypes[i] = new Idiotype();
-            idiotypes_ng[i] = new Idiotype();
-            idiotypes_lg[i] = new Idiotype();
+            idiotypes[i] = new Idiotype(i);
+            idiotypes_ng[i] = new Idiotype(i);
+            idiotypes_lg[i] = new Idiotype(i);
         }
 
         rng = new Random();
