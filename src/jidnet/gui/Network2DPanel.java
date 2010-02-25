@@ -96,12 +96,12 @@ public class Network2DPanel extends JPanel {
         // most sign to less : 8 -1 -10 0 3 -9 -7 11 2 4 -5 6
         // most sign to less : 8 -1 -10 3 0 -9 -7 11 2 4 -5 6
 /*            return Integer.parseInt("100101011101",2) ^(((y & (1 << 0)) << 6) | ((x & (1 << 0)) << 5) |
-                    ((y & (1 << 1)) << (4-1)) | ((x & (1 << 1)) <<
-                    (2-1)) | ((y & (1 << 2)) << (11-2)) | ((x & (1 << 2)) << (9-2)) | ((y & (1 <<
-                    3)) << (7-3)) |
-                            ((x & (1 << 3)) << (0-3)) | ((y & (1 << 4)) << (3-4)) |
-                    ((x & (1 << 4)) << (10-4)) |
-                    ((y & (1 << 5)) << (1-5)) | ((x & (1 << 5)) << (8-5)));*/
+        ((y & (1 << 1)) << (4-1)) | ((x & (1 << 1)) <<
+        (2-1)) | ((y & (1 << 2)) << (11-2)) | ((x & (1 << 2)) << (9-2)) | ((y & (1 <<
+        3)) << (7-3)) |
+        ((x & (1 << 3)) << (0-3)) | ((y & (1 << 4)) << (3-4)) |
+        ((x & (1 << 4)) << (10-4)) |
+        ((y & (1 << 5)) << (1-5)) | ((x & (1 << 5)) << (8-5)));*/
 
     }
 
@@ -145,7 +145,7 @@ public class Network2DPanel extends JPanel {
     public void arrangeByDetBitGroups() {
         arrangeByDetBitGroups(idnetManager.calcDeterminantBits());
     }
-    
+
     /**
      *  Generates order-array and blocks to rearrange nodes by determinant bit group (S_0, ...)
      */
@@ -160,6 +160,23 @@ public class Network2DPanel extends JPanel {
                 order[orderIndexHigh] = i;
                 orderIndexHigh--;
             }
+
+        if (detBits.order != null) {
+
+            /*
+            for (int i = 0; i < 12; i++)
+                System.out.print(order[i] + " ");
+            System.out.println();*/
+
+            for (int i = 0; i < Helper.hammingWeight(detBits.mask); i++)
+                order[11 - i] = detBits.order[i];
+
+            /*
+            for (int i = 0; i < 12; i++)
+                System.out.print(order[i] + " ");
+
+            System.out.println("\n\n");*/
+        }
 
         // Set number of determinant bits (d_m) and determine size of blocks, that differ only in not det. bits
         d_m = Helper.hammingWeight(detBits.mask);

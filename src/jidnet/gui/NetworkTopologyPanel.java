@@ -4,6 +4,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Polygon;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import jidnet.idnet.DeterminantBits;
 import jidnet.idnet.Helper;
@@ -22,8 +26,13 @@ public class NetworkTopologyPanel extends JPanel {
     private int[] neighbourCounts;
     private int[] neighbourCountsOccupied;
     private int[][] groupNeighbourCounts;
+    private int[] neighbourCountsOld;
+    private int[] neighbourCountsOccupiedOld;
+    private int[][] groupNeighbourCountsOld;
     private int max;
-    private boolean showMeans;
+    public final static int DRAW_CURRENT = 0;
+    public final static int DRAW_TOTAL_MEANS = 1;
+    private int drawType = DRAW_CURRENT;
 
     public NetworkTopologyPanel(IdnetManager idnetManager) {
         super();
@@ -31,18 +40,29 @@ public class NetworkTopologyPanel extends JPanel {
         recalc();
     }
 
-    public void setShowMeans(boolean showMeans) {
-        this.showMeans = showMeans;
-        if (!showMeans)
-            afterIteration();
-        else
-            recalc();
+    public int getDrawType() {
+        return drawType;
+    }
+
+    public void setDrawType(int drawType) {
+        this.drawType = drawType;
+        switch (drawType) {
+            case DRAW_CURRENT:
+                afterIteration();
+                break;
+            case DRAW_TOTAL_MEANS:
+                recalc();
+                break;
+        }
         repaint();
     }
 
     public void setDeterminantBits(DeterminantBits detBits) {
         this.detBits = detBits;
+        if (drawType != DRAW_CURRENT)
+            setDrawType(DRAW_CURRENT);
         recalc();
+        afterIteration();
         repaint();
     }
 
@@ -56,8 +76,11 @@ public class NetworkTopologyPanel extends JPanel {
     }
 
     public void afterIteration() {
-        if (!showMeans)
-            recalc();
+        if (drawType == DRAW_CURRENT)
+            if (isShowing())
+                recalc();
+            else
+                return;
         max = 1;
         for (Idiotype i : idnetManager.getIdiotypes())
             if ((int) i.n_d <= MAX_NEIGHBOUR_COUNT) {
@@ -68,6 +91,17 @@ public class NetworkTopologyPanel extends JPanel {
                     groupNeighbourCounts[Helper.hammingWeight((detBits.mask & i.i) ^ detBits.values)][(int) i.n_d]++;
                 max = Math.max(max, neighbourCounts[(int) i.n_d]);
             }
+        /*BufferedImage img = new BufferedImage(1000, 750, BufferedImage.TYPE_INT_RGB);
+        Graphics g = img.createGraphics();
+        paintComponent(g);
+        g.setColor(Color.BLACK);
+        g.drawString("t = " + idnetManager.gett(), 800, 20);
+        g.dispose();
+        try {
+        ImageIO.write(img, "png", new File(1000000 + idnetManager.gett() + ".png"));
+        } catch(IOException e) {
+        e.printStackTrace();
+        }*/
     }
 
     @Override

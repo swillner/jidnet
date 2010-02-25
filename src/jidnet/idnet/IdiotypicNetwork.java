@@ -434,9 +434,9 @@ public class IdiotypicNetwork {
      * 
      * @param externalInflux
      */
-    public void setExternalInflux(int[] externalInflux) {
-        this.externalInflux = externalInflux;
-    }
+//    public void setExternalInflux(int[] externalInflux) {
+//        this.externalInflux = externalInflux;
+//    }
 
     /**
      * Sets if center of gravity should be calculated

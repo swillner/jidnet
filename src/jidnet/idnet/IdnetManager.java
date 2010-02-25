@@ -6,6 +6,11 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -37,8 +42,6 @@ public class IdnetManager extends IdiotypicNetwork {
     private int[] totalGroupOccs;
     /** Saves last calculated determinat bits */
     DeterminantBits detBits;
-    private int[] totalNeighbours;
-    private static final int MAX_NEIGHBOURS = 80;
 
     /**
      * Default parameters: <code>d<code> = 12, <code>p</code> = 0.027, <code>t_l</code> = 1, <code>t_u</code> = 10,
@@ -72,8 +75,6 @@ public class IdnetManager extends IdiotypicNetwork {
         params.setProperty("lw9", "0");
         params.setProperty("lw10", "0");
         params.setProperty("lw11", "0");
-
-        totalNeighbours = new int[MAX_NEIGHBOURS + 1];
     }
 
     /**
@@ -96,8 +97,8 @@ public class IdnetManager extends IdiotypicNetwork {
     public void loadParams(Properties params) {
         this.params.putAll(params);
         this.setp(Double.parseDouble(params.getProperty("p")));
-        this.sett_l(Integer.parseInt(params.getProperty("t_l")));
-        this.sett_u(Integer.parseInt(params.getProperty("t_u")));
+        this.sett_l(Double.parseDouble(params.getProperty("t_l")));
+        this.sett_u(Double.parseDouble(params.getProperty("t_u")));
         this.setN(Integer.parseInt(params.getProperty("N")));
         this.setmax_s(Double.parseDouble(params.getProperty("max_s")));
         this.reseed(Long.parseLong(params.getProperty("seed")));
@@ -330,12 +331,6 @@ public class IdnetManager extends IdiotypicNetwork {
                 totalGroupOccs[l] += getGroupOccupation(l);
     }
 
-    public int[] getTotalNeighbours() {
-        return totalNeighbours;
-    }
-
-
-
     /**
      * Calculates the standard deviation of center of gravity component <code>c</code>
      *
@@ -359,17 +354,53 @@ public class IdnetManager extends IdiotypicNetwork {
      * @return
      */
     public DeterminantBits calcDeterminantBits() {
+        class MyComparator implements Comparator {
+
+            public int compare(Object obj1, Object obj2) {
+                int result = 0;
+                Map.Entry<Integer, Double> e1 = (Map.Entry<Integer, Double>) obj1;
+                Map.Entry<Integer, Double> e2 = (Map.Entry<Integer, Double>) obj2;
+                Double value1 = (Double) e1.getValue();
+                Double value2 = (Double) e2.getValue();
+
+                if (value1.compareTo(value2) == 0) {
+                    Integer int1 = (Integer) e1.getKey();
+                    Integer int2 = (Integer) e2.getKey();
+                    result = int1.compareTo(int2);
+                } else
+                    result = value2.compareTo(value1);
+
+                return result;
+            }
+
+        }
+
         DeterminantBits result = new DeterminantBits();
+        Hashtable<Integer, Double> order = new Hashtable<Integer, Double>();
         for (int j = 0; j < d; j++) {
             double s = getCOGStandardDeviation(j);
             if (s < max_s)
                 if (cog[j] > 5 * s) {
                     result.mask |= 1 << j;
                     result.values |= 1 << j;
-                } else if (cog[j] < -5 * s)
+                    order.put(j, cog[j]);
+                } else if (cog[j] < -5 * s) {
                     result.mask |= 1 << j;
+                    order.put(j, -cog[j]);
+                }
             // TODO : Proper recognision of determinant bits
         }
+
+        ArrayList<Map.Entry<Integer, Double>> myArrayList = new ArrayList<Map.Entry<Integer, Double>>(order.entrySet());
+        Collections.sort(myArrayList, new MyComparator());
+
+        result.order = new int[d];
+        int j = 0;
+        for (Map.Entry<Integer, Double> e : myArrayList) {
+            result.order[j] = e.getKey();
+            j++;
+        }
+
         return result;
     }
 

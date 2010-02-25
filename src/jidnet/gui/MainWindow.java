@@ -727,7 +727,6 @@ public class MainWindow extends javax.swing.JFrame {
         });
 
         topologyDrawTypeButtonGroup.add(topologyDrawMeansRadioButton);
-        topologyDrawMeansRadioButton.setSelected(true);
         topologyDrawMeansRadioButton.setText("Draw means");
         topologyDrawMeansRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -736,6 +735,7 @@ public class MainWindow extends javax.swing.JFrame {
         });
 
         topologyDrawTypeButtonGroup.add(topologyDrawCurrentRadioButton);
+        topologyDrawCurrentRadioButton.setSelected(true);
         topologyDrawCurrentRadioButton.setText("Draw current topology");
         topologyDrawCurrentRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -750,8 +750,8 @@ public class MainWindow extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, networkTopologyPanelLayout.createSequentialGroup()
                 .addContainerGap(449, Short.MAX_VALUE)
                 .addGroup(networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(topologyDrawCurrentRadioButton)
                     .addComponent(topologyDrawMeansRadioButton)
+                    .addComponent(topologyDrawCurrentRadioButton)
                     .addComponent(buttonTopologyDrawCustomBitGroups))
                 .addContainerGap())
         );
@@ -760,11 +760,11 @@ public class MainWindow extends javax.swing.JFrame {
             .addGroup(networkTopologyPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(buttonTopologyDrawCustomBitGroups)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(topologyDrawMeansRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addComponent(topologyDrawCurrentRadioButton)
-                .addContainerGap(607, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(topologyDrawMeansRadioButton)
+                .addContainerGap(601, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Topology", networkTopologyPanel);
@@ -1074,10 +1074,12 @@ public class MainWindow extends javax.swing.JFrame {
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
         Application.getIdnetManager().reseed((Long) spinnerSeed.getValue());
         Application.getIdnetManager().reset();
+        ((NetworkTopologyPanel) networkTopologyPanel).recalc();
     }//GEN-LAST:event_resetButtonActionPerformed
 
     private void recalcButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recalcButtonActionPerformed
         Application.getIdnetManager().recalc();
+        ((NetworkTopologyPanel) networkTopologyPanel).recalc();
     }//GEN-LAST:event_recalcButtonActionPerformed
 
     private void spinnerRedrawDelayStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinnerRedrawDelayStateChanged
@@ -1319,7 +1321,11 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_buttonTopologyDrawCustomBitGroupsActionPerformed
 
     private void topologyDrawTypeRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_topologyDrawTypeRadioButtonActionPerformed
-        ((NetworkTopologyPanel)networkTopologyPanel).setShowMeans(topologyDrawMeansRadioButton.isSelected());
+        if (topologyDrawCurrentRadioButton.isSelected())
+            ((NetworkTopologyPanel) networkTopologyPanel).setDrawType(NetworkTopologyPanel.DRAW_CURRENT);
+        else if (topologyDrawMeansRadioButton.isSelected())
+            ((NetworkTopologyPanel) networkTopologyPanel).setDrawType(NetworkTopologyPanel.DRAW_TOTAL_MEANS);
+
     }//GEN-LAST:event_topologyDrawTypeRadioButtonActionPerformed
 
     public void afterIteration() {
