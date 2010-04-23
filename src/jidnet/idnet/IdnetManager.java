@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Observable;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -24,8 +25,6 @@ public class IdnetManager extends IdiotypicNetwork {
 
     /** Parameters (for saving / loading) */
     private Properties params;
-    /** Histogram information for one <code>p</code> value */
-    private int[] histogramMO, histogramLT, histogramON;
     /** History of center of gravity */
     private double[][] cogWindow;
     /** Size of center of gravity history */
@@ -85,7 +84,7 @@ public class IdnetManager extends IdiotypicNetwork {
      * @throws IOException
      */
     public void loadParams(String fileName) throws FileNotFoundException,
-                                                   IOException {
+            IOException {
         params.loadFromXML(new FileInputStream(fileName));
         loadParams(params);
     }
@@ -124,6 +123,7 @@ public class IdnetManager extends IdiotypicNetwork {
      * @return
      */
     public int getGroupOccupation(int l) {
+        detBits = calcDeterminantBits();
         return calcGroupOccupation(detBits.mask, detBits.values, l);
     }
 
@@ -158,8 +158,8 @@ public class IdnetManager extends IdiotypicNetwork {
             for (int l = 0; l <= l_max; l++) {
                 int k_max = Math.min(i - 1, Math.min(d_m - i + 1 - delta_i_j, (m - l - delta_i_j) / 2));
                 for (int k = 0; k <= k_max; k++)
-                    sum += Helper.binomial(d - d_m, l) * Helper.binomial(i - 1, k) * Helper.binomial(d_m - i + 1, k +
-                            delta_i_j);
+                    sum += Helper.binomial(d - d_m, l) * Helper.binomial(i - 1, k) * Helper.binomial(d_m - i + 1, k
+                            + delta_i_j);
             }
         } else { // delta_i_j < 0
             int l_max = Math.min(d - d_m, m + delta_i_j);
@@ -279,46 +279,6 @@ public class IdnetManager extends IdiotypicNetwork {
     }
 
     /**
-     * Calculates a step in the histogram (for one <code>p</code> value)
-     *
-     * @param numLoops Number of loops (reset for each loop) to take the mean of
-     * @param tWait Number of iterations to wait before doing the statistics
-     * @param tWindow Number of iterations to do the statistics on
-     * @param ySteps Number of steps to devide the y-axis into
-     * @throws IOException
-     */
-    private void calcHistogramStep(int numLoops, int tWait, int tWindow,
-                                   int ySteps) throws IOException {
-        for (int loop = 0; loop < numLoops; loop++) {
-            this.reset();
-            this.iterate(tWait);
-            this.recalc();
-            this.iterate(tWindow);
-
-            for (int i = 0; i < (1 << this.getd()); i++) {
-                Idiotype node = this.getIdiotypes()[i];
-
-                if (histogramMO != null)
-                    histogramMO[(int) ((double) node.sum_n * (double) (ySteps -
-                            1) / (double) tWindow)]++;
-
-                if (histogramON != null)
-                    if ((double) this.gettotal_sum_n() / (double) tWindow < 80.)
-                        histogramON[(int) ((double) node.sum_n_d / 80. *
-                                (double) (ySteps - 1) / (double) tWindow)]++;
-
-                if (histogramLT != null) {
-                    double mlt = (double) node.sum_n / (double) node.b;
-                    if (mlt < 10000. && mlt >= 1)
-                        histogramLT[(int) (Math.log10(mlt) / 5. *
-                                (double) (ySteps - 1))]++;
-                }
-            }
-        }
-
-    }
-
-    /**
      * Do one iteration step (overridden to do center of gravity statistics)
      */
     @Override
@@ -329,6 +289,8 @@ public class IdnetManager extends IdiotypicNetwork {
         if (calcMeanGroupOccs)
             for (int l = 0; l <= d_m; l++)
                 totalGroupOccs[l] += getGroupOccupation(l);
+        setChanged();
+        notifyObservers();
     }
 
     /**
@@ -372,7 +334,6 @@ public class IdnetManager extends IdiotypicNetwork {
 
                 return result;
             }
-
         }
 
         DeterminantBits result = new DeterminantBits();
@@ -387,7 +348,8 @@ public class IdnetManager extends IdiotypicNetwork {
                 } else if (cog[j] < -5 * s) {
                     result.mask |= 1 << j;
                     order.put(j, -cog[j]);
-                }
+                } else
+                    order.put(j, Double.NEGATIVE_INFINITY);
             // TODO : Proper recognision of determinant bits
         }
 
@@ -400,6 +362,7 @@ public class IdnetManager extends IdiotypicNetwork {
             result.order[j] = e.getKey();
             j++;
         }
+
 
         return result;
     }
@@ -424,24 +387,35 @@ public class IdnetManager extends IdiotypicNetwork {
     }
 
     /**
+     * Calculates cluster of <code>j</code> (descends into mismatched neighbours)
+     *
+     * @param j
+     * @param cluster Cluster of <code>j</code>
+     * @param mismatchMask Missmatches to last <code>j</code>
+     * @param dist Distance to original <code>j</code>
+     */
+    private void calcClusterRecIntern(int j, Vector<Idiotype> cluster, int mismatchMask, int dist) {
+        while (mismatchMask != 0) {
+            mismatchMask >>= 1;
+            calcClusterRec(j ^ mismatchMask, cluster);
+            if (linkWeighting[dist + 1] > 0)
+                calcClusterRecIntern(j ^ mismatchMask, cluster, mismatchMask, dist + 1);
+        }
+    }
+
+    /**
      * Calculates cluster of <code>j</code>
      *
      * @param j
      * @param cluster Cluster of <code>j</code>
-     * @param visited Boolean-Array which idiotypes have been counted already
-     * @param mismatchMask Missmatches to last <code>j</code>
-     * @param dist Distance to original <code>j</code>
      */
-    private void calcClusterRec(int j, Vector<Idiotype> cluster, boolean[] visited, int mismatchMask, int dist) {
-        while (mismatchMask != 0) {
-            mismatchMask >>= 1;
-            if (idiotypes[j ^ mismatchMask].n > 0 && !visited[j ^ mismatchMask]) {
-                visited[j ^ mismatchMask] = true;
-                idiotypes[j ^ mismatchMask].cluster = cluster;
-                cluster.add(idiotypes[j ^ mismatchMask]);
-            }
-            if (linkWeighting[dist + 1] > 0)
-                calcClusterRec(j ^ mismatchMask, cluster, visited, mismatchMask, dist + 1);
+    private void calcClusterRec(int j, Vector<Idiotype> cluster) {
+        if (idiotypes[j].n > 0 && idiotypes[j].cluster == null) {
+            idiotypes[j].cluster = cluster;
+            cluster.add(idiotypes[j]);
+            int complement = ~j & ((1 << d) - 1);
+            if (linkWeighting[0] > 0)
+                calcClusterRecIntern(complement, cluster, 1 << d, 1);
         }
     }
 
@@ -452,129 +426,16 @@ public class IdnetManager extends IdiotypicNetwork {
      */
     public Vector<Vector<Idiotype>> calcClusters() {
         Vector<Vector<Idiotype>> res = new Vector<Vector<Idiotype>>();
-        boolean[] visited = new boolean[1 << d];
         for (int i = 0; i < (1 << d); i++)
-            if (!visited[i] && idiotypes[i].n > 0) {
-                visited[i] = true;
+            idiotypes[i].cluster = null;
+        for (int i = 0; i < (1 << d); i++)
+            if (idiotypes[i].n > 0 && idiotypes[i].cluster == null) {
                 Vector<Idiotype> cluster = new Vector<Idiotype>();
                 res.add(cluster);
-                cluster.add(idiotypes[i]);
-                idiotypes[i].cluster = cluster;
+                calcClusterRec(i, cluster);
 
-                int complement = ~i & ((1 << d) - 1);
-                if (idiotypes[complement].n > 0) {
-                    visited[complement] = true;
-                    idiotypes[complement].cluster = cluster;
-                    cluster.add(idiotypes[complement]);
-                }
-
-                if (linkWeighting[0] > 0)
-                    calcClusterRec(complement, cluster, visited, 1 << d, 1);
             }
         return res;
-    }
-
-    /**
-     * Creates histogram, reads settings from config file
-     *
-     * @param configFileName Name of config file
-     * @throws Exception
-     */
-    public void createHistogram(String configFileName) throws Exception {
-        Properties config = new Properties();
-        config.loadFromXML(new FileInputStream(configFileName));
-        if (config.getProperty("p_from") == null)
-            throw new Exception("Configuration property 'p_from' missing");
-        double pFrom = Double.parseDouble(config.getProperty("p_from"));
-        if (config.getProperty("p_to") == null)
-            throw new Exception("Configuration property 'p_to' missing");
-        double pTo = Double.parseDouble(config.getProperty("p_to"));
-        if (config.getProperty("p_steps") == null)
-            throw new Exception("Configuration property 'p_steps' missing");
-        int pSteps = Integer.parseInt(config.getProperty("p_steps"));
-        if (config.getProperty("num_loops") == null)
-            throw new Exception("Configuration property 'num_loops' missing");
-        int numLoops = Integer.parseInt(config.getProperty("num_loops"));
-        if (config.getProperty("y_steps") == null)
-            throw new Exception("Configuration property 'y_steps' missing");
-        int ySteps = Integer.parseInt(config.getProperty("y_steps"));
-        if (config.getProperty("t_wait") == null)
-            throw new Exception("Configuration property 't_wait' missing");
-        int tWait = Integer.parseInt(config.getProperty("t_wait"));
-        if (config.getProperty("t_window") == null)
-            throw new Exception("Configuration property 't_window' missing");
-        int tWindow = Integer.parseInt(config.getProperty("t_window"));
-
-        String fileNameLT = config.getProperty("filename_LT");
-        String fileNameMO = config.getProperty("filename_MO");
-        String fileNameON = config.getProperty("filename_ON");
-
-        if (fileNameLT != null)
-            histogramLT = new int[ySteps];
-        if (fileNameMO != null)
-            histogramMO = new int[ySteps];
-        if (fileNameON != null)
-            histogramON = new int[ySteps];
-
-        FileWriter fileWriterLT = null, fileWriterMO = null, fileWriterON = null;
-        if (fileNameLT != null)
-            new FileWriter(fileNameLT, false).close();
-        if (fileNameMO != null)
-            new FileWriter(fileNameMO, false).close();
-        if (fileNameON != null)
-            new FileWriter(fileNameON, false).close();
-
-        for (int i_p = 0; i_p < pSteps; i_p++) {
-            double p = pFrom + i_p * pTo / pSteps;
-            this.setp(p);
-            this.reset();
-            calcHistogramStep(numLoops, tWait, tWindow, ySteps);
-
-            if (histogramLT != null)
-                fileWriterLT = new FileWriter(fileNameLT, true);
-            if (histogramMO != null)
-                fileWriterMO = new FileWriter(fileNameMO, true);
-            if (histogramON != null)
-                fileWriterON = new FileWriter(fileNameON, true);
-            for (int i = 0; i < ySteps; i++) {
-                if (fileNameMO != null) {
-                    fileWriterMO.write(p + " " + (double) i * this.getN() /
-                            (double) ySteps + " ");
-                    fileWriterMO.write((double) histogramMO[i] /
-                            (double) numLoops + "\n");
-                    histogramMO[i] = 0;
-                }
-                if (fileNameLT != null) {
-                    fileWriterLT.write(p + " " + Math.pow(10, (double) i * 5 /
-                            (double) ySteps) + " ");
-                    fileWriterLT.write((double) histogramLT[i] /
-                            (double) numLoops + "\n");
-                    histogramLT[i] = 0;
-                }
-                if (fileNameON != null) {
-                    fileWriterON.write(p + " " + (double) i * this.getN() * 80 /
-                            (double) ySteps + " ");
-                    fileWriterON.write((double) histogramON[i] /
-                            (double) numLoops + "\n");
-                    histogramON[i] = 0;
-                }
-            }
-            if (fileNameLT != null) {
-                fileWriterLT.write("\n");
-                fileWriterLT.close();
-            }
-            if (fileNameMO != null) {
-                fileWriterMO.write("\n");
-                fileWriterMO.close();
-            }
-            if (fileNameON != null) {
-                fileWriterON.write("\n");
-                fileWriterON.close();
-            }
-
-            System.out.println(i_p);
-
-        }
     }
 
     /**
@@ -613,6 +474,7 @@ public class IdnetManager extends IdiotypicNetwork {
             idiotypes[i].n = Integer.parseInt(s);
         }
         reader.close();
+        setChanged();
+        notifyObservers();
     }
-
 }

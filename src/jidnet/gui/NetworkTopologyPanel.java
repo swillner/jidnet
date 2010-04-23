@@ -4,10 +4,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Polygon;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.ImageIO;
+import java.util.Observable;
+import java.util.Observer;
 import javax.swing.JPanel;
 import jidnet.idnet.DeterminantBits;
 import jidnet.idnet.Helper;
@@ -18,7 +16,7 @@ import jidnet.idnet.IdnetManager;
  *
  * @author Sven Willner
  */
-public class NetworkTopologyPanel extends JPanel {
+public class NetworkTopologyPanel extends JPanel implements Observer {
 
     private IdnetManager idnetManager;
     private DeterminantBits detBits;
@@ -26,17 +24,17 @@ public class NetworkTopologyPanel extends JPanel {
     private int[] neighbourCounts;
     private int[] neighbourCountsOccupied;
     private int[][] groupNeighbourCounts;
-    private int[] neighbourCountsOld;
-    private int[] neighbourCountsOccupiedOld;
-    private int[][] groupNeighbourCountsOld;
+    private int[][] bitwiseNeighbourCounts;
     private int max;
     public final static int DRAW_CURRENT = 0;
     public final static int DRAW_TOTAL_MEANS = 1;
-    private int drawType = DRAW_CURRENT;
+    private int drawType;
 
     public NetworkTopologyPanel(IdnetManager idnetManager) {
         super();
         this.idnetManager = idnetManager;
+        drawType = DRAW_CURRENT;
+        idnetManager.addObserver(this);
         recalc();
     }
 
@@ -48,7 +46,7 @@ public class NetworkTopologyPanel extends JPanel {
         this.drawType = drawType;
         switch (drawType) {
             case DRAW_CURRENT:
-                afterIteration();
+                update(null, null);
                 break;
             case DRAW_TOTAL_MEANS:
                 recalc();
@@ -59,10 +57,10 @@ public class NetworkTopologyPanel extends JPanel {
 
     public void setDeterminantBits(DeterminantBits detBits) {
         this.detBits = detBits;
-        if (drawType != DRAW_CURRENT)
-            setDrawType(DRAW_CURRENT);
+        //if (drawType != DRAW_CURRENT)
+        //    setDrawType(DRAW_CURRENT);
         recalc();
-        afterIteration();
+        update(null, null);
         repaint();
     }
 
@@ -73,9 +71,10 @@ public class NetworkTopologyPanel extends JPanel {
         neighbourCounts = new int[MAX_NEIGHBOUR_COUNT + 1];
         neighbourCountsOccupied = new int[MAX_NEIGHBOUR_COUNT + 1];
         groupNeighbourCounts = new int[d_m + 1][MAX_NEIGHBOUR_COUNT + 1];
+        bitwiseNeighbourCounts = new int[12][MAX_NEIGHBOUR_COUNT + 1];
     }
 
-    public void afterIteration() {
+    public void update(Observable o, Object arg) {
         if (drawType == DRAW_CURRENT)
             if (isShowing())
                 recalc();
@@ -89,27 +88,19 @@ public class NetworkTopologyPanel extends JPanel {
                     neighbourCountsOccupied[(int) i.n_d]++;
                 if (detBits != null)
                     groupNeighbourCounts[Helper.hammingWeight((detBits.mask & i.i) ^ detBits.values)][(int) i.n_d]++;
+                for (int j = 0; j < 12; j++)
+                    if ((i.i & (1 << j)) != 0)
+                        bitwiseNeighbourCounts[j][(int) i.n_d]++;
                 max = Math.max(max, neighbourCounts[(int) i.n_d]);
             }
-        /*BufferedImage img = new BufferedImage(1000, 750, BufferedImage.TYPE_INT_RGB);
-        Graphics g = img.createGraphics();
-        paintComponent(g);
-        g.setColor(Color.BLACK);
-        g.drawString("t = " + idnetManager.gett(), 800, 20);
-        g.dispose();
-        try {
-        ImageIO.write(img, "png", new File(1000000 + idnetManager.gett() + ".png"));
-        } catch(IOException e) {
-        e.printStackTrace();
-        }*/
     }
 
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if (idnetManager.gett() == 0)
-            return;
+        //if (idnetManager.gett() == 0)
+        //    return;
 
         // Draw diagram outlines
         g.setColor(Color.getHSBColor(0.7f, 0.7f, 1.0f));
@@ -126,6 +117,8 @@ public class NetworkTopologyPanel extends JPanel {
         int[] lastGroupY = null;
         if (detBits != null)
             lastGroupY = new int[Helper.hammingWeight(detBits.mask) + 1];
+        else
+            lastGroupY = new int[12];
         g.setFont(new Font("Arial", 0, 8));
         for (int i = 1; i <= MAX_NEIGHBOUR_COUNT; i++) {
             g.setColor(Color.LIGHT_GRAY);
@@ -153,13 +146,13 @@ public class NetworkTopologyPanel extends JPanel {
 
             if (lastYOccupied > 0) {
                 g.setColor(Color.BLACK);
-                g.fillArc(xOffset + i * stepWidth - 3, yOffset + height - lastYOccupied - 3, 5, 5, 0, 360);
+                g.fillArc(xOffset + i * stepWidth - 4, yOffset + height - lastYOccupied - 4, 7, 7, 0, 360);
             }
 
             if (detBits != null) {
                 int d_m = Helper.hammingWeight(detBits.mask);
                 for (int j = 0; j <= d_m; j++) {
-                    g.setColor(Color.getHSBColor((float) j / (float) d_m, 1.0f, 0.5f));
+                    g.setColor(Color.getHSBColor((float) j / (float) (d_m + 1), 1.0f, 0.8f));
                     if (i > 0)
                         g.drawLine(xOffset + (i - 1) * stepWidth, yOffset + height - lastGroupY[j], xOffset + i *
                                 stepWidth,
@@ -167,19 +160,49 @@ public class NetworkTopologyPanel extends JPanel {
                     lastGroupY[j] = (int) (height * (double) groupNeighbourCounts[j][i] / (double) max);
 
                     if (lastGroupY[j] > 0) {
-                        g.setColor(Color.getHSBColor((float) j / (float) d_m, 1.0f, 1.0f));
-                        g.fillRect(xOffset + i * stepWidth - 1, yOffset + height - lastGroupY[j] - 1, 3, 3);
+                        g.setColor(Color.getHSBColor((float) j / (float) (d_m + 1), 1.0f, 1.0f));
+                        g.fillRect(xOffset + i * stepWidth - 2, yOffset + height - lastGroupY[j] - 2, 5, 5);
                     }
                 }
-            }
+            }/* else
+                for (int j = 0; j < 12; j++) {
+                    g.setColor(Color.getHSBColor((float) j / (float) 12, 1.0f, 0.8f));
+                    if (i > 0)
+                        g.drawLine(xOffset + (i - 1) * stepWidth, yOffset + height - lastGroupY[j], xOffset + i *
+                                stepWidth,
+                                yOffset + height - (int) (height * (double) bitwiseNeighbourCounts[j][i] / (double) max));
+                    lastGroupY[j] = (int) (height * (double) bitwiseNeighbourCounts[j][i] / (double) max);
+
+                    if (lastGroupY[j] > 0) {
+                        g.setColor(Color.getHSBColor((float) j / (float) 12, 1.0f, 1.0f));
+                        g.fillRect(xOffset + i * stepWidth - 2, yOffset + height - lastGroupY[j] - 2, 5, 5);
+                    }
+                }*/
 
             g.setColor(Color.BLACK);
-            g.drawString(i + "", xOffset + i * stepWidth, yOffset + height + 10);
+            g.drawString(i + "", xOffset + i * stepWidth - 3, yOffset + height + 10);
         }
 
         g.setColor(new Color(255, 255, 255, 128));
         g.fillRect((int) (xOffset + idnetManager.gett_l() * stepWidth), yOffset, (int) ((idnetManager.gett_u() -
                 idnetManager.gett_l()) * stepWidth), height);
+
+        g.setFont(new Font("Arial", 0, 12));
+        if (detBits != null) {
+            int d_m = Helper.hammingWeight(detBits.mask);
+            for (int j = 0; j <= d_m; j++) {
+                g.setColor(Color.getHSBColor((float) j / (float) (d_m + 1), 1.0f, 1.0f));
+                g.fillRect(xOffset + MAX_NEIGHBOUR_COUNT * stepWidth + 50, yOffset + 150 + 30 * j, 18, 18);
+                g.setColor(Color.BLACK);
+                g.drawString("S_" + j, xOffset + MAX_NEIGHBOUR_COUNT * stepWidth + 72, yOffset + 163 + 30 * j);
+            }
+        }/* else
+            for (int j = 0; j < 12; j++) {
+                g.setColor(Color.getHSBColor((float) j / (float) 12, 1.0f, 1.0f));
+                g.fillRect(xOffset + MAX_NEIGHBOUR_COUNT * stepWidth + 50, yOffset + 150 + 30 * j, 18, 18);
+                g.setColor(Color.BLACK);
+                g.drawString(j + "", xOffset + MAX_NEIGHBOUR_COUNT * stepWidth + 72, yOffset + 163 + 30 * j);
+            }*/
 
     }
 

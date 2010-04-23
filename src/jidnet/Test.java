@@ -4,7 +4,7 @@
  */
 package jidnet;
 
-import java.io.FileWriter;
+import java.util.Vector;
 import jidnet.idnet.Helper;
 import jidnet.idnet.Idiotype;
 import jidnet.idnet.IdnetManager;
@@ -16,57 +16,136 @@ import jidnet.idnet.IdnetManager;
 public class Test {
 
     public static void main(String[] args) throws Exception {
-        /*        int d = 12;
-        int d_m = 11;
-        int m = 2;
-
-        for (int i = 0; i <= d_m; i++) {
-        for (int j = 0; j <= d_m; j++)
-        System.out.print(IdnetManager.calcLinkMatrixElem(i, j, d_m, m, d) + " ");
-        System.out.println();
-        }*/
 
         IdnetManager idnetManager = new IdnetManager();
 
-        int P_STEPS = 100;
-        int MAX_NEIGHBOUR_COUNT = 11;
-        int T_TO_STATIC = 1000;
-        int T_WINDOW = 500;
-        int[] neighbourCounts;
+        idnetManager.setp(0.025);
+        idnetManager.setmax_s(0.04);
 
-        FileWriter fw = new FileWriter("topology.dat");
 
-        long t0 = System.currentTimeMillis();
-
-        for (int j = 1; j < P_STEPS; j++) {
-            double p = (double)j * 0.1 / (double) P_STEPS;
-            idnetManager.setp(p);
+        for (int i = 0; i < 10000; i++) {
+            long seed = System.currentTimeMillis();
+            idnetManager.reseed(seed);
             idnetManager.reset();
-
-            neighbourCounts = new int[MAX_NEIGHBOUR_COUNT + 1];
-
-            idnetManager.setStatNeighbourOccupations(false);
-            idnetManager.iterate(T_TO_STATIC);
-            idnetManager.setStatNeighbourOccupations(true);
-
-            for (int n = 0; n < T_WINDOW; n++)
-                for (Idiotype i : idnetManager.getIdiotypes())
-                    if (i.n > 0 && (int) i.n_d <= MAX_NEIGHBOUR_COUNT)
-                        neighbourCounts[(int) i.n_d]++;
-
-            for (int n = 0; n <= MAX_NEIGHBOUR_COUNT; n++)
-                fw.write(p + " " + n + " " + neighbourCounts[n] + "\n");
-
-            fw.write("\n");
-            fw.flush();
-
-            System.out.println(p);
+            for (int j = 0; j < 1; j++) {
+                idnetManager.iterate(1000);
+                //int dm = Helper.hammingWeight(idnetManager.calcDeterminantBits().mask);
+                //if (dm <= 4)
+                //    break;
+                //else {
+                    Vector<Vector<Idiotype>> clusters = idnetManager.calcClusters();
+                    for (Vector<Idiotype> cluster : clusters)
+                        if (cluster.size() == 24) {
+                            System.out.println(seed);
+                            break;
+                        }
+                //}
+            }
         }
+        
+        /*
+        IdnetManager idnetManager = new IdnetManager();
 
-        fw.close();
+        idnetManager.setp(0.015);
+        idnetManager.setmax_s(0.04);
+        idnetManager.loadNetwork("1.dat");
+        idnetManager.reseed(1267623876539L);
+        idnetManager.iterate();
 
-        long t1 = System.currentTimeMillis();
-        System.out.println("Time needed: " + (t1 - t0) / 60000 + "min");
+        DeterminantBits detBits = new DeterminantBits(Integer.parseInt("011001100000", 2), Integer.parseInt(
+                "011001100000", 2));
+
+        int d_m = d_m = Helper.hammingWeight(detBits.mask);
+        final int MAX_NEIGHBOUR_COUNT = 80;
+        int[] neighbourCounts = new int[MAX_NEIGHBOUR_COUNT + 1];
+        int[] neighbourCountsOccupied = new int[MAX_NEIGHBOUR_COUNT + 1];
+        int[][] groupNeighbourCounts = new int[d_m + 1][MAX_NEIGHBOUR_COUNT + 1];
+        int[][] bitwiseNeighbourCounts = new int[12][MAX_NEIGHBOUR_COUNT + 1];
+
+        int max = 1;
+        for (Idiotype i : idnetManager.getIdiotypes())
+            if ((int) i.n_d <= MAX_NEIGHBOUR_COUNT) {
+                neighbourCounts[(int) i.n_d]++;
+                if (i.n > 0)
+                    neighbourCountsOccupied[(int) i.n_d]++;
+                if (detBits != null)
+                    groupNeighbourCounts[Helper.hammingWeight((detBits.mask & i.i) ^ detBits.values)][(int) i.n_d]++;
+                for (int j = 0; j < 12; j++)
+                    if ((i.i & (1 << j)) != 0)
+                        bitwiseNeighbourCounts[j][(int) i.n_d]++;
+                max = Math.max(max, neighbourCounts[(int) i.n_d]);
+            }
+        for (int l = 0; l < 12; l++) {
+            System.out.print(l + "\t");
+            //System.out.print(idnetManager.calcGroupSize(l, d_m) + "\t");
+
+            int ton = 0;
+            for (int i = 0; i <= MAX_NEIGHBOUR_COUNT; i++)
+                ton += bitwiseNeighbourCounts[l][i];
+            //System.out.print(ton + "\t");
+
+            int ton_w = 0;
+            for (int i = 1; i <= 10; i++)
+                ton_w += bitwiseNeighbourCounts[l][i];
+            //System.out.print(ton_w + "\t");
+
+            System.out.print((double) ton_w / (double) ton + "\n");
+        }
+/*
+        //System.out.println("Group\tNodes\tTotal ON in [1;10]\tRatio\n");
+        //System.out.print("Ist:\n");
+        for (int l = 0; l <= d_m; l++) {
+            System.out.print("S_" + l + "\t");
+            //System.out.print(idnetManager.calcGroupSize(l, d_m) + "\t");
+
+            int ton = 0;
+            for (int i = 0; i <= MAX_NEIGHBOUR_COUNT; i++)
+                ton += groupNeighbourCounts[l][i];
+            //System.out.print(ton + "\t");
+
+            int ton_w = 0;
+            for (int i = 1; i <= 10; i++)
+                ton_w += groupNeighbourCounts[l][i];
+            //System.out.print(ton_w + "\t");
+
+            System.out.print((double) ton_w / (double) ton + "\n");
+        }
+*/
+       /* idnetManager.reseed(1267631750048L);
+        System.out.print("\nBei d_M=4 im Mittel:\n");
+        max = 1;
+        idnetManager.iterate(1000);
+        for (int l = 0; l < 1000; l++) {
+            idnetManager.iterate();
+        for (Idiotype i : idnetManager.getIdiotypes())
+            if ((int) i.n_d <= MAX_NEIGHBOUR_COUNT) {
+                neighbourCounts[(int) i.n_d]++;
+                if (i.n > 0)
+                    neighbourCountsOccupied[(int) i.n_d]++;
+                if (detBits != null)
+                    groupNeighbourCounts[Helper.hammingWeight((detBits.mask & i.i) ^ detBits.values)][(int) i.n_d]++;
+                for (int j = 0; j < 12; j++)
+                    if ((i.i & (1 << j)) != 0)
+                        bitwiseNeighbourCounts[j][(int) i.n_d]++;
+                max = Math.max(max, neighbourCounts[(int) i.n_d]);
+            }
+        }
+        for (int l = 0; l <= d_m; l++) {
+            System.out.print("S_" + l + "\t");
+            //System.out.print(idnetManager.calcGroupSize(l, d_m) + "\t");
+
+            int ton = 0;
+            for (int i = 0; i <= MAX_NEIGHBOUR_COUNT; i++)
+                ton += groupNeighbourCounts[l][i];
+            //System.out.print(ton + "\t");
+
+            int ton_w = 0;
+            for (int i = 1; i <= 10; i++)
+                ton_w += groupNeighbourCounts[l][i];
+            //System.out.print(ton_w + "\t");
+
+            System.out.print((double) ton_w / (double) ton + "\n");
+        }*/
     }
 
 }

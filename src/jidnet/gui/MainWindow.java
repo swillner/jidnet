@@ -1,15 +1,32 @@
 package jidnet.gui;
 
+import java.awt.Color;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Vector;
+import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
 import javax.swing.Timer;
+import javax.swing.text.MaskFormatter;
 import jidnet.idnet.Helper;
 import jidnet.idnet.Idiotype;
 import jidnet.idnet.DeterminantBits;
@@ -32,22 +49,23 @@ public class MainWindow extends javax.swing.JFrame {
         spinnerMax_s.setValue(Application.getIdnetManager().getmax_s());
         redrawDelay = Integer.parseInt(Application.getConfiguration().getProperty("redraw_delay", "10"));
         spinnerRedrawDelay.setValue(redrawDelay);
+        spinnerTimerDelay.setValue(Integer.parseInt(Application.getConfiguration().getProperty("timer_delay", "10")));
 
         for (Properties p : Application.getConfigurations())
             ((DefaultListModel) configurationsList.getModel()).addElement(p.getProperty("name"));
 
+        for (int i = 0; i < 12; i++)
+            ((DefaultListModel) detBitsList.getModel()).addElement(i + "");
+
         this.setExtendedState(this.getExtendedState() | MAXIMIZED_BOTH);
 
-        timer = new Timer(10, new ActionListener() {
+        timer = new Timer(Integer.parseInt(Application.getConfiguration().getProperty("timer_delay", "10")), new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                for (int i = 0; i < redrawDelay; i++) {
+                for (int i = 0; i < redrawDelay; i++)
                     Application.getIdnetManager().iterate();
-                    afterIteration();
-                }
                 updateIdnetStatistics();
             }
-
         });
 
     }
@@ -65,33 +83,19 @@ public class MainWindow extends javax.swing.JFrame {
 
         drawTypeButtonGroup = new javax.swing.ButtonGroup();
         topologyDrawTypeButtonGroup = new javax.swing.ButtonGroup();
-        jSplitPane1 = new javax.swing.JSplitPane();
-        jPanel3 = new javax.swing.JPanel();
-        runButton = new javax.swing.JToggleButton();
-        resetButton = new javax.swing.JButton();
-        recalcButton = new javax.swing.JButton();
-        stepButton = new javax.swing.JButton();
-        Step10000Button = new javax.swing.JButton();
-        spinnerSeed = new javax.swing.JSpinner();
-        reseedButton = new javax.swing.JButton();
-        reseedAndResetButton = new javax.swing.JButton();
-        jSeparator2 = new javax.swing.JSeparator();
-        jSeparator3 = new javax.swing.JSeparator();
-        saveNetworkButton = new javax.swing.JButton();
-        loadNetworkButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
+        mainTabbedPane = new javax.swing.JTabbedPane();
         cogDiagramPanel = new COGDiagramPanel(Application.getIdnetManager());
-        network1DPanel = new jidnet.gui.Network1DPanel(Application.getIdnetManager());
+        networkTopologyPanel = new NetworkTopologyPanel(Application.getIdnetManager());
         network2DPanel = new Network2DPanel(Application.getIdnetManager());
-        arrangebyDetBitsButton = new javax.swing.JButton();
-        defArragementButton = new javax.swing.JButton();
-        calcGroupOccButton = new javax.swing.JButton();
+        network1DPanel = new jidnet.gui.Network1DPanel(Application.getIdnetManager());
+        clusterPanel = new javax.swing.JPanel();
+        calcClustersButton = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         groupOccText = new javax.swing.JTextArea();
-        drawCurrentRadioButton = new javax.swing.JRadioButton();
-        drawMeanOccsRadioButton = new javax.swing.JRadioButton();
-        buttonArangeByCustomBits = new javax.swing.JButton();
+        calcGroupOccButton = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        clustersText = new javax.swing.JTextArea();
         linkWeightingPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
@@ -124,14 +128,26 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel23 = new javax.swing.JLabel();
         spinnerp_deadly = new javax.swing.JSpinner();
         setp_deadlyButton = new javax.swing.JButton();
-        clusterPanel = new javax.swing.JPanel();
-        calcClustersButton = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        clustersText = new javax.swing.JTextArea();
-        networkTopologyPanel = new NetworkTopologyPanel(Application.getIdnetManager());
-        buttonTopologyDrawCustomBitGroups = new javax.swing.JButton();
-        topologyDrawMeansRadioButton = new javax.swing.JRadioButton();
-        topologyDrawCurrentRadioButton = new javax.swing.JRadioButton();
+        detBitsPanel = new javax.swing.JPanel();
+        jLabel24 = new javax.swing.JLabel();
+        jLabel25 = new javax.swing.JLabel();
+        jLabel30 = new javax.swing.JLabel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        detBitsList = new javax.swing.JList();
+        detBitsUpButton = new javax.swing.JButton();
+        detBitsDownButton = new javax.swing.JButton();
+        try {
+            MaskFormatter textCustomBitMaskFormatter = new MaskFormatter("************");
+            textCustomBitMaskFormatter.setValidCharacters("01");
+            textCustomBitMask = new javax.swing.JFormattedTextField(textCustomBitMaskFormatter);
+        } catch(ParseException e) {
+        }
+        try {
+            MaskFormatter textCustomBitValuesFormatter = new MaskFormatter("************");
+            textCustomBitValuesFormatter.setValidCharacters("01");
+            textCustomBitValues = new javax.swing.JFormattedTextField(textCustomBitValuesFormatter);
+        } catch(ParseException e) {
+        }
         configurationsPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         configurationsList = new javax.swing.JList();
@@ -139,7 +155,15 @@ public class MainWindow extends javax.swing.JFrame {
         loadConfigButton = new javax.swing.JButton();
         removeConfigButton = new javax.swing.JButton();
         overwriteConfigButton = new javax.swing.JButton();
-        jPanel5 = new javax.swing.JPanel();
+        jLabel26 = new javax.swing.JLabel();
+        spinnerSeed = new javax.swing.JSpinner();
+        jSeparator2 = new javax.swing.JSeparator();
+        jLabel28 = new javax.swing.JLabel();
+        spinnerPrepareGroupCount = new javax.swing.JSpinner();
+        jLabel29 = new javax.swing.JLabel();
+        spinnerPrepareFillGroup = new javax.swing.JSpinner();
+        prepareNetworkButton = new javax.swing.JButton();
+        statisticsPanel = new javax.swing.JPanel();
         spinnerRedrawDelay = new javax.swing.JSpinner();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -156,227 +180,94 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel8 = new javax.swing.JLabel();
         spinnerN = new javax.swing.JSpinner();
         jLabel7 = new javax.swing.JLabel();
-        checkExtStat = new javax.swing.JCheckBox();
-        jLabel24 = new javax.swing.JLabel();
-        textCustomBitMask = new javax.swing.JTextField();
-        jLabel25 = new javax.swing.JLabel();
-        textCustomBitValues = new javax.swing.JTextField();
-        buttonAutoDetBits = new javax.swing.JButton();
+        spinnerTimerDelay = new javax.swing.JSpinner();
+        jLabel27 = new javax.swing.JLabel();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        menuItemRun = new javax.swing.JCheckBoxMenuItem();
+        menuItemStep = new javax.swing.JMenuItem();
+        jMenuItem4 = new javax.swing.JMenuItem();
+        menuItemReseed = new javax.swing.JMenuItem();
+        menuItemReset = new javax.swing.JMenuItem();
+        menuItemRecalc = new javax.swing.JMenuItem();
+        menuItemReseedAndReset = new javax.swing.JMenuItem();
+        jMenuItem7 = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+        jMenuItem5 = new javax.swing.JMenuItem();
+        jMenuItem6 = new javax.swing.JMenuItem();
+        menuItemExtNeighbourStat = new javax.swing.JCheckBoxMenuItem();
+        jMenu3 = new javax.swing.JMenu();
+        jCheckBoxMenuItem1 = new javax.swing.JCheckBoxMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        menuItemSaveSnapshot = new javax.swing.JMenuItem();
+        menuItemDrawMeans = new javax.swing.JCheckBoxMenuItem();
+        menuItemDrawDetBits = new javax.swing.JCheckBoxMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Idiotypic Network");
+        setName("jIdNetFrame"); // NOI18N
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
             }
         });
+        addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                formKeyPressed(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                formKeyTyped(evt);
+            }
+        });
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.Y_AXIS));
 
-        jSplitPane1.setDividerLocation(175);
-
-        runButton.setText("Run");
-        runButton.setName("runButton"); // NOI18N
-        runButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                runButtonActionPerformed(evt);
-            }
-        });
-
-        resetButton.setText("Reset");
-        resetButton.setName("resetButton"); // NOI18N
-        resetButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resetButtonActionPerformed(evt);
-            }
-        });
-
-        recalcButton.setText("Recalc");
-        recalcButton.setName("recalcButton"); // NOI18N
-        recalcButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                recalcButtonActionPerformed(evt);
-            }
-        });
-
-        stepButton.setText("Step");
-        stepButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                stepButtonActionPerformed(evt);
-            }
-        });
-
-        Step10000Button.setText("Step 10000");
-        Step10000Button.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                Step10000ButtonActionPerformed(evt);
-            }
-        });
-
-        spinnerSeed.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), null, null, Long.valueOf(1L)));
-        spinnerSeed.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                spinnerSeedStateChanged(evt);
-            }
-        });
-
-        reseedButton.setText("Reseed");
-        reseedButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reseedButtonActionPerformed(evt);
-            }
-        });
-
-        reseedAndResetButton.setText("Reseed & Reset");
-        reseedAndResetButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reseedAndResetButtonActionPerformed(evt);
-            }
-        });
-
-        saveNetworkButton.setText("Save network");
-        saveNetworkButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveNetworkButtonActionPerformed(evt);
-            }
-        });
-
-        loadNetworkButton.setText("Load network");
-        loadNetworkButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadNetworkButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
-                    .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
-                    .addComponent(runButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
-                    .addComponent(stepButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
-                    .addComponent(Step10000Button, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
-                    .addComponent(reseedAndResetButton, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
-                    .addComponent(resetButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
-                    .addComponent(recalcButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
-                    .addComponent(spinnerSeed, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
-                    .addComponent(reseedButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
-                    .addComponent(saveNetworkButton, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE)
-                    .addComponent(loadNetworkButton, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(runButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(stepButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Step10000Button)
-                .addGap(18, 18, 18)
-                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(reseedAndResetButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(resetButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(recalcButton)
-                .addGap(18, 18, 18)
-                .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(spinnerSeed, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(reseedButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 320, Short.MAX_VALUE)
-                .addComponent(loadNetworkButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(saveNetworkButton)
-                .addContainerGap())
-        );
-
-        jSplitPane1.setLeftComponent(jPanel3);
-
         cogDiagramPanel.setBackground(new java.awt.Color(255, 255, 255));
+        cogDiagramPanel.setNextFocusableComponent(mainTabbedPane);
+        cogDiagramPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                panelMouseClickedPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout cogDiagramPanelLayout = new javax.swing.GroupLayout(cogDiagramPanel);
         cogDiagramPanel.setLayout(cogDiagramPanelLayout);
         cogDiagramPanelLayout.setHorizontalGroup(
             cogDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 659, Short.MAX_VALUE)
+            .addGap(0, 744, Short.MAX_VALUE)
         );
         cogDiagramPanelLayout.setVerticalGroup(
             cogDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 704, Short.MAX_VALUE)
+            .addGap(0, 760, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("Center of gravity", cogDiagramPanel);
+        mainTabbedPane.addTab("Center of gravity", cogDiagramPanel);
 
-        network1DPanel.setBackground(new java.awt.Color(255, 255, 255));
-        network1DPanel.setName("network1DPanel"); // NOI18N
+        networkTopologyPanel.setBackground(new java.awt.Color(255, 255, 255));
+        networkTopologyPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                panelMouseClickedPerformed(evt);
+            }
+        });
 
-        javax.swing.GroupLayout network1DPanelLayout = new javax.swing.GroupLayout(network1DPanel);
-        network1DPanel.setLayout(network1DPanelLayout);
-        network1DPanelLayout.setHorizontalGroup(
-            network1DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 659, Short.MAX_VALUE)
+        javax.swing.GroupLayout networkTopologyPanelLayout = new javax.swing.GroupLayout(networkTopologyPanel);
+        networkTopologyPanel.setLayout(networkTopologyPanelLayout);
+        networkTopologyPanelLayout.setHorizontalGroup(
+            networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 744, Short.MAX_VALUE)
         );
-        network1DPanelLayout.setVerticalGroup(
-            network1DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 704, Short.MAX_VALUE)
+        networkTopologyPanelLayout.setVerticalGroup(
+            networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 760, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("1D View", network1DPanel);
+        mainTabbedPane.addTab("Topology", networkTopologyPanel);
 
         network2DPanel.setBackground(new java.awt.Color(255, 255, 255));
-
-        arrangebyDetBitsButton.setText("Arrange by det. bit groups");
-        arrangebyDetBitsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                arrangebyDetBitsButtonActionPerformed(evt);
-            }
-        });
-
-        defArragementButton.setText("Default arrangement");
-        defArragementButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                defArragementButtonActionPerformed(evt);
-            }
-        });
-
-        calcGroupOccButton.setText("Calculate group occupations");
-        calcGroupOccButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                calcGroupOccButtonActionPerformed(evt);
-            }
-        });
-
-        groupOccText.setEditable(false);
-        jScrollPane3.setViewportView(groupOccText);
-
-        drawTypeButtonGroup.add(drawCurrentRadioButton);
-        drawCurrentRadioButton.setSelected(true);
-        drawCurrentRadioButton.setText("Draw current network");
-        drawCurrentRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                drawRadioButtonActionPerformed(evt);
-            }
-        });
-
-        drawTypeButtonGroup.add(drawMeanOccsRadioButton);
-        drawMeanOccsRadioButton.setText("Draw mean occupations");
-        drawMeanOccsRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                drawRadioButtonActionPerformed(evt);
-            }
-        });
-
-        buttonArangeByCustomBits.setText("Arrange by custom bits");
-        buttonArangeByCustomBits.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonArangeByCustomBitsActionPerformed(evt);
+        network2DPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                panelMouseClickedPerformed(evt);
             }
         });
 
@@ -384,39 +275,90 @@ public class MainWindow extends javax.swing.JFrame {
         network2DPanel.setLayout(network2DPanelLayout);
         network2DPanelLayout.setHorizontalGroup(
             network2DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, network2DPanelLayout.createSequentialGroup()
-                .addContainerGap(456, Short.MAX_VALUE)
-                .addGroup(network2DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(buttonArangeByCustomBits, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(drawMeanOccsRadioButton)
-                    .addComponent(drawCurrentRadioButton)
-                    .addComponent(calcGroupOccButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(defArragementButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(arrangebyDetBitsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addContainerGap())
+            .addGap(0, 744, Short.MAX_VALUE)
         );
         network2DPanelLayout.setVerticalGroup(
             network2DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(network2DPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(arrangebyDetBitsButton)
-                .addGap(18, 18, 18)
-                .addComponent(defArragementButton)
-                .addGap(18, 18, 18)
-                .addComponent(calcGroupOccButton)
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 268, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(drawCurrentRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(drawMeanOccsRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(buttonArangeByCustomBits)
-                .addContainerGap(186, Short.MAX_VALUE))
+            .addGap(0, 760, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("2D View", network2DPanel);
+        mainTabbedPane.addTab("2D View", network2DPanel);
+
+        network1DPanel.setBackground(new java.awt.Color(255, 255, 255));
+        network1DPanel.setName("network1DPanel"); // NOI18N
+        network1DPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                panelMouseClickedPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout network1DPanelLayout = new javax.swing.GroupLayout(network1DPanel);
+        network1DPanel.setLayout(network1DPanelLayout);
+        network1DPanelLayout.setHorizontalGroup(
+            network1DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 744, Short.MAX_VALUE)
+        );
+        network1DPanelLayout.setVerticalGroup(
+            network1DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 760, Short.MAX_VALUE)
+        );
+
+        mainTabbedPane.addTab("1D View", network1DPanel);
+
+        calcClustersButton.setMnemonic('c');
+        calcClustersButton.setText("Calc clusters");
+        calcClustersButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                calcClustersButtonActionPerformed(evt);
+            }
+        });
+
+        groupOccText.setEditable(false);
+        jScrollPane3.setViewportView(groupOccText);
+
+        calcGroupOccButton.setMnemonic('g');
+        calcGroupOccButton.setText("Calculate group occupations");
+        calcGroupOccButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                calcGroupOccButtonActionPerformed(evt);
+            }
+        });
+
+        clustersText.setEditable(false);
+        jScrollPane2.setViewportView(clustersText);
+
+        javax.swing.GroupLayout clusterPanelLayout = new javax.swing.GroupLayout(clusterPanel);
+        clusterPanel.setLayout(clusterPanelLayout);
+        clusterPanelLayout.setHorizontalGroup(
+            clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, clusterPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(calcClustersButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                    .addComponent(calcGroupOccButton, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
+                .addGap(288, 288, 288))
+        );
+        clusterPanelLayout.setVerticalGroup(
+            clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(clusterPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(clusterPanelLayout.createSequentialGroup()
+                        .addComponent(calcGroupOccButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane3))
+                    .addGroup(clusterPanelLayout.createSequentialGroup()
+                        .addComponent(calcClustersButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(458, Short.MAX_VALUE))
+        );
+
+        mainTabbedPane.addTab("Clusters / Groups", clusterPanel);
 
         jLabel9.setText("Missmatches");
 
@@ -589,7 +531,7 @@ public class MainWindow extends javax.swing.JFrame {
                     .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE)
                             .addComponent(jLabel9))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -646,6 +588,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         spinnerp_deadly.setModel(new javax.swing.SpinnerNumberModel(0.3d, 0.0d, 1.0d, 0.1d));
 
+        setp_deadlyButton.setMnemonic('s');
         setp_deadlyButton.setText("Set");
         setp_deadlyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -667,7 +610,7 @@ public class MainWindow extends javax.swing.JFrame {
                         .addComponent(spinnerp_deadly, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(setp_deadlyButton, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(262, Short.MAX_VALUE))
+                .addContainerGap(347, Short.MAX_VALUE))
         );
         linkWeightingPanelLayout.setVerticalGroup(
             linkWeightingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -679,100 +622,106 @@ public class MainWindow extends javax.swing.JFrame {
                     .addComponent(jLabel23)
                     .addComponent(spinnerp_deadly, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(setp_deadlyButton))
-                .addContainerGap(137, Short.MAX_VALUE))
+                .addContainerGap(194, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Link weighting", linkWeightingPanel);
+        mainTabbedPane.addTab("Link weighting", linkWeightingPanel);
 
-        calcClustersButton.setText("Calc clusters");
-        calcClustersButton.addActionListener(new java.awt.event.ActionListener() {
+        jLabel24.setText("mask = ");
+
+        jLabel25.setText("values =");
+
+        jLabel30.setText("order =");
+
+        detBitsList.setFont(new java.awt.Font("Courier New", 1, 18));
+        detBitsList.setModel(new DefaultListModel());
+        detBitsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jScrollPane4.setViewportView(detBitsList);
+
+        detBitsUpButton.setMnemonic('u');
+        detBitsUpButton.setText("Up");
+        detBitsUpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                calcClustersButtonActionPerformed(evt);
+                detBitsUpButtonActionPerformed(evt);
             }
         });
 
-        clustersText.setEditable(false);
-        jScrollPane2.setViewportView(clustersText);
+        detBitsDownButton.setMnemonic('o');
+        detBitsDownButton.setText("Down");
+        detBitsDownButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                detBitsDownButtonActionPerformed(evt);
+            }
+        });
 
-        javax.swing.GroupLayout clusterPanelLayout = new javax.swing.GroupLayout(clusterPanel);
-        clusterPanel.setLayout(clusterPanelLayout);
-        clusterPanelLayout.setHorizontalGroup(
-            clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(clusterPanelLayout.createSequentialGroup()
+        textCustomBitMask.setText("000000000000");
+        textCustomBitMask.setFont(new java.awt.Font("Courier New", 1, 18));
+        textCustomBitMask.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                textCustomBitMaskPropertyChange(evt);
+            }
+        });
+
+        textCustomBitValues.setText("000000000000");
+        textCustomBitValues.setFont(new java.awt.Font("Courier New", 1, 18));
+        textCustomBitValues.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                textCustomBitValuesPropertyChange(evt);
+            }
+        });
+
+        javax.swing.GroupLayout detBitsPanelLayout = new javax.swing.GroupLayout(detBitsPanel);
+        detBitsPanel.setLayout(detBitsPanelLayout);
+        detBitsPanelLayout.setHorizontalGroup(
+            detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(detBitsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 635, Short.MAX_VALUE)
-                    .addComponent(calcClustersButton))
-                .addContainerGap())
-        );
-        clusterPanelLayout.setVerticalGroup(
-            clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(clusterPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(calcClustersButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 647, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        jTabbedPane1.addTab("Clusters", clusterPanel);
-
-        networkTopologyPanel.setBackground(new java.awt.Color(255, 255, 255));
-
-        buttonTopologyDrawCustomBitGroups.setText("Draw custom det. bits groups");
-        buttonTopologyDrawCustomBitGroups.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonTopologyDrawCustomBitGroupsActionPerformed(evt);
-            }
-        });
-
-        topologyDrawTypeButtonGroup.add(topologyDrawMeansRadioButton);
-        topologyDrawMeansRadioButton.setText("Draw means");
-        topologyDrawMeansRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                topologyDrawTypeRadioButtonActionPerformed(evt);
-            }
-        });
-
-        topologyDrawTypeButtonGroup.add(topologyDrawCurrentRadioButton);
-        topologyDrawCurrentRadioButton.setSelected(true);
-        topologyDrawCurrentRadioButton.setText("Draw current topology");
-        topologyDrawCurrentRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                topologyDrawTypeRadioButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout networkTopologyPanelLayout = new javax.swing.GroupLayout(networkTopologyPanel);
-        networkTopologyPanel.setLayout(networkTopologyPanelLayout);
-        networkTopologyPanelLayout.setHorizontalGroup(
-            networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, networkTopologyPanelLayout.createSequentialGroup()
-                .addContainerGap(449, Short.MAX_VALUE)
-                .addGroup(networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(topologyDrawMeansRadioButton)
-                    .addComponent(topologyDrawCurrentRadioButton)
-                    .addComponent(buttonTopologyDrawCustomBitGroups))
-                .addContainerGap())
-        );
-        networkTopologyPanelLayout.setVerticalGroup(
-            networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(networkTopologyPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(buttonTopologyDrawCustomBitGroups)
+                .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel24)
+                    .addComponent(jLabel25))
                 .addGap(18, 18, 18)
-                .addComponent(topologyDrawCurrentRadioButton)
+                .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(textCustomBitValues, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(textCustomBitMask, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jLabel30)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(topologyDrawMeansRadioButton)
-                .addContainerGap(601, Short.MAX_VALUE))
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(detBitsDownButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(detBitsUpButton, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
+                .addContainerGap(283, Short.MAX_VALUE))
+        );
+        detBitsPanelLayout.setVerticalGroup(
+            detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(detBitsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(detBitsPanelLayout.createSequentialGroup()
+                        .addComponent(detBitsUpButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(detBitsDownButton))
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 393, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(detBitsPanelLayout.createSequentialGroup()
+                        .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel24)
+                            .addComponent(textCustomBitMask, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel30))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(textCustomBitValues, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel25))))
+                .addContainerGap(355, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Topology", networkTopologyPanel);
+        mainTabbedPane.addTab("Determinant bits", detBitsPanel);
 
         configurationsList.setModel(new DefaultListModel());
         configurationsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(configurationsList);
 
+        newConfigButton.setMnemonic('n');
         newConfigButton.setText("New configuration");
         newConfigButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -780,6 +729,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        loadConfigButton.setMnemonic('l');
         loadConfigButton.setText("Load selected");
         loadConfigButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -787,6 +737,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        removeConfigButton.setMnemonic('r');
         removeConfigButton.setText("Remove selected");
         removeConfigButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -794,10 +745,35 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        overwriteConfigButton.setMnemonic('o');
         overwriteConfigButton.setText("Overwrite selected");
         overwriteConfigButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 overwriteConfigButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel26.setText("seed");
+
+        spinnerSeed.setModel(new javax.swing.SpinnerNumberModel(Long.valueOf(0L), null, null, Long.valueOf(1L)));
+        spinnerSeed.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                spinnerSeedStateChanged(evt);
+            }
+        });
+
+        jLabel28.setText("Group count");
+
+        spinnerPrepareGroupCount.setModel(new javax.swing.SpinnerNumberModel(2, 2, 13, 1));
+
+        jLabel29.setText("Fill group S_");
+
+        spinnerPrepareFillGroup.setModel(new javax.swing.SpinnerNumberModel(0, 0, 12, 1));
+
+        prepareNetworkButton.setText("Prepare network");
+        prepareNetworkButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                prepareNetworkButtonActionPerformed(evt);
             }
         });
 
@@ -807,35 +783,69 @@ public class MainWindow extends javax.swing.JFrame {
             configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(configurationsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(removeConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(overwriteConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(loadConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(newConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(286, Short.MAX_VALUE))
+                .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 720, Short.MAX_VALUE)
+                    .addGroup(configurationsPanelLayout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(removeConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(overwriteConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(loadConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(newConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(configurationsPanelLayout.createSequentialGroup()
+                                .addComponent(jLabel26)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(spinnerSeed, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(prepareNetworkButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, configurationsPanelLayout.createSequentialGroup()
+                            .addComponent(jLabel29)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(spinnerPrepareFillGroup))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, configurationsPanelLayout.createSequentialGroup()
+                            .addComponent(jLabel28)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(spinnerPrepareGroupCount, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap())
         );
         configurationsPanelLayout.setVerticalGroup(
             configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(configurationsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(configurationsPanelLayout.createSequentialGroup()
+                .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, configurationsPanelLayout.createSequentialGroup()
                         .addComponent(newConfigButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(loadConfigButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(overwriteConfigButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(removeConfigButton))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(403, Short.MAX_VALUE))
+                        .addComponent(removeConfigButton)
+                        .addGap(18, 18, 18)
+                        .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel26)
+                            .addComponent(spinnerSeed, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(18, 18, 18)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel28)
+                    .addComponent(spinnerPrepareGroupCount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel29)
+                    .addComponent(spinnerPrepareFillGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(prepareNetworkButton)
+                .addContainerGap(399, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Configurations", configurationsPanel);
+        mainTabbedPane.addTab("Configurations", configurationsPanel);
 
-        jPanel5.setPreferredSize(new java.awt.Dimension(681, 163));
+        statisticsPanel.setPreferredSize(new java.awt.Dimension(681, 163));
 
         spinnerRedrawDelay.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(10), Integer.valueOf(1), null, Integer.valueOf(1)));
         spinnerRedrawDelay.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -852,7 +862,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         jLabel3.setText("p =");
 
-        spinnerp.setModel(new javax.swing.SpinnerNumberModel(0.0d, 0.0d, 1.0d, 0.0010d));
+        spinnerp.setModel(new javax.swing.SpinnerNumberModel(0.0d, 0.0d, 1.0d, 0.001d));
         spinnerp.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 spinnerpStateChanged(evt);
@@ -899,120 +909,85 @@ public class MainWindow extends javax.swing.JFrame {
 
         jLabel7.setText("N =");
 
-        checkExtStat.setText("Extended statistics");
-        checkExtStat.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkExtStatActionPerformed(evt);
+        spinnerTimerDelay.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(10), Integer.valueOf(1), null, Integer.valueOf(10)));
+        spinnerTimerDelay.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                spinnerTimerDelayStateChanged(evt);
             }
         });
 
-        jLabel24.setText("mask = ");
+        jLabel27.setText("Timer Delay");
 
-        jLabel25.setText("values =");
-
-        buttonAutoDetBits.setText("Auto det. bits");
-        buttonAutoDetBits.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonAutoDetBitsActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(22, 22, 22)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(checkExtStat, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
-                            .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel1)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jLabel7)
-                                    .addComponent(jLabel6)
-                                    .addComponent(jLabel8))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(totalOccLabel)
-                                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                        .addComponent(tLabel, javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(spinnerp, javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(spinnert_l, javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(spinnert_u, javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(spinnerN, javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(spinnerMax_s, javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(spinnerRedrawDelay, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addComponent(jLabel24)
-                                .addGap(14, 14, 14))
-                            .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addComponent(jLabel25)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(textCustomBitValues, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
-                            .addComponent(textCustomBitMask, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(buttonAutoDetBits, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)))
+        javax.swing.GroupLayout statisticsPanelLayout = new javax.swing.GroupLayout(statisticsPanel);
+        statisticsPanel.setLayout(statisticsPanelLayout);
+        statisticsPanelLayout.setHorizontalGroup(
+            statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, statisticsPanelLayout.createSequentialGroup()
+                .addGap(22, 22, 22)
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel7)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel8)
+                    .addComponent(jLabel27))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(totalOccLabel)
+                        .addComponent(tLabel)
+                        .addComponent(spinnerp)
+                        .addComponent(spinnert_l)
+                        .addComponent(spinnert_u)
+                        .addComponent(spinnerN)
+                        .addComponent(spinnerMax_s)
+                        .addComponent(spinnerRedrawDelay, javax.swing.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE))
+                    .addComponent(spinnerTimerDelay, javax.swing.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGap(41, 41, 41)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        statisticsPanelLayout.setVerticalGroup(
+            statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(statisticsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(spinnerTimerDelay, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel27))
+                .addGap(18, 18, 18)
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(spinnerRedrawDelay, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(tLabel))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(spinnerp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(spinnert_l, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(spinnert_u, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(spinnerN, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(spinnerMax_s, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(statisticsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8)
                     .addComponent(totalOccLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 229, Short.MAX_VALUE)
-                .addComponent(buttonAutoDetBits)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel24)
-                    .addComponent(textCustomBitMask, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(textCustomBitValues, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel25))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(checkExtStat)
-                .addContainerGap())
+                .addContainerGap(460, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
@@ -1020,19 +995,197 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE)
+                .addComponent(mainTabbedPane)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(statisticsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 735, Short.MAX_VALUE)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 735, Short.MAX_VALUE)
+            .addComponent(statisticsPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 828, Short.MAX_VALUE)
+            .addComponent(mainTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 828, Short.MAX_VALUE)
         );
 
-        jSplitPane1.setRightComponent(jPanel4);
+        getContentPane().add(jPanel4);
 
-        getContentPane().add(jSplitPane1);
+        jMenu1.setText("Run");
+        jMenu1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenu1ActionPerformed(evt);
+            }
+        });
+
+        menuItemRun.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, 0));
+        menuItemRun.setText("Running");
+        menuItemRun.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemRunActionPerformed(evt);
+            }
+        });
+        jMenu1.add(menuItemRun);
+
+        menuItemStep.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, 0));
+        menuItemStep.setText("Step");
+        menuItemStep.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemStepActionPerformed(evt);
+            }
+        });
+        jMenu1.add(menuItemStep);
+
+        jMenuItem4.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, 0));
+        jMenuItem4.setText("Step n times...");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem4);
+
+        menuItemReseed.setText("Reseed");
+        menuItemReseed.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemReseedActionPerformed(evt);
+            }
+        });
+        jMenu1.add(menuItemReseed);
+
+        menuItemReset.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, 0));
+        menuItemReset.setText("Reset");
+        menuItemReset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemResetActionPerformed(evt);
+            }
+        });
+        jMenu1.add(menuItemReset);
+
+        menuItemRecalc.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, 0));
+        menuItemRecalc.setText("Recalc");
+        menuItemRecalc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemRecalcActionPerformed(evt);
+            }
+        });
+        jMenu1.add(menuItemRecalc);
+
+        menuItemReseedAndReset.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, 0));
+        menuItemReseedAndReset.setText("Reseed & reset");
+        menuItemReseedAndReset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemReseedAndResetActionPerformed(evt);
+            }
+        });
+        jMenu1.add(menuItemReseedAndReset);
+
+        jMenuItem7.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, 0));
+        jMenuItem7.setText("Recalc det. bits");
+        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem7ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem7);
+
+        jMenuBar1.add(jMenu1);
+
+        jMenu2.setText("Network");
+
+        jMenuItem5.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem5.setText("Load snapshot");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem5ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem5);
+
+        jMenuItem6.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem6.setText("Save snapshot");
+        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem6ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem6);
+
+        menuItemExtNeighbourStat.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, 0));
+        menuItemExtNeighbourStat.setText("Extended neighbour statistics");
+        menuItemExtNeighbourStat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemExtNeighbourStatActionPerformed(evt);
+            }
+        });
+        jMenu2.add(menuItemExtNeighbourStat);
+
+        jMenuBar1.add(jMenu2);
+
+        jMenu3.setText("View");
+
+        jCheckBoxMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, 0));
+        jCheckBoxMenuItem1.setSelected(true);
+        jCheckBoxMenuItem1.setText("Show statistics");
+        jCheckBoxMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBoxMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jCheckBoxMenuItem1);
+
+        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_K, 0));
+        jMenuItem2.setText("Previous tab");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem2);
+
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, 0));
+        jMenuItem1.setText("Next tab");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem1);
+
+        jMenuItem3.setText("Show COG window");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem3);
+
+        menuItemSaveSnapshot.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_MASK));
+        menuItemSaveSnapshot.setText("Save Snapshot");
+        menuItemSaveSnapshot.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemSaveSnapshotActionPerformed(evt);
+            }
+        });
+        jMenu3.add(menuItemSaveSnapshot);
+
+        menuItemDrawMeans.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, 0));
+        menuItemDrawMeans.setText("Draw means");
+        menuItemDrawMeans.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemDrawMeansActionPerformed(evt);
+            }
+        });
+        jMenu3.add(menuItemDrawMeans);
+
+        menuItemDrawDetBits.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, 0));
+        menuItemDrawDetBits.setText("Determinant bits");
+        menuItemDrawDetBits.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemDrawDetBitsActionPerformed(evt);
+            }
+        });
+        jMenu3.add(menuItemDrawDetBits);
+
+        jMenuBar1.add(jMenu3);
+
+        setJMenuBar(jMenuBar1);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -1061,26 +1214,9 @@ public class MainWindow extends javax.swing.JFrame {
     public void updateIdnetStatistics() {
         tLabel.setText(Integer.toString(Application.getIdnetManager().gett()));
         totalOccLabel.setText(Integer.toString(Application.getIdnetManager().gettotal_sum_n()));
-        repaint();
+        for (Window w : getWindows())
+            w.repaint();
     }
-
-    private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
-        if (timer.isRunning())
-            timer.stop();
-        else
-            timer.start();
-    }//GEN-LAST:event_runButtonActionPerformed
-
-    private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
-        Application.getIdnetManager().reseed((Long) spinnerSeed.getValue());
-        Application.getIdnetManager().reset();
-        ((NetworkTopologyPanel) networkTopologyPanel).recalc();
-    }//GEN-LAST:event_resetButtonActionPerformed
-
-    private void recalcButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recalcButtonActionPerformed
-        Application.getIdnetManager().recalc();
-        ((NetworkTopologyPanel) networkTopologyPanel).recalc();
-    }//GEN-LAST:event_recalcButtonActionPerformed
 
     private void spinnerRedrawDelayStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinnerRedrawDelayStateChanged
         redrawDelay = ((Integer) spinnerRedrawDelay.getValue()).intValue();
@@ -1095,31 +1231,13 @@ public class MainWindow extends javax.swing.JFrame {
         Application.closing();
     }//GEN-LAST:event_formWindowClosing
 
-    private void stepButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepButtonActionPerformed
-        Application.getIdnetManager().iterate();
-        afterIteration();
-        updateIdnetStatistics();
-    }//GEN-LAST:event_stepButtonActionPerformed
-
-    private void arrangebyDetBitsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_arrangebyDetBitsButtonActionPerformed
-        ((Network2DPanel) network2DPanel).arrangeByDetBitGroups();
-    }//GEN-LAST:event_arrangebyDetBitsButtonActionPerformed
-
     private void spinnerMax_sStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinnerMax_sStateChanged
         Application.getIdnetManager().setmax_s((Double) spinnerMax_s.getValue());
     }//GEN-LAST:event_spinnerMax_sStateChanged
 
-    private void Step10000ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Step10000ButtonActionPerformed
-        Application.getIdnetManager().iterate(10000);
-    }//GEN-LAST:event_Step10000ButtonActionPerformed
-
     private void spinnerNStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinnerNStateChanged
         Application.getIdnetManager().setN((Integer) spinnerN.getValue());
     }//GEN-LAST:event_spinnerNStateChanged
-
-    private void defArragementButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_defArragementButtonActionPerformed
-        ((Network2DPanel) network2DPanel).arrangeDefault();
-    }//GEN-LAST:event_defArragementButtonActionPerformed
 
     private void spinnerLinkWeightingChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinnerLinkWeightingChanged
         if (evt.getSource().equals(spinnerLinkW0))
@@ -1153,12 +1271,6 @@ public class MainWindow extends javax.swing.JFrame {
         Application.getIdnetManager().reseed((Long) spinnerSeed.getValue());
     }//GEN-LAST:event_spinnerSeedStateChanged
 
-    private void reseedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reseedButtonActionPerformed
-        long seed = System.currentTimeMillis();
-        spinnerSeed.setValue((Long) seed);
-        Application.getIdnetManager().reseed(seed);
-    }//GEN-LAST:event_reseedButtonActionPerformed
-
     private void setp_deadlyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setp_deadlyButtonActionPerformed
         double[] lw = new double[12];
         double v = 1, p = (Double) spinnerp_deadly.getValue();
@@ -1188,11 +1300,6 @@ public class MainWindow extends javax.swing.JFrame {
             updateParamSpinners();
         }
     }//GEN-LAST:event_loadConfigButtonActionPerformed
-
-    private void reseedAndResetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reseedAndResetButtonActionPerformed
-        reseedButtonActionPerformed(evt);
-        resetButtonActionPerformed(evt);
-    }//GEN-LAST:event_reseedAndResetButtonActionPerformed
 
     private void newConfigButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newConfigButtonActionPerformed
         String name = JOptionPane.showInputDialog("Name:");
@@ -1231,17 +1338,99 @@ public class MainWindow extends javax.swing.JFrame {
         Application.getIdnetManager().sett_u((Double) spinnert_u.getValue());
     }//GEN-LAST:event_spinnert_uStateChanged
 
-    private void saveNetworkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveNetworkButtonActionPerformed
-        String fileName = JOptionPane.showInputDialog("Filename:");
-        if (fileName != null && !fileName.isEmpty())
-            try {
-                Application.getIdnetManager().saveNetwork(fileName);
-            } catch (IOException io) {
-                io.printStackTrace();
-            }
-    }//GEN-LAST:event_saveNetworkButtonActionPerformed
+    private void calcClustersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_calcClustersButtonActionPerformed
+        class MyComparator implements Comparator {
 
-    private void loadNetworkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadNetworkButtonActionPerformed
+            public int compare(Object obj1, Object obj2) {
+                int result = 0;
+                Map.Entry<Integer, Integer> e1 = (Map.Entry<Integer, Integer>) obj1;
+                Map.Entry<Integer, Integer> e2 = (Map.Entry<Integer, Integer>) obj2;
+                Integer value1 = (Integer) e1.getKey();
+                Integer value2 = (Integer) e2.getKey();
+
+                if (value1.compareTo(value2) == 0) {
+                    Integer int1 = (Integer) e1.getValue();
+                    Integer int2 = (Integer) e2.getValue();
+                    result = int1.compareTo(int2);
+                } else
+                    result = value2.compareTo(value1);
+
+                return result;
+            }
+        }
+
+        Vector<Vector<Idiotype>> clusters = Application.getIdnetManager().calcClusters();
+        Hashtable<Integer, Integer> clusterSizes = new Hashtable<Integer, Integer>();
+        for (Vector<Idiotype> cluster : clusters)
+            if (clusterSizes.containsKey(cluster.size()))
+                clusterSizes.put(cluster.size(), clusterSizes.get(cluster.size()) + 1);
+            else
+                clusterSizes.put(cluster.size(), 1);
+        String text = "Clusters:\n\nSize\tNumber\n\n";
+
+        ArrayList<Map.Entry<Integer, Integer>> myArrayList = new ArrayList<Map.Entry<Integer, Integer>>(clusterSizes.entrySet());
+        Collections.sort(myArrayList, new MyComparator());
+
+
+        for (Entry<Integer, Integer> e : myArrayList)
+            text += e.getKey() + "\t" + e.getValue() + "\n";
+        clustersText.setText(text);
+    }//GEN-LAST:event_calcClustersButtonActionPerformed
+
+    private void calcGroupOccButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_calcGroupOccButtonActionPerformed
+        String text = null;
+        int d_m = Application.getIdnetManager().getd_m();
+        if (!menuItemDrawMeans.isSelected()) {
+            Application.getIdnetManager().calcDeterminantBits();
+            text = "Group\tOcc.\n\n";
+            for (int i = 0; i <= d_m; i++)
+                text += "S_" + i + "\t" + Application.getIdnetManager().getGroupOccupation(i) + "\n";
+        } else {
+            text = "Group\tMean occ.\n\n";
+            for (int i = 0; i <= d_m; i++)
+                text += "S_" + i + "\t" + (double) ((int) (10000 * (double) Application.getIdnetManager().
+                        getTotalGroupOccs()[i] / Application.getIdnetManager().gett() / Application.getIdnetManager().
+                        calcGroupSize(i, d_m))) / 10000 + "\n";
+        }
+        groupOccText.setText(text);
+    }//GEN-LAST:event_calcGroupOccButtonActionPerformed
+
+    private void formKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyPressed
+    }//GEN-LAST:event_formKeyPressed
+
+    private void formKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_formKeyTyped
+    }//GEN-LAST:event_formKeyTyped
+
+    private void menuItemRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemRunActionPerformed
+        if (timer.isRunning())
+            timer.stop();
+        else
+            timer.start();
+    }//GEN-LAST:event_menuItemRunActionPerformed
+
+    private void menuItemStepActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemStepActionPerformed
+        Application.getIdnetManager().iterate();
+        updateIdnetStatistics();
+    }//GEN-LAST:event_menuItemStepActionPerformed
+
+    private void menuItemReseedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemReseedActionPerformed
+        long seed = System.currentTimeMillis();
+        spinnerSeed.setValue((Long) seed);
+        Application.getIdnetManager().reseed(seed);
+    }//GEN-LAST:event_menuItemReseedActionPerformed
+
+    private void menuItemResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemResetActionPerformed
+        Application.getIdnetManager().reseed((Long) spinnerSeed.getValue());
+        Application.getIdnetManager().reset();
+        ((NetworkTopologyPanel) networkTopologyPanel).recalc();
+    }//GEN-LAST:event_menuItemResetActionPerformed
+
+    private void jMenu1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu1ActionPerformed
+        Application.getIdnetManager().recalc();
+        ((NetworkTopologyPanel) networkTopologyPanel).recalc();
+    }//GEN-LAST:event_jMenu1ActionPerformed
+
+    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
         String fileName = JOptionPane.showInputDialog("Filename:");
         if (fileName != null && !fileName.isEmpty()) {
             try {
@@ -1252,105 +1441,237 @@ public class MainWindow extends javax.swing.JFrame {
             }
             JOptionPane.showMessageDialog(this, "Network snapshot loaded");
         }
-    }//GEN-LAST:event_loadNetworkButtonActionPerformed
+    }//GEN-LAST:event_jMenuItem5ActionPerformed
 
-    private void calcClustersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_calcClustersButtonActionPerformed
-        Vector<Vector<Idiotype>> clusters = Application.getIdnetManager().calcClusters();
-        Hashtable<Integer, Integer> clusterSizes = new Hashtable<Integer, Integer>();
-        for (Vector<Idiotype> cluster : clusters)
-            if (clusterSizes.containsKey(cluster.size()))
-                clusterSizes.put(cluster.size(), clusterSizes.get(cluster.size()) + 1);
-            else
-                clusterSizes.put(cluster.size(), 1);
-        String text = "Clusters:\n\nSize\tNumber\n\n";
-        for (Entry<Integer, Integer> e : clusterSizes.entrySet())
-            text += e.getKey() + "\t" + e.getValue() + "\n";
-        clustersText.setText(text);
-    }//GEN-LAST:event_calcClustersButtonActionPerformed
+    private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+        String fileName = JOptionPane.showInputDialog("Filename:");
+        if (fileName != null && !fileName.isEmpty())
+            try {
+                Application.getIdnetManager().saveNetwork(fileName);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+    }//GEN-LAST:event_jMenuItem6ActionPerformed
 
-    private void calcGroupOccButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_calcGroupOccButtonActionPerformed
-        String text = null;
-        int d_m = Application.getIdnetManager().getd_m();
-        if (drawCurrentRadioButton.isSelected()) {
-            Application.getIdnetManager().calcDeterminantBits();
-            text = "Group\tOcc.\n\n";
-            for (int i = 0; i <= d_m; i++)
-                text += "S_" + i + "\t" + Application.getIdnetManager().getGroupOccupation(i) + "\n";
-        } else if (drawMeanOccsRadioButton.isSelected()) {
-            text = "Group\tMean occ.\n\n";
-            for (int i = 0; i <= d_m; i++)
-                text += "S_" + i + "\t" + (double) ((int) (10000 * (double) Application.getIdnetManager().
-                        getTotalGroupOccs()[i] / Application.getIdnetManager().gett() / Application.getIdnetManager().
-                        calcGroupSize(i, d_m))) / 10000 + "\n";
+    private void menuItemReseedAndResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemReseedAndResetActionPerformed
+        menuItemReseedActionPerformed(evt);
+        menuItemResetActionPerformed(evt);
+    }//GEN-LAST:event_menuItemReseedAndResetActionPerformed
+
+    private void jCheckBoxMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxMenuItem1ActionPerformed
+        statisticsPanel.setVisible(!statisticsPanel.isVisible());
+    }//GEN-LAST:event_jCheckBoxMenuItem1ActionPerformed
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        mainTabbedPane.setSelectedIndex((mainTabbedPane.getSelectedIndex() + 1) % mainTabbedPane.getTabCount());
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        mainTabbedPane.setSelectedIndex((mainTabbedPane.getSelectedIndex() + mainTabbedPane.getTabCount() - 1)
+                % mainTabbedPane.getTabCount());
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        final JFrame f = new JFrame("COG diagram");
+        final COGDiagramPanel p = new COGDiagramPanel(Application.getIdnetManager());
+        f.getContentPane().add(p);
+        p.setBackground(Color.WHITE);
+        f.setSize(1050, 470);
+        f.setVisible(true);
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+    private void spinnerTimerDelayStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinnerTimerDelayStateChanged
+        timer.setDelay((Integer) spinnerTimerDelay.getValue());
+    }//GEN-LAST:event_spinnerTimerDelayStateChanged
+
+    private void panelMouseClickedPerformed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panelMouseClickedPerformed
+        mainTabbedPane.requestFocusInWindow();
+    }//GEN-LAST:event_panelMouseClickedPerformed
+
+    private void menuItemSaveSnapshotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemSaveSnapshotActionPerformed
+        if (mainTabbedPane.getSelectedComponent() instanceof JPanel) {
+            String fileName = JOptionPane.showInputDialog("Filename:");
+            if (fileName != null && !fileName.isEmpty())
+                try {
+                    BufferedImage i = new BufferedImage(mainTabbedPane.getSelectedComponent().getWidth(), mainTabbedPane.getSelectedComponent().getHeight(), BufferedImage.TYPE_INT_ARGB);
+                    mainTabbedPane.getSelectedComponent().paint(i.createGraphics());
+                    //cogDiagramPanel.paint(i.createGraphics());
+                    ImageIO.write(i, "png", new File(fileName));
+                } catch (IOException io) {
+                    io.printStackTrace();
+                }
         }
-        groupOccText.setText(text);
-    }//GEN-LAST:event_calcGroupOccButtonActionPerformed
+    }//GEN-LAST:event_menuItemSaveSnapshotActionPerformed
 
-    private void drawRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drawRadioButtonActionPerformed
-        if (drawCurrentRadioButton.isSelected()) {
-            Application.getIdnetManager().setCalcMeanGroupOccs(false);
-            ((Network2DPanel) network2DPanel).setDrawType(Network2DPanel.DRAW_CURRENT);
-        } else if (drawMeanOccsRadioButton.isSelected()) {
-            Application.getIdnetManager().setCalcMeanGroupOccs(true);
+    private void prepareNetworkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prepareNetworkButtonActionPerformed
+        int n = (Integer) spinnerPrepareGroupCount.getValue();
+        int k = (Integer) spinnerPrepareFillGroup.getValue();
+        int mask = (1 << (n - 1)) - 1;
+        Application.getIdnetManager().reset();
+        Idiotype[] idiotypes = Application.getIdnetManager().getIdiotypes();
+        for (int i = 0; i < (1 << 12); i++)
+            if (Helper.hammingWeight(i & mask) == k)
+                idiotypes[i].n = 1;
+        textCustomBitMask.setText(Helper.getBitString(mask));
+        textCustomBitValues.setText("000000000000");
+    }//GEN-LAST:event_prepareNetworkButtonActionPerformed
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        class IterationTask extends SwingWorker<Void, Void> {
+
+            private static final int STEP_SIZE = 250;
+            private int n;
+
+            public IterationTask(int n) {
+                this.n = n;
+            }
+
+            @Override
+            public Void doInBackground() {
+                setProgress(0);
+                for (int i = 0; i < n; i += STEP_SIZE) {
+                    Application.getIdnetManager().iterate(Math.min(STEP_SIZE, n - i));
+                    setProgress(100 * (i + 1) / n);
+                    if (isCancelled())
+                        return null;
+                }
+                setProgress(100);
+                return null;
+            }
+
+            @Override
+            public void done() {
+            }
+        }
+
+        String nStr = JOptionPane.showInputDialog("n = ");
+        if (nStr != null && !nStr.equals(""))
+            try {
+                final int n = Integer.parseInt(nStr);
+                final ProgressMonitor progressMonitor = new ProgressMonitor(this,
+                        "Iterating...",
+                        "", 0, 100);
+                progressMonitor.setProgress(0);
+                final IterationTask task = new IterationTask(n);
+                task.addPropertyChangeListener(new PropertyChangeListener() {
+
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if ("progress".equals(evt.getPropertyName())) {
+                            int progress = (Integer) evt.getNewValue();
+                            progressMonitor.setProgress(progress);
+                            progressMonitor.setNote(progress + "%");
+                            if (progressMonitor.isCanceled() || task.isDone()) {
+                                if (progressMonitor.isCanceled())
+                                    task.cancel(true);
+                                progressMonitor.close();
+                                updateIdnetStatistics();
+                                setEnabled(true);
+                            }
+                        }
+                    }
+                });
+                task.execute();
+                setEnabled(false);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Not an integer!");
+            }
+
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
+
+    private void detBitsUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_detBitsUpButtonActionPerformed
+        int sel = detBitsList.getSelectedIndex();
+        if (sel > 0) {
+            String tmp = (String) ((DefaultListModel) detBitsList.getModel()).get(sel);
+            ((DefaultListModel) detBitsList.getModel()).setElementAt(((DefaultListModel) detBitsList.getModel()).get(sel - 1), sel);
+            ((DefaultListModel) detBitsList.getModel()).setElementAt(tmp, sel - 1);
+            detBitsList.setSelectedIndex(sel - 1);
+        }
+        menuItemDrawDetBitsActionPerformed(evt);
+    }//GEN-LAST:event_detBitsUpButtonActionPerformed
+
+    private void detBitsDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_detBitsDownButtonActionPerformed
+        int sel = detBitsList.getSelectedIndex();
+        if (sel < 11) {
+            String tmp = (String) ((DefaultListModel) detBitsList.getModel()).get(sel);
+            ((DefaultListModel) detBitsList.getModel()).setElementAt(((DefaultListModel) detBitsList.getModel()).get(sel + 1), sel);
+            ((DefaultListModel) detBitsList.getModel()).setElementAt(tmp, sel + 1);
+            detBitsList.setSelectedIndex(sel + 1);
+        }
+        menuItemDrawDetBitsActionPerformed(evt);
+    }//GEN-LAST:event_detBitsDownButtonActionPerformed
+
+    private void menuItemRecalcActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemRecalcActionPerformed
+        Application.getIdnetManager().recalc();
+        updateIdnetStatistics();
+    }//GEN-LAST:event_menuItemRecalcActionPerformed
+
+    private void menuItemDrawMeansActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemDrawMeansActionPerformed
+        if (menuItemDrawMeans.isSelected()) {
+            ((NetworkTopologyPanel) networkTopologyPanel).setDrawType(NetworkTopologyPanel.DRAW_TOTAL_MEANS);
             ((Network2DPanel) network2DPanel).setDrawType(Network2DPanel.DRAW_MEAN_OCCUPATIONS);
         }
-    }//GEN-LAST:event_drawRadioButtonActionPerformed
+        else {
+            ((NetworkTopologyPanel) networkTopologyPanel).setDrawType(NetworkTopologyPanel.DRAW_CURRENT);
+            ((Network2DPanel) network2DPanel).setDrawType(Network2DPanel.DRAW_CURRENT);
+        }
+        updateIdnetStatistics();
+    }//GEN-LAST:event_menuItemDrawMeansActionPerformed
 
-    private void buttonArangeByCustomBitsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonArangeByCustomBitsActionPerformed
-        DeterminantBits detBits = new DeterminantBits();
-        detBits.mask = Integer.parseInt(textCustomBitMask.getText(), 2);
-        detBits.values = Integer.parseInt(textCustomBitValues.getText(), 2);
-        ((Network2DPanel) network2DPanel).arrangeByDetBitGroups(detBits);
-    }//GEN-LAST:event_buttonArangeByCustomBitsActionPerformed
+    private void menuItemExtNeighbourStatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemExtNeighbourStatActionPerformed
+        Application.getIdnetManager().setStatNeighbourOccupations(menuItemExtNeighbourStat.isSelected());
+        updateIdnetStatistics();
+    }//GEN-LAST:event_menuItemExtNeighbourStatActionPerformed
 
-    private void checkExtStatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkExtStatActionPerformed
-        Application.getIdnetManager().setStatNeighbourOccupations(checkExtStat.isSelected());
-    }//GEN-LAST:event_checkExtStatActionPerformed
-
-    private void buttonAutoDetBitsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAutoDetBitsActionPerformed
+    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
         DeterminantBits detBits = Application.getIdnetManager().calcDeterminantBits();
         textCustomBitMask.setText(Helper.getBitString(detBits.mask));
         textCustomBitValues.setText(Helper.getBitString(detBits.values));
-    }//GEN-LAST:event_buttonAutoDetBitsActionPerformed
+        for (int i = 0; i < 12; i++)
+            ((DefaultListModel) detBitsList.getModel()).setElementAt(Integer.toString(detBits.order[i]), i);
+        menuItemDrawDetBitsActionPerformed(evt);
+    }//GEN-LAST:event_jMenuItem7ActionPerformed
 
-    private void buttonTopologyDrawCustomBitGroupsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonTopologyDrawCustomBitGroupsActionPerformed
-        DeterminantBits detBits = new DeterminantBits();
+    private void menuItemDrawDetBitsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemDrawDetBitsActionPerformed
+        if (menuItemDrawDetBits.isSelected()) {
+                    DeterminantBits detBits = new DeterminantBits();
         detBits.mask = Integer.parseInt(textCustomBitMask.getText(), 2);
         detBits.values = Integer.parseInt(textCustomBitValues.getText(), 2);
+        detBits.order = new int[12];
+        for (int i = 0; i < 12; i++)
+            detBits.order[i] = Integer.parseInt((String)((DefaultListModel) detBitsList.getModel()).get(i));
+
+        ((Network2DPanel) network2DPanel).arrangeByDetBitGroups(detBits);
         ((NetworkTopologyPanel) networkTopologyPanel).setDeterminantBits(detBits);
-    }//GEN-LAST:event_buttonTopologyDrawCustomBitGroupsActionPerformed
+        } else {
+            ((Network2DPanel) network2DPanel).arrangeDefault();
+            ((NetworkTopologyPanel) networkTopologyPanel).setDeterminantBits(null);
+        }
+        updateIdnetStatistics();
+    }//GEN-LAST:event_menuItemDrawDetBitsActionPerformed
 
-    private void topologyDrawTypeRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_topologyDrawTypeRadioButtonActionPerformed
-        if (topologyDrawCurrentRadioButton.isSelected())
-            ((NetworkTopologyPanel) networkTopologyPanel).setDrawType(NetworkTopologyPanel.DRAW_CURRENT);
-        else if (topologyDrawMeansRadioButton.isSelected())
-            ((NetworkTopologyPanel) networkTopologyPanel).setDrawType(NetworkTopologyPanel.DRAW_TOTAL_MEANS);
+    private void textCustomBitMaskPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textCustomBitMaskPropertyChange
+        menuItemDrawDetBitsActionPerformed(null);
+    }//GEN-LAST:event_textCustomBitMaskPropertyChange
 
-    }//GEN-LAST:event_topologyDrawTypeRadioButtonActionPerformed
+    private void textCustomBitValuesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textCustomBitValuesPropertyChange
+        menuItemDrawDetBitsActionPerformed(null);
+    }//GEN-LAST:event_textCustomBitValuesPropertyChange
 
-    public void afterIteration() {
-        ((COGDiagramPanel) cogDiagramPanel).afterIteration();
-        ((NetworkTopologyPanel) networkTopologyPanel).afterIteration();
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton Step10000Button;
-    private javax.swing.JButton arrangebyDetBitsButton;
-    private javax.swing.JButton buttonArangeByCustomBits;
-    private javax.swing.JButton buttonAutoDetBits;
-    private javax.swing.JButton buttonTopologyDrawCustomBitGroups;
     private javax.swing.JButton calcClustersButton;
     private javax.swing.JButton calcGroupOccButton;
-    private javax.swing.JCheckBox checkExtStat;
     private javax.swing.JPanel clusterPanel;
     private javax.swing.JTextArea clustersText;
     private javax.swing.JPanel cogDiagramPanel;
     private javax.swing.JList configurationsList;
     private javax.swing.JPanel configurationsPanel;
-    private javax.swing.JButton defArragementButton;
-    private javax.swing.JRadioButton drawCurrentRadioButton;
-    private javax.swing.JRadioButton drawMeanOccsRadioButton;
+    private javax.swing.JButton detBitsDownButton;
+    private javax.swing.JList detBitsList;
+    private javax.swing.JPanel detBitsPanel;
+    private javax.swing.JButton detBitsUpButton;
     private javax.swing.ButtonGroup drawTypeButtonGroup;
     private javax.swing.JTextArea groupOccText;
+    private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1369,40 +1690,57 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
+    private javax.swing.JLabel jLabel28;
+    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel30;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuItem jMenuItem6;
+    private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JPanel linkWeightingPanel;
     private javax.swing.JButton loadConfigButton;
-    private javax.swing.JButton loadNetworkButton;
+    private javax.swing.JTabbedPane mainTabbedPane;
+    private javax.swing.JCheckBoxMenuItem menuItemDrawDetBits;
+    private javax.swing.JCheckBoxMenuItem menuItemDrawMeans;
+    private javax.swing.JCheckBoxMenuItem menuItemExtNeighbourStat;
+    private javax.swing.JMenuItem menuItemRecalc;
+    private javax.swing.JMenuItem menuItemReseed;
+    private javax.swing.JMenuItem menuItemReseedAndReset;
+    private javax.swing.JMenuItem menuItemReset;
+    private javax.swing.JCheckBoxMenuItem menuItemRun;
+    private javax.swing.JMenuItem menuItemSaveSnapshot;
+    private javax.swing.JMenuItem menuItemStep;
     private javax.swing.JPanel network1DPanel;
     private javax.swing.JPanel network2DPanel;
     private javax.swing.JPanel networkTopologyPanel;
     private javax.swing.JButton newConfigButton;
     private javax.swing.JButton overwriteConfigButton;
-    private javax.swing.JButton recalcButton;
+    private javax.swing.JButton prepareNetworkButton;
     private javax.swing.JButton removeConfigButton;
-    private javax.swing.JButton reseedAndResetButton;
-    private javax.swing.JButton reseedButton;
-    private javax.swing.JButton resetButton;
-    private javax.swing.JToggleButton runButton;
-    private javax.swing.JButton saveNetworkButton;
     private javax.swing.JButton setp_deadlyButton;
     private javax.swing.JSpinner spinnerLinkW0;
     private javax.swing.JSpinner spinnerLinkW1;
@@ -1418,18 +1756,19 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JSpinner spinnerLinkW9;
     private javax.swing.JSpinner spinnerMax_s;
     private javax.swing.JSpinner spinnerN;
+    private javax.swing.JSpinner spinnerPrepareFillGroup;
+    private javax.swing.JSpinner spinnerPrepareGroupCount;
     private javax.swing.JSpinner spinnerRedrawDelay;
     private javax.swing.JSpinner spinnerSeed;
+    private javax.swing.JSpinner spinnerTimerDelay;
     private javax.swing.JSpinner spinnerp;
     private javax.swing.JSpinner spinnerp_deadly;
     private javax.swing.JSpinner spinnert_l;
     private javax.swing.JSpinner spinnert_u;
-    private javax.swing.JButton stepButton;
+    private javax.swing.JPanel statisticsPanel;
     private javax.swing.JLabel tLabel;
-    private javax.swing.JTextField textCustomBitMask;
-    private javax.swing.JTextField textCustomBitValues;
-    private javax.swing.JRadioButton topologyDrawCurrentRadioButton;
-    private javax.swing.JRadioButton topologyDrawMeansRadioButton;
+    private javax.swing.JFormattedTextField textCustomBitMask;
+    private javax.swing.JFormattedTextField textCustomBitValues;
     private javax.swing.ButtonGroup topologyDrawTypeButtonGroup;
     private javax.swing.JLabel totalOccLabel;
     // End of variables declaration//GEN-END:variables

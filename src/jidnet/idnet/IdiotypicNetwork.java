@@ -1,5 +1,6 @@
 package jidnet.idnet;
 
+import java.util.Observable;
 import java.util.Random;
 
 /**
@@ -7,7 +8,7 @@ import java.util.Random;
  *
  * @author Sven Willner
  */
-public class IdiotypicNetwork {
+public class IdiotypicNetwork extends Observable {
 
     /** Sum of total occupation of network */
     protected int total_sum_n;
@@ -37,6 +38,7 @@ public class IdiotypicNetwork {
     protected int[] externalInflux;
     /** Random number generator */
     protected Random rng;
+    //int test;
 
     /**
      * Does the influx on the network
@@ -44,6 +46,9 @@ public class IdiotypicNetwork {
     protected final void influx() {
         for (int i = 0; i < (1 << d); i++) {
             idiotypes_lg[i].n = idiotypes[i].n;
+            idiotypes_lg[i].sum_n = idiotypes[i].sum_n;
+            idiotypes_lg[i].sum_n_d = idiotypes[i].sum_n_d;
+            idiotypes_lg[i].tau = idiotypes[i].tau;
             if (idiotypes[i].n < N && rng.nextDouble() < p) {
                 if (idiotypes[i].n == 0)
                     idiotypes[i].b++;
@@ -78,6 +83,10 @@ public class IdiotypicNetwork {
             return 0;
         while (mismatchMask != 0) {
             mismatchMask >>= 1;
+            if (mismatchMask == 0)
+                break;
+            //test++;
+            //System.out.println(Helper.getBitString(j ^mismatchMask) + " " + dist);
             res += idiotypes[j ^ mismatchMask].n * linkWeighting[dist];
             if (linkWeighting[dist + 1] > 0) // Stop, when link weighting of larger distance == 0
                 res += calcWeightedNeighboutOccSumRec(j ^ mismatchMask, mismatchMask, dist + 1);
@@ -93,7 +102,13 @@ public class IdiotypicNetwork {
      */
     protected final double calcWeightedNeighbourOccSum(int i) {
         int complement = ~i & ((1 << d) - 1);
-        return idiotypes[complement].n * linkWeighting[0] + calcWeightedNeighboutOccSumRec(complement, 1 << d, 1);
+        //test = 1;
+        double res = idiotypes[complement].n * linkWeighting[0] + calcWeightedNeighboutOccSumRec(complement, 1 << d, 1);
+        //if (test != 79) {
+        //    System.out.println(test);
+        //    System.exit(-1);
+        //}
+        return res;
     }
 
     /**
@@ -114,10 +129,10 @@ public class IdiotypicNetwork {
                     idiotypes_ng[i].n = idiotypes[i].n;
                 else
                     idiotypes_ng[i].n = idiotypes[i].n - 1;
-            else {
+            else
                 idiotypes_ng[i].n = 0;
-                idiotypes_ng[i].cluster = null;
-            }
+
+            idiotypes_ng[i].cluster = null;
 
             idiotypes_ng[i].b = idiotypes[i].b;
 
@@ -125,7 +140,8 @@ public class IdiotypicNetwork {
                 // If no extra-statistics about neighbour occupations is needed, set simple statistics (has errors in it!)
                 idiotypes_ng[i].n_d = sum_n_d;
                 idiotypes_ng[i].sum_n_d = idiotypes[i].sum_n_d + sum_n_d;
-            }
+            } else
+                idiotypes_ng[i].sum_n_d = idiotypes[i].sum_n_d;
 
             if (idiotypes_ng[i].n > 0) {
                 idiotypes_ng[i].sum_n = idiotypes[i].sum_n + idiotypes_ng[i].n;
@@ -332,10 +348,9 @@ public class IdiotypicNetwork {
     public void setLinkWeighting(int dist, double weighting) {
         if (dist < d) {
             linkWeighting[dist] = weighting;
-            if (weighting == 0) {
+            if (weighting == 0)
                 for (int i = dist; i < d; i++)
                     linkWeighting[i] = 0;
-            }
         }
     }
 
@@ -437,7 +452,6 @@ public class IdiotypicNetwork {
 //    public void setExternalInflux(int[] externalInflux) {
 //        this.externalInflux = externalInflux;
 //    }
-
     /**
      * Sets if center of gravity should be calculated
      *
@@ -492,5 +506,4 @@ public class IdiotypicNetwork {
     public void setN(int N) {
         this.N = N;
     }
-
 }
