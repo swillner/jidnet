@@ -29,19 +29,19 @@ public final class Application {
         config = new Properties();
 
         try {
-            idnetManager.loadParams("params.xml");
+            idnetManager.loadParams("jIdNet/params.xml");
         } catch (Exception e) {
             //
         }
 
         try {
-            config.loadFromXML(new FileInputStream("config.xml"));
+            config.loadFromXML(new FileInputStream("jIdNet/config.xml"));
         } catch (Exception e) {
             //
         }
 
         try {
-            loadConfigurations("configs.dat");
+            loadConfigurations("jIdNet/configs.dat");
         } catch (Exception e) {
             configurations = new Vector<Properties>();
         }
@@ -89,18 +89,18 @@ public final class Application {
 
     public static void closing() {
         try {
-            idnetManager.saveParams("params.xml");
+            idnetManager.saveParams("jIdNet/params.xml");
         } catch (Exception ex) {
             //
         }
 
         try {
-            config.storeToXML(new FileOutputStream("config.xml"), "Configuration of jIdNet Application");
+            config.storeToXML(new FileOutputStream("jIdNet/config.xml"), "Configuration of jIdNet Application");
         } catch (Exception e) {
             //
         }
         try {
-            saveConfigurations("configs.dat");
+            saveConfigurations("jIdNet/configs.dat");
         } catch (Exception e) {
             //
         }

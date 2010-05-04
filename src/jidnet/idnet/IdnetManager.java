@@ -300,14 +300,20 @@ public class IdnetManager extends IdiotypicNetwork {
      * @return Standard deviation
      */
     public double getCOGStandardDeviation(int c) {
-        double mean = 0, s = 0;
-        for (int i = 0; i < cogWindowSize; i++)
-            mean += cogWindow[i][c];
-        mean /= cogWindowSize;
+        double mean = getCOGMean(c);
+        double s = 0;
         for (int i = 0; i < cogWindowSize; i++)
             s += (cogWindow[i][c] - mean) * (cogWindow[i][c] - mean);
         s = Math.sqrt(s / (cogWindowSize - 1));
         return s;
+    }
+
+    public double getCOGMean(int c) {
+        double mean = 0;
+        for (int i = 0; i < cogWindowSize; i++)
+            mean += cogWindow[i][c];
+        mean /= cogWindowSize;
+        return mean;
     }
 
     /**
@@ -340,17 +346,19 @@ public class IdnetManager extends IdiotypicNetwork {
         Hashtable<Integer, Double> order = new Hashtable<Integer, Double>();
         for (int j = 0; j < d; j++) {
             double s = getCOGStandardDeviation(j);
-            if (s < max_s)
-                if (cog[j] > 5 * s) {
+            if (s < max_s) {
+                double mean = getCOGMean(j);
+                if (mean > max_s) {
                     result.mask |= 1 << j;
                     result.values |= 1 << j;
                     order.put(j, cog[j]);
-                } else if (cog[j] < -5 * s) {
+                } else if (mean < -max_s) {
                     result.mask |= 1 << j;
                     order.put(j, -cog[j]);
                 } else
                     order.put(j, Double.NEGATIVE_INFINITY);
-            // TODO : Proper recognision of determinant bits
+            } else
+                order.put(j, Double.NEGATIVE_INFINITY);
         }
 
         ArrayList<Map.Entry<Integer, Double>> myArrayList = new ArrayList<Map.Entry<Integer, Double>>(order.entrySet());
@@ -362,7 +370,6 @@ public class IdnetManager extends IdiotypicNetwork {
             result.order[j] = e.getKey();
             j++;
         }
-
 
         return result;
     }

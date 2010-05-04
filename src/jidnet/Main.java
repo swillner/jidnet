@@ -272,34 +272,80 @@ public class Main {
         int maxNeighbourCount = Integer.parseInt(getConfigProperty("max_neighbour_count"));
         int tWait = Integer.parseInt(getConfigProperty("t_wait"));
         int tWindow = Integer.parseInt(getConfigProperty("t_window"));
+        int d_m = Integer.parseInt(getConfigProperty("d_m"));
+        boolean waitForPattern = Boolean.parseBoolean(getConfigProperty("wait_for_pattern"));
         int[] neighbourCounts;
 
         FileWriter fw;
         (new FileWriter(getConfigProperty("filename_topology_histogram"), false)).close();
 
-        idnetManager.setStatCenterOfGravity(false);
+        idnetManager.setStatCenterOfGravity(waitForPattern);
+        idnetManager.setmax_s(Double.parseDouble(getConfigProperty("max_s")));
+
+        long seed = 0;
 
         for (int i_p = 0; i_p < pSteps; i_p++) {
-            double p = pFrom + i_p * pTo / pSteps;
+            double p = Math.round((pFrom + (double) i_p * (pTo - pFrom) / (double) pSteps) * 10000.0) / 10000.0;
+            if (p == 0)
+                continue;
             idnetManager.setp(p);
 
             neighbourCounts = new int[maxNeighbourCount + 1];
 
+            boolean found = false;
+
             for (int loop = 0; loop < numLoops; loop++) {
+                seed = System.currentTimeMillis();
+                idnetManager.reseed(seed);
                 idnetManager.reset();
+
+                int k = 1;
+                int mask = (1 << 11) - 1;
+                Idiotype[] idiotypes = idnetManager.getIdiotypes();
+                for (int i = 0; i < (1 << 12); i++)
+                    if (Helper.hammingWeight(i & mask) <= k && Math.random() < 0.5)
+                        idiotypes[i].n = 1;
+
                 idnetManager.setStatNeighbourOccupations(false);
                 idnetManager.iterate(tWait);
                 idnetManager.setStatNeighbourOccupations(true);
 
+                if (waitForPattern)
+                    if (Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) != d_m)
+                        continue;
+                    else {
+                        idnetManager.iterate(100);
+                        if (Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) != d_m)
+                            continue;
+                        else {
+                            idnetManager.iterate(100);
+                            if (Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) != d_m)
+                                continue;
+                        }
+                    }
                 for (int n = 0; n < tWindow; n++) {
                     idnetManager.iterate();
                     for (Idiotype i : idnetManager.getIdiotypes())
                         if (i.n > 0 && (int) i.n_d <= maxNeighbourCount)
                             neighbourCounts[(int) i.n_d]++;
                 }
+                if (waitForPattern)
+                    if (Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) != d_m) {
+                        neighbourCounts = new int[maxNeighbourCount + 1];
+                        continue;
+                    }
+                found = true;
+                break;
             }
 
+            if (waitForPattern)
+                if (found)
+                    System.out.print("   pattern found for p=");
+                else
+                    System.out.print("no pattern found for p=");
+
             fw = new FileWriter(getConfigProperty("filename_topology_histogram"), true);
+            fw.write("#seed " + seed + "\n");
 
             for (int n = 0; n <= maxNeighbourCount; n++)
                 fw.write(p + " " + n + " " + neighbourCounts[n] + "\n");
@@ -307,7 +353,7 @@ public class Main {
             fw.write("\n");
             fw.close();
 
-            System.out.println(i_p);
+            System.out.println(p);
         }
     }
 }

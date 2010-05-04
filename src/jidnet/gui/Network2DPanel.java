@@ -28,9 +28,6 @@ public class Network2DPanel extends JPanel {
     // Determinated/undet. bits of rows and cols in grid (arranged in blocks, whose nodes only differ in undet. bits)
     private int[] undetRow, undetCol, detRow, detCol;
     private int undetBlockWidth, undetBlockHeight, undetBlockColCount, undetBlockRowCount;
-    public final static int DRAW_CURRENT = 0;
-    public final static int DRAW_MEAN_OCCUPATIONS = 1;
-    private int drawType = DRAW_CURRENT;
 
     public Network2DPanel(IdnetManager idnetManager) {
         super();
@@ -160,13 +157,6 @@ public class Network2DPanel extends JPanel {
             }
 
         if (detBits.order != null)
-
-            /*
-            for (int i = 0; i < 12; i++)
-            System.out.print(order[i] + " ");
-            System.out.println();*/
-            //for (int i = 0; i < Helper.hammingWeight(detBits.mask); i++)
-            //    order[11 - i] = detBits.order[i];
             for (int i = 0; i < 12; i++)
                 order[11 - i] = detBits.order[i];
 
@@ -193,25 +183,18 @@ public class Network2DPanel extends JPanel {
         repaint();
     }
 
-    public int getDrawType() {
-        return drawType;
-    }
-
-    public void setDrawType(int drawType) {
-        this.drawType = drawType;
-    }
-
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        int xOffset = 50;
+        int xOffset = 20;
         int yOffset = 20; // Offsets of grid
-        int squareSize = 11; // Width/height of grid's squares
+        int squareSize = 10; // Width/height of grid's squares
 
         // Draw grid outline
         g.setColor(Color.GRAY);
         g.drawRect(xOffset - 1, yOffset - 1, 64 * squareSize + 1, 64 * squareSize + 1);
+        g.drawRect(64 * squareSize + 3 * xOffset - 1, yOffset - 1, 64 * squareSize + 1, 64 * squareSize + 1);
 
         if (detBits != null) {
             // Arranged by determinant bits => Draw groups
@@ -219,28 +202,48 @@ public class Network2DPanel extends JPanel {
             for (int x = 0; x < 64; x++)
                 for (int y = 0; y < 64; y++) {
                     int i = coordsToNode(x, y);
-                    if (drawType == DRAW_MEAN_OCCUPATIONS)
-                        //if (idnetManager.getIdiotypes()[i].sum_n == 0)
-                        //    g.setColor(Color.getHSBColor(Helper.hammingWeight(
-                        //            (detBits.mask & i) ^ detBits.values) / (float) (d_m + 1), 1.0f, 1.0f));
-                        //else
-                        //    g.setColor(Color.getHSBColor(Helper.hammingWeight(
-                        //            (detBits.mask & i) ^ detBits.values) / (float) (d_m + 1), 1.0f, 0.8f - 0.8f*(float) idnetManager.getIdiotypes()[i].sum_n / (float) idnetManager.getN() / (float) idnetManager.gett()));
-                            g.setColor(Color.getHSBColor(Helper.hammingWeight(
-                                    (detBits.mask & i) ^ detBits.values) / (float) (d_m + 1), 1.0f, 1.0f - (float) idnetManager.getIdiotypes()[i].sum_n / (float) idnetManager.getN() / (float) idnetManager.gett()));
-                    else
-                        g.setColor(Color.getHSBColor(Helper.hammingWeight(
-                                (detBits.mask & i) ^ detBits.values) / (float) (d_m + 1), 1.0f, 1.0f));
+                    g.setColor(Color.getHSBColor(Helper.hammingWeight(
+                            (detBits.mask & i) ^ detBits.values) / (float) (d_m + 1), 1.0f, 1.0f));
 
                     g.fillRect(x * squareSize + xOffset, y * squareSize + yOffset, squareSize, squareSize);
                 }
+
         } else {
             // Not arranged => Draw grid's background monochrome
             g.setColor(Color.CYAN);
             g.fillRect(xOffset, yOffset, 64 * squareSize, 64 * squareSize);
         }
 
-//        if (drawType != DRAW_MEAN_OCCUPATIONS)
+        for (int x = 0; x < 64; x++)
+            for (int y = 0; y < 64; y++) {
+                int i = coordsToNode(x, y);
+                g.setColor(Color.getHSBColor(0.0f, 0.0f, 1.0f - (float) idnetManager.getIdiotypes()[i].sum_n / (float) idnetManager.getN() / (float) idnetManager.gett()));
+                g.fillRect(x * squareSize + 3 * xOffset + 64 * squareSize, y * squareSize + yOffset, squareSize, squareSize);
+            }
+
+        if (detBits != null) {
+            g.setColor(Color.RED);
+            int x = 64 * squareSize + 3 * xOffset;
+            int n_x = (d_m / 2) + (d_m % 2);
+            g.drawLine(x, yOffset, x, yOffset + 64 * squareSize);
+            g.drawLine(x - 1, yOffset, x - 1, yOffset + 64 * squareSize);
+            for (int k = 0; k <= n_x; k++) {
+                x += squareSize * undetBlockWidth * Helper.binomial(n_x, k);
+                g.drawLine(x, yOffset, x, yOffset + 64 * squareSize);
+                g.drawLine(x - 1, yOffset, x - 1, yOffset + 64 * squareSize);
+            }
+            int y = yOffset;
+            int n_y = (d_m / 2);
+            g.drawLine(64 * squareSize + 3 * xOffset, y, 128 * squareSize + 3 * xOffset, y);
+            g.drawLine(64 * squareSize + 3 * xOffset, y - 1, 128 * squareSize + 3 * xOffset, y - 1);
+            for (int k = 0; k <= n_y; k++) {
+                y += squareSize * undetBlockHeight * Helper.binomial(n_y, k);
+                g.drawLine(64 * squareSize + 3 * xOffset, y, 128 * squareSize + 3 * xOffset, y);
+                g.drawLine(64 * squareSize + 3 * xOffset, y - 1, 128 * squareSize + 3 * xOffset, y - 1);
+            }
+        }
+
+        //        if (drawType != DRAW_MEAN_OCCUPATIONS)
         if (mouseX > xOffset && mouseY > yOffset && mouseX < xOffset + 64 * squareSize && mouseY
                 < yOffset + 64 * squareSize) {
             // If mouse pointer in grid
@@ -283,41 +286,21 @@ public class Network2DPanel extends JPanel {
         boolean[] check = new boolean[4096];
 
         // Draw dots for nodes' occupations
-        switch (drawType) {
-            case DRAW_CURRENT:
-                g.setColor(Color.BLACK);
-                for (int x = 0; x < 64; x++)
-                    for (int y = 0; y < 64; y++) {
-                        int i = coordsToNode(x, y);
-                        if (check[i]) {
-                            System.err.println("ERROR: Node " + i + " painted twice");
-                            //System.exit(-1); TODO : debug?
-                        } else
-                            check[i] = true;
-                        if (idnetManager.getIdiotypes()[i].n > 0) {
-                            int size = (idnetManager.getIdiotypes()[i].n * (squareSize - 4)) / idnetManager.getN();
-                            g.fillRect(x * squareSize + xOffset + (squareSize - size) / 2, y * squareSize + yOffset
-                                    + (squareSize - size) / 2, size, size);
-                        }
-                    }
-                break;
-
-            /*case DRAW_MEAN_OCCUPATIONS:
-            g.setColor(Color.BLACK);
-            for (int x = 0; x < 64; x++)
+        g.setColor(Color.BLACK);
+        for (int x = 0; x < 64; x++)
             for (int y = 0; y < 64; y++) {
-            int i = coordsToNode(x, y);
-            if (idnetManager.gett() > 0) {
-            //int size = (int)(((double)idnetManager.getIdiotypes()[i].sum_n * (squareSize - 4)) / (double)idnetManager.getN() /
-            //       (double) idnetManager.gett());
-            g.setColor(new Color(0, 0, 0, (int) (255 * (float) idnetManager.getIdiotypes()[i].sum_n / (float) idnetManager.getN() / (float) idnetManager.gett())));
-            int size = squareSize;
-            g.fillRect(x * squareSize + xOffset + (squareSize - size) / 2, y * squareSize + yOffset
-            + (squareSize - size) / 2, size, size);
+                int i = coordsToNode(x, y);
+                if (check[i])
+                    System.err.println("ERROR: Node " + i + " painted twice");
+                else
+                    check[i] = true;
+                if (idnetManager.getIdiotypes()[i].n > 0) {
+                    int size = (idnetManager.getIdiotypes()[i].n * (squareSize - 4)) / idnetManager.getN();
+                    g.fillRect(x * squareSize + xOffset + (squareSize - size) / 2, y * squareSize + yOffset
+                            + (squareSize - size) / 2, size, size);
+                }
             }
-            }
-            break;*/
-        }
+
 
     }
 }
