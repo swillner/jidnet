@@ -34,6 +34,7 @@ import javax.swing.text.MaskFormatter;
 import jidnet.idnet.Helper;
 import jidnet.idnet.Idiotype;
 import jidnet.idnet.DeterminantBits;
+import jidnet.idnet.IdnetManager;
 
 /**
  *
@@ -43,6 +44,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     private Timer timer;
     private int redrawDelay;
+    private MaskFormatter textCustomBitMaskFormatter, textCustomBitValuesFormatter;
 
     /** Creates new form MainWindow */
     public MainWindow() {
@@ -69,7 +71,7 @@ public class MainWindow extends javax.swing.JFrame {
         for (Properties p : Application.getConfigurations())
             ((DefaultListModel) configurationsList.getModel()).addElement(p.getProperty("name"));
 
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < Application.getIdnetManager().getd(); i++)
             ((DefaultListModel) detBitsList.getModel()).addElement(i + "");
 
         this.setExtendedState(this.getExtendedState() | MAXIMIZED_BOTH);
@@ -102,8 +104,9 @@ public class MainWindow extends javax.swing.JFrame {
         mainTabbedPane = new javax.swing.JTabbedPane();
         cogDiagramPanel = new COGDiagramPanel(Application.getIdnetManager());
         network2DPanel = new Network2DPanel(Application.getIdnetManager());
-        network1DPanel = new jidnet.gui.Network1DPanel(Application.getIdnetManager());
+        linkMatrixPanel = new LinkMatrixPanel(Application.getIdnetManager());
         networkTopologyPanel = new NetworkTopologyPanel(Application.getIdnetManager());
+        network1DPanel = new jidnet.gui.Network1DPanel(Application.getIdnetManager());
         clusterPanel = new javax.swing.JPanel();
         calcClustersButton = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -111,6 +114,9 @@ public class MainWindow extends javax.swing.JFrame {
         calcGroupOccButton = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         clustersText = new javax.swing.JTextArea();
+        jButton1 = new javax.swing.JButton();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        linkMatrixText = new javax.swing.JTextArea();
         linkWeightingPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
@@ -151,18 +157,8 @@ public class MainWindow extends javax.swing.JFrame {
         detBitsList = new javax.swing.JList();
         detBitsUpButton = new javax.swing.JButton();
         detBitsDownButton = new javax.swing.JButton();
-        try {
-            MaskFormatter textCustomBitMaskFormatter = new MaskFormatter("************");
-            textCustomBitMaskFormatter.setValidCharacters("01");
-            textCustomBitMask = new javax.swing.JFormattedTextField(textCustomBitMaskFormatter);
-        } catch(ParseException e) {
-        }
-        try {
-            MaskFormatter textCustomBitValuesFormatter = new MaskFormatter("************");
-            textCustomBitValuesFormatter.setValidCharacters("01");
-            textCustomBitValues = new javax.swing.JFormattedTextField(textCustomBitValuesFormatter);
-        } catch(ParseException e) {
-        }
+        textCustomBitMask = new javax.swing.JTextField();
+        textCustomBitValues = new javax.swing.JTextField();
         configurationsPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         configurationsList = new javax.swing.JList();
@@ -211,6 +207,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuItem5 = new javax.swing.JMenuItem();
         jMenuItem6 = new javax.swing.JMenuItem();
         menuItemExtNeighbourStat = new javax.swing.JCheckBoxMenuItem();
+        jMenuItem11 = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         jCheckBoxMenuItem1 = new javax.swing.JCheckBoxMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -220,7 +217,10 @@ public class MainWindow extends javax.swing.JFrame {
         menuItemDrawMeans = new javax.swing.JCheckBoxMenuItem();
         menuItemDrawDetBits = new javax.swing.JCheckBoxMenuItem();
         menuItemFullscreen = new javax.swing.JCheckBoxMenuItem();
+        jMenuItem10 = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
+        menuStat_d = new javax.swing.JMenu();
+        jMenuItem9 = new javax.swing.JMenuItem();
         menuStat_p = new javax.swing.JMenu();
         jMenuItem8 = new javax.swing.JMenuItem();
         menuStat_t = new javax.swing.JMenu();
@@ -258,7 +258,7 @@ public class MainWindow extends javax.swing.JFrame {
         cogDiagramPanel.setLayout(cogDiagramPanelLayout);
         cogDiagramPanelLayout.setHorizontalGroup(
             cogDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 563, Short.MAX_VALUE)
+            .addGap(0, 569, Short.MAX_VALUE)
         );
         cogDiagramPanelLayout.setVerticalGroup(
             cogDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -278,7 +278,7 @@ public class MainWindow extends javax.swing.JFrame {
         network2DPanel.setLayout(network2DPanelLayout);
         network2DPanelLayout.setHorizontalGroup(
             network2DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 563, Short.MAX_VALUE)
+            .addGap(0, 569, Short.MAX_VALUE)
         );
         network2DPanelLayout.setVerticalGroup(
             network2DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -286,6 +286,41 @@ public class MainWindow extends javax.swing.JFrame {
         );
 
         mainTabbedPane.addTab("2D View", network2DPanel);
+
+        linkMatrixPanel.setBackground(new java.awt.Color(255, 255, 255));
+
+        javax.swing.GroupLayout linkMatrixPanelLayout = new javax.swing.GroupLayout(linkMatrixPanel);
+        linkMatrixPanel.setLayout(linkMatrixPanelLayout);
+        linkMatrixPanelLayout.setHorizontalGroup(
+            linkMatrixPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 569, Short.MAX_VALUE)
+        );
+        linkMatrixPanelLayout.setVerticalGroup(
+            linkMatrixPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 586, Short.MAX_VALUE)
+        );
+
+        mainTabbedPane.addTab("Link matrix", linkMatrixPanel);
+
+        networkTopologyPanel.setBackground(new java.awt.Color(255, 255, 255));
+        networkTopologyPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                panelMouseClickedPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout networkTopologyPanelLayout = new javax.swing.GroupLayout(networkTopologyPanel);
+        networkTopologyPanel.setLayout(networkTopologyPanelLayout);
+        networkTopologyPanelLayout.setHorizontalGroup(
+            networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 569, Short.MAX_VALUE)
+        );
+        networkTopologyPanelLayout.setVerticalGroup(
+            networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 586, Short.MAX_VALUE)
+        );
+
+        mainTabbedPane.addTab("Topology", networkTopologyPanel);
 
         network1DPanel.setBackground(new java.awt.Color(255, 255, 255));
         network1DPanel.setName("network1DPanel"); // NOI18N
@@ -299,7 +334,7 @@ public class MainWindow extends javax.swing.JFrame {
         network1DPanel.setLayout(network1DPanelLayout);
         network1DPanelLayout.setHorizontalGroup(
             network1DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 563, Short.MAX_VALUE)
+            .addGap(0, 569, Short.MAX_VALUE)
         );
         network1DPanelLayout.setVerticalGroup(
             network1DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -307,26 +342,6 @@ public class MainWindow extends javax.swing.JFrame {
         );
 
         mainTabbedPane.addTab("1D View", network1DPanel);
-
-        networkTopologyPanel.setBackground(new java.awt.Color(255, 255, 255));
-        networkTopologyPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                panelMouseClickedPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout networkTopologyPanelLayout = new javax.swing.GroupLayout(networkTopologyPanel);
-        networkTopologyPanel.setLayout(networkTopologyPanelLayout);
-        networkTopologyPanelLayout.setHorizontalGroup(
-            networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 563, Short.MAX_VALUE)
-        );
-        networkTopologyPanelLayout.setVerticalGroup(
-            networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 586, Short.MAX_VALUE)
-        );
-
-        mainTabbedPane.addTab("Topology", networkTopologyPanel);
 
         calcClustersButton.setMnemonic('u');
         calcClustersButton.setText("Calc clusters");
@@ -350,35 +365,54 @@ public class MainWindow extends javax.swing.JFrame {
         clustersText.setEditable(false);
         jScrollPane2.setViewportView(clustersText);
 
+        jButton1.setText("Show link matrix");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        linkMatrixText.setColumns(20);
+        linkMatrixText.setRows(5);
+        jScrollPane5.setViewportView(linkMatrixText);
+
         javax.swing.GroupLayout clusterPanelLayout = new javax.swing.GroupLayout(clusterPanel);
         clusterPanel.setLayout(clusterPanelLayout);
         clusterPanelLayout.setHorizontalGroup(
             clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, clusterPanelLayout.createSequentialGroup()
+            .addGroup(clusterPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(calcClustersButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
-                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)
-                    .addComponent(calcGroupOccButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(800, 800, 800))
+                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, clusterPanelLayout.createSequentialGroup()
+                        .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(calcClustersButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(calcGroupOccButton, 0, 0, Short.MAX_VALUE)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE))))
+                .addContainerGap(163, Short.MAX_VALUE))
         );
         clusterPanelLayout.setVerticalGroup(
             clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(clusterPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(clusterPanelLayout.createSequentialGroup()
                         .addComponent(calcGroupOccButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jScrollPane3))
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))
                     .addGroup(clusterPanelLayout.createSequentialGroup()
                         .addComponent(calcClustersButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 251, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(282, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(jButton1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         mainTabbedPane.addTab("Clusters / Groups", clusterPanel);
@@ -626,7 +660,7 @@ public class MainWindow extends javax.swing.JFrame {
                         .addComponent(spinnerp_deadly, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(6, 6, 6)
                         .addComponent(setp_deadlyButton, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(143, Short.MAX_VALUE))
+                .addContainerGap(149, Short.MAX_VALUE))
         );
         linkWeightingPanelLayout.setVerticalGroup(
             linkWeightingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -670,19 +704,19 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        textCustomBitMask.setFont(new java.awt.Font("Courier New", 1, 18)); // NOI18N
         textCustomBitMask.setText("000000000000");
-        textCustomBitMask.setFont(new java.awt.Font("Courier New", 1, 18));
         textCustomBitMask.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 textCustomBitMaskPropertyChange(evt);
             }
         });
 
+        textCustomBitValues.setFont(new java.awt.Font("Courier New", 1, 18)); // NOI18N
         textCustomBitValues.setText("000000000000");
-        textCustomBitValues.setFont(new java.awt.Font("Courier New", 1, 18));
         textCustomBitValues.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                textCustomBitValuesPropertyChange(evt);
+                textCustomBitMaskPropertyChange(evt);
             }
         });
 
@@ -696,9 +730,9 @@ public class MainWindow extends javax.swing.JFrame {
                     .addComponent(jLabel24)
                     .addComponent(jLabel25))
                 .addGap(18, 18, 18)
-                .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(textCustomBitValues, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(textCustomBitMask, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(textCustomBitValues)
+                    .addComponent(textCustomBitMask))
                 .addGap(18, 18, 18)
                 .addComponent(jLabel30)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -707,7 +741,7 @@ public class MainWindow extends javax.swing.JFrame {
                 .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(detBitsDownButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(detBitsUpButton, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
-                .addContainerGap(102, Short.MAX_VALUE))
+                .addContainerGap(108, Short.MAX_VALUE))
         );
         detBitsPanelLayout.setVerticalGroup(
             detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -722,12 +756,12 @@ public class MainWindow extends javax.swing.JFrame {
                     .addGroup(detBitsPanelLayout.createSequentialGroup()
                         .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel24)
-                            .addComponent(textCustomBitMask, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel30))
+                            .addComponent(jLabel30)
+                            .addComponent(textCustomBitMask, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(textCustomBitValues, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel25))))
+                            .addComponent(jLabel25)
+                            .addComponent(textCustomBitValues, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(181, Short.MAX_VALUE))
         );
 
@@ -833,7 +867,7 @@ public class MainWindow extends javax.swing.JFrame {
                         .addComponent(overwriteConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(loadConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(newConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap(141, Short.MAX_VALUE))
+                .addContainerGap(147, Short.MAX_VALUE))
         );
         configurationsPanelLayout.setVerticalGroup(
             configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1032,7 +1066,7 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addComponent(mainTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
+                .addComponent(mainTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(statisticsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -1153,6 +1187,14 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jMenu2.add(menuItemExtNeighbourStat);
 
+        jMenuItem11.setText("Export topology data...");
+        jMenuItem11.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem11ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem11);
+
         jMenuBar1.add(jMenu2);
 
         jMenu3.setText("View");
@@ -1228,11 +1270,31 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jMenu3.add(menuItemFullscreen);
 
+        jMenuItem10.setText("Set node size...");
+        jMenuItem10.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem10ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem10);
+
         jMenuBar1.add(jMenu3);
 
         jMenu4.setText("               ");
         jMenu4.setEnabled(false);
         jMenuBar1.add(jMenu4);
+
+        menuStat_d.setText("d = 12");
+
+        jMenuItem9.setText("Set d...");
+        jMenuItem9.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem9ActionPerformed(evt);
+            }
+        });
+        menuStat_d.add(jMenuItem9);
+
+        jMenuBar1.add(menuStat_d);
 
         menuStat_p.setText("p = 0");
         menuStat_p.addActionListener(new java.awt.event.ActionListener() {
@@ -1265,7 +1327,8 @@ public class MainWindow extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     public void updateParamSpinners() {
-        menuStat_p.setText("p = " + Application.getIdnetManager().getp());
+        menuStat_d.setText("d = " + Application.getIdnetManager().getd());
+        menuStat_p.setText("p = " + Math.round(Application.getIdnetManager().getp() * 100000) / 100000.);
         spinnerp.setValue(Application.getIdnetManager().getp());
         spinnert_l.setValue(Application.getIdnetManager().gett_l());
         spinnert_u.setValue(Application.getIdnetManager().gett_u());
@@ -1302,6 +1365,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void spinnerpStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spinnerpStateChanged
         Application.getIdnetManager().setp((Double) spinnerp.getValue());
+        updateParamSpinners();
     }//GEN-LAST:event_spinnerpStateChanged
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
@@ -1373,6 +1437,9 @@ public class MainWindow extends javax.swing.JFrame {
         int s = configurationsList.getSelectedIndex();
         if (s > -1) {
             Application.getIdnetManager().loadParams(Application.getConfigurations().get(s));
+            ((Network2DPanel) network2DPanel).change_d(Application.getIdnetManager().getd());
+            ((LinkMatrixPanel) linkMatrixPanel).change_d(Application.getIdnetManager().getd());
+            ((COGDiagramPanel) cogDiagramPanel).change_d(Application.getIdnetManager().getd());
             Application.getIdnetManager().reset();
             updateParamSpinners();
         }
@@ -1501,6 +1568,7 @@ public class MainWindow extends javax.swing.JFrame {
         Application.getIdnetManager().reseed((Long) spinnerSeed.getValue());
         Application.getIdnetManager().reset();
         ((NetworkTopologyPanel) networkTopologyPanel).recalc();
+        updateIdnetStatistics();
     }//GEN-LAST:event_menuItemResetActionPerformed
 
     private void jMenu1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu1ActionPerformed
@@ -1589,11 +1657,11 @@ public class MainWindow extends javax.swing.JFrame {
         int mask = (1 << d_m) - 1;
         Application.getIdnetManager().reset();
         Idiotype[] idiotypes = Application.getIdnetManager().getIdiotypes();
-        for (int i = 0; i < (1 << 12); i++)
+        for (int i = 0; i < (1 << Application.getIdnetManager().getd()); i++)
             if (Helper.hammingWeight(i & mask) == k)
                 idiotypes[i].n = 1;
-        textCustomBitMask.setText(Helper.getBitString(mask));
-        textCustomBitValues.setText("000000000000");
+        textCustomBitMask.setText(Helper.getBitString(mask, Application.getIdnetManager().getd()));
+        textCustomBitValues.setText(Helper.getBitString(0, Application.getIdnetManager().getd()));
     }//GEN-LAST:event_prepareNetworkButtonActionPerformed
 
     private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
@@ -1624,8 +1692,10 @@ public class MainWindow extends javax.swing.JFrame {
             }
         }
 
-        if (timer.isRunning())
+        if (timer.isRunning()) {
+            menuItemRun.setSelected(false);
             menuItemRunActionPerformed(evt);
+        }
 
         String nStr = JOptionPane.showInputDialog("n = ");
         if (nStr != null && !nStr.equals(""))
@@ -1674,7 +1744,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void detBitsDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_detBitsDownButtonActionPerformed
         int sel = detBitsList.getSelectedIndex();
-        if (sel < 11) {
+        if (sel < Application.getIdnetManager().getd() - 1) {
             String tmp = (String) ((DefaultListModel) detBitsList.getModel()).get(sel);
             ((DefaultListModel) detBitsList.getModel()).setElementAt(((DefaultListModel) detBitsList.getModel()).get(sel + 1), sel);
             ((DefaultListModel) detBitsList.getModel()).setElementAt(tmp, sel + 1);
@@ -1704,38 +1774,33 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
         DeterminantBits detBits = Application.getIdnetManager().calcDeterminantBits();
-        textCustomBitMask.setText(Helper.getBitString(detBits.mask));
-        textCustomBitValues.setText(Helper.getBitString(detBits.values));
-        for (int i = 0; i < 12; i++)
-            ((DefaultListModel) detBitsList.getModel()).setElementAt(Integer.toString(detBits.order[i]), i);
+        textCustomBitMask.setText(Helper.getBitString(detBits.mask, Application.getIdnetManager().getd()));
+        textCustomBitValues.setText(Helper.getBitString(detBits.values, Application.getIdnetManager().getd()));
+        ((DefaultListModel) detBitsList.getModel()).clear();
+        for (int i = 0; i < Application.getIdnetManager().getd(); i++)
+            ((DefaultListModel) detBitsList.getModel()).addElement(Integer.toString(detBits.order[i]));
         menuItemDrawDetBitsActionPerformed(evt);
     }//GEN-LAST:event_jMenuItem7ActionPerformed
 
     private void menuItemDrawDetBitsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemDrawDetBitsActionPerformed
         if (menuItemDrawDetBits.isSelected()) {
             DeterminantBits detBits = new DeterminantBits();
-            detBits.mask = Integer.parseInt(textCustomBitMask.getText(), 2);
-            detBits.values = Integer.parseInt(textCustomBitValues.getText(), 2);
-            detBits.order = new int[12];
-            for (int i = 0; i < 12; i++)
+            detBits.mask = Integer.parseInt(textCustomBitMask.getText().trim(), 2);
+            detBits.values = Integer.parseInt(textCustomBitValues.getText().trim(), 2);
+            detBits.order = new int[Application.getIdnetManager().getd()];
+            for (int i = 0; i < Application.getIdnetManager().getd(); i++)
                 detBits.order[i] = Integer.parseInt((String) ((DefaultListModel) detBitsList.getModel()).get(i));
 
             ((Network2DPanel) network2DPanel).arrangeByDetBitGroups(detBits);
+            ((LinkMatrixPanel) linkMatrixPanel).arrangeByDetBitGroups(detBits);
             ((NetworkTopologyPanel) networkTopologyPanel).setDeterminantBits(detBits);
         } else {
             ((Network2DPanel) network2DPanel).arrangeDefault();
+            ((LinkMatrixPanel) linkMatrixPanel).arrangeDefault();
             ((NetworkTopologyPanel) networkTopologyPanel).setDeterminantBits(null);
         }
         updateIdnetStatistics();
     }//GEN-LAST:event_menuItemDrawDetBitsActionPerformed
-
-    private void textCustomBitMaskPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textCustomBitMaskPropertyChange
-        menuItemDrawDetBitsActionPerformed(null);
-    }//GEN-LAST:event_textCustomBitMaskPropertyChange
-
-    private void textCustomBitValuesPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textCustomBitValuesPropertyChange
-        menuItemDrawDetBitsActionPerformed(null);
-    }//GEN-LAST:event_textCustomBitValuesPropertyChange
 
     private void menuItemFullscreenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemFullscreenActionPerformed
         getGraphicsConfiguration().getDevice().setFullScreenWindow(menuItemFullscreen.isSelected() ? this : null);
@@ -1748,6 +1813,10 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_menuStat_pActionPerformed
 
     private void jMenuItem8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem8ActionPerformed
+        if (timer.isRunning()) {
+            menuItemRun.setSelected(false);
+            menuItemRunActionPerformed(evt);
+        }
         String nStr = JOptionPane.showInputDialog("p = ");
         if (nStr != null && !nStr.equals(""))
             try {
@@ -1759,6 +1828,86 @@ public class MainWindow extends javax.swing.JFrame {
             }
         requestFocus();
     }//GEN-LAST:event_jMenuItem8ActionPerformed
+
+    private void jMenuItem9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem9ActionPerformed
+        if (timer.isRunning()) {
+            menuItemRun.setSelected(false);
+            menuItemRunActionPerformed(evt);
+        }
+        String nStr = JOptionPane.showInputDialog("d = ");
+        if (nStr != null && !nStr.equals(""))
+            try {
+                final int d = Integer.parseInt(nStr);
+                Application.getIdnetManager().setd(d);
+                if (menuItemDrawDetBits.isSelected()) {
+                    menuItemDrawDetBits.setSelected(false);
+                    menuItemDrawDetBitsActionPerformed(evt);
+                }
+                if (menuItemExtNeighbourStat.isSelected()) {
+                    menuItemExtNeighbourStat.setSelected(false);
+                    menuItemExtNeighbourStatActionPerformed(evt);
+                }
+
+                ((LinkMatrixPanel) linkMatrixPanel).change_d(d);
+                ((Network2DPanel) network2DPanel).change_d(d);
+                ((COGDiagramPanel) cogDiagramPanel).change_d(d);
+                ((DefaultListModel) detBitsList.getModel()).clear();
+                for (int i = 0; i < Application.getIdnetManager().getd(); i++)
+                    ((DefaultListModel) detBitsList.getModel()).addElement(i + "");
+
+                textCustomBitMask.setText(Helper.getBitString(0, Application.getIdnetManager().getd()));
+                textCustomBitValues.setText(Helper.getBitString(0, Application.getIdnetManager().getd()));
+                updateParamSpinners();
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Not an integer!");
+            }
+        requestFocus();
+
+    }//GEN-LAST:event_jMenuItem9ActionPerformed
+
+    private void jMenuItem10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem10ActionPerformed
+        String nStr = JOptionPane.showInputDialog("size = ");
+        if (nStr != null && !nStr.equals(""))
+            try {
+                final int size = Integer.parseInt(nStr);
+                ((Network2DPanel) network2DPanel).setSquareSize(size);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Not an integer!");
+            }
+        requestFocus();
+    }//GEN-LAST:event_jMenuItem10ActionPerformed
+
+    private void jMenuItem11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem11ActionPerformed
+        if (mainTabbedPane.getSelectedComponent() instanceof NetworkTopologyPanel) {
+            String fileName = JOptionPane.showInputDialog("Filename:");
+            if (fileName != null && !fileName.isEmpty())
+                try {
+                    ((NetworkTopologyPanel) mainTabbedPane.getSelectedComponent()).saveDataToFile(fileName);
+                } catch (IOException io) {
+                    io.printStackTrace();
+                }
+        }
+    }//GEN-LAST:event_jMenuItem11ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        if (!menuItemDrawDetBits.isSelected())
+            return;
+        int d = Application.getIdnetManager().getd();
+        int d_m = Helper.hammingWeight(Integer.parseInt(textCustomBitMask.getText().trim(), 2));
+        int m = 2; // TODO : General m
+
+        String text = "";
+        for (int i = 0; i <= d_m; i++) {
+            for (int j = 0; j <= d_m; j++)
+                text += IdnetManager.calcLinkMatrixElem(i, j, d_m, m, d) + " ";
+            text += "\n";
+        }
+        linkMatrixText.setText(text);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void textCustomBitMaskPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textCustomBitMaskPropertyChange
+        menuItemDrawDetBitsActionPerformed(null);
+    }//GEN-LAST:event_textCustomBitMaskPropertyChange
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton calcClustersButton;
     private javax.swing.JButton calcGroupOccButton;
@@ -1773,6 +1922,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JButton detBitsUpButton;
     private javax.swing.ButtonGroup drawTypeButtonGroup;
     private javax.swing.JTextArea groupOccText;
+    private javax.swing.JButton jButton1;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -1810,6 +1960,8 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem10;
+    private javax.swing.JMenuItem jMenuItem11;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
@@ -1817,6 +1969,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JMenuItem jMenuItem8;
+    private javax.swing.JMenuItem jMenuItem9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel4;
@@ -1824,7 +1977,10 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JPanel linkMatrixPanel;
+    private javax.swing.JTextArea linkMatrixText;
     private javax.swing.JPanel linkWeightingPanel;
     private javax.swing.JButton loadConfigButton;
     private javax.swing.JTabbedPane mainTabbedPane;
@@ -1840,6 +1996,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem menuItemSaveSnapshot;
     private javax.swing.JMenuItem menuItemStep;
     private javax.swing.JMenu menuStatTotalOcc;
+    private javax.swing.JMenu menuStat_d;
     private javax.swing.JMenu menuStat_p;
     private javax.swing.JMenu menuStat_t;
     private javax.swing.JPanel network1DPanel;
@@ -1875,8 +2032,8 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JSpinner spinnert_u;
     private javax.swing.JPanel statisticsPanel;
     private javax.swing.JLabel tLabel;
-    private javax.swing.JFormattedTextField textCustomBitMask;
-    private javax.swing.JFormattedTextField textCustomBitValues;
+    private javax.swing.JTextField textCustomBitMask;
+    private javax.swing.JTextField textCustomBitValues;
     private javax.swing.ButtonGroup topologyDrawTypeButtonGroup;
     private javax.swing.JLabel totalOccLabel;
     // End of variables declaration//GEN-END:variables

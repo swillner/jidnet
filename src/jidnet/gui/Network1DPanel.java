@@ -24,6 +24,9 @@ public class Network1DPanel extends JPanel {
 
         if (idiotypicNetwork.gett() == 0)
             return;
+
+        if (idiotypicNetwork.getd() != 12)
+            return;
         
         // Draw diagram outlines
         g.setColor(Color.getHSBColor(0.7f, 0.7f, 1.0f));

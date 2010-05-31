@@ -52,7 +52,7 @@ public class IdnetManager extends IdiotypicNetwork {
         max_s = 0.04;
         setStatCenterOfGravity(true);
 
-        cogWindow = new double[cogWindowSize][d];
+        initialize();
 
         params = new Properties();
         params.setProperty("d", "12");
@@ -76,6 +76,12 @@ public class IdnetManager extends IdiotypicNetwork {
         params.setProperty("lw11", "0");
     }
 
+    @Override
+    protected void initialize() {
+        super.initialize();
+        cogWindow = new double[cogWindowSize][d];
+    }
+
     /**
      * Loads parameters from file
      *
@@ -95,24 +101,29 @@ public class IdnetManager extends IdiotypicNetwork {
      */
     public void loadParams(Properties params) {
         this.params.putAll(params);
+        d = Integer.parseInt(params.getProperty("d"));
+        initialize();
+
         this.setp(Double.parseDouble(params.getProperty("p")));
         this.sett_l(Double.parseDouble(params.getProperty("t_l")));
         this.sett_u(Double.parseDouble(params.getProperty("t_u")));
         this.setN(Integer.parseInt(params.getProperty("N")));
         this.setmax_s(Double.parseDouble(params.getProperty("max_s")));
         this.reseed(Long.parseLong(params.getProperty("seed")));
-        linkWeighting[0] = Double.parseDouble(params.getProperty("lw0"));
-        linkWeighting[1] = Double.parseDouble(params.getProperty("lw1"));
-        linkWeighting[2] = Double.parseDouble(params.getProperty("lw2"));
-        linkWeighting[3] = Double.parseDouble(params.getProperty("lw3"));
-        linkWeighting[4] = Double.parseDouble(params.getProperty("lw4"));
-        linkWeighting[5] = Double.parseDouble(params.getProperty("lw5"));
-        linkWeighting[6] = Double.parseDouble(params.getProperty("lw6"));
-        linkWeighting[7] = Double.parseDouble(params.getProperty("lw7"));
-        linkWeighting[8] = Double.parseDouble(params.getProperty("lw8"));
-        linkWeighting[9] = Double.parseDouble(params.getProperty("lw9"));
-        linkWeighting[10] = Double.parseDouble(params.getProperty("lw10"));
-        linkWeighting[11] = Double.parseDouble(params.getProperty("lw11"));
+        if (d == 12) {
+            linkWeighting[0] = Double.parseDouble(params.getProperty("lw0"));
+            linkWeighting[1] = Double.parseDouble(params.getProperty("lw1"));
+            linkWeighting[2] = Double.parseDouble(params.getProperty("lw2"));
+            linkWeighting[3] = Double.parseDouble(params.getProperty("lw3"));
+            linkWeighting[4] = Double.parseDouble(params.getProperty("lw4"));
+            linkWeighting[5] = Double.parseDouble(params.getProperty("lw5"));
+            linkWeighting[6] = Double.parseDouble(params.getProperty("lw6"));
+            linkWeighting[7] = Double.parseDouble(params.getProperty("lw7"));
+            linkWeighting[8] = Double.parseDouble(params.getProperty("lw8"));
+            linkWeighting[9] = Double.parseDouble(params.getProperty("lw9"));
+            linkWeighting[10] = Double.parseDouble(params.getProperty("lw10"));
+            linkWeighting[11] = Double.parseDouble(params.getProperty("lw11"));
+        }
     }
 
     /**
@@ -237,6 +248,12 @@ public class IdnetManager extends IdiotypicNetwork {
     public void setN(int N) {
         super.setN(N);
         params.setProperty("N", Integer.toString(N));
+    }
+
+    @Override
+    public void setd(int d) {
+        super.setd(d);
+        params.setProperty("d", Integer.toString(d));
     }
 
     @Override

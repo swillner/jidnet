@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Polygon;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JPanel;
@@ -71,7 +73,7 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
         neighbourCounts = new int[MAX_NEIGHBOUR_COUNT + 1];
         neighbourCountsOccupied = new int[MAX_NEIGHBOUR_COUNT + 1];
         groupNeighbourCounts = new int[d_m + 1][MAX_NEIGHBOUR_COUNT + 1];
-        bitwiseNeighbourCounts = new int[12][MAX_NEIGHBOUR_COUNT + 1];
+        bitwiseNeighbourCounts = new int[idnetManager.getd()][MAX_NEIGHBOUR_COUNT + 1];
     }
 
     public void update(Observable o, Object arg) {
@@ -88,11 +90,30 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
                     neighbourCountsOccupied[(int) i.n_d]++;
                 if (detBits != null)
                     groupNeighbourCounts[Helper.hammingWeight((detBits.mask & i.i) ^ detBits.values)][(int) i.n_d]++;
-                for (int j = 0; j < 12; j++)
+                for (int j = 0; j < idnetManager.getd(); j++)
                     if ((i.i & (1 << j)) != 0)
                         bitwiseNeighbourCounts[j][(int) i.n_d]++;
                 max = Math.max(max, neighbourCounts[(int) i.n_d]);
             }
+    }
+
+    public void saveDataToFile(String fileName) throws IOException {
+        FileWriter fw = new FileWriter(fileName);
+        fw.write("# Total network:\n");
+        for (int i = 0; i <= MAX_NEIGHBOUR_COUNT; i++)
+            fw.write(i + " " + neighbourCounts[i] + "\n");
+        fw.write("\n# Occupied nodes:\n");
+        for (int i = 0; i <= MAX_NEIGHBOUR_COUNT; i++)
+            fw.write(i + " " + neighbourCountsOccupied[i] + "\n");
+        if (detBits != null) {
+            fw.write("\n# Determinant bit groups:\n");
+            for (int j = 0; j <= Helper.hammingWeight(detBits.mask); j++) {
+                fw.write("# S_" + j + ":\n");
+                for (int i = 0; i <= MAX_NEIGHBOUR_COUNT; i++)
+                    fw.write(i + " " + groupNeighbourCounts[j][i] + "\n");
+            }
+        }
+        fw.close();
     }
 
     @Override
@@ -118,7 +139,7 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
         if (detBits != null)
             lastGroupY = new int[Helper.hammingWeight(detBits.mask) + 1];
         else
-            lastGroupY = new int[12];
+            lastGroupY = new int[idnetManager.getd()];
         g.setFont(new Font("Arial", 0, 8));
         for (int i = 1; i <= MAX_NEIGHBOUR_COUNT; i++) {
             g.setColor(Color.LIGHT_GRAY);
@@ -154,8 +175,8 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
                 for (int j = 0; j <= d_m; j++) {
                     g.setColor(Color.getHSBColor((float) j / (float) (d_m + 1), 1.0f, 0.8f));
                     if (i > 0)
-                        g.drawLine(xOffset + (i - 1) * stepWidth, yOffset + height - lastGroupY[j], xOffset + i *
-                                stepWidth,
+                        g.drawLine(xOffset + (i - 1) * stepWidth, yOffset + height - lastGroupY[j], xOffset + i
+                                * stepWidth,
                                 yOffset + height - (int) (height * (double) groupNeighbourCounts[j][i] / (double) max));
                     lastGroupY[j] = (int) (height * (double) groupNeighbourCounts[j][i] / (double) max);
 
@@ -165,27 +186,27 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
                     }
                 }
             }/* else
-                for (int j = 0; j < 12; j++) {
-                    g.setColor(Color.getHSBColor((float) j / (float) 12, 1.0f, 0.8f));
-                    if (i > 0)
-                        g.drawLine(xOffset + (i - 1) * stepWidth, yOffset + height - lastGroupY[j], xOffset + i *
-                                stepWidth,
-                                yOffset + height - (int) (height * (double) bitwiseNeighbourCounts[j][i] / (double) max));
-                    lastGroupY[j] = (int) (height * (double) bitwiseNeighbourCounts[j][i] / (double) max);
+            for (int j = 0; j < d; j++) {
+            g.setColor(Color.getHSBColor((float) j / (float) d, 1.0f, 0.8f));
+            if (i > 0)
+            g.drawLine(xOffset + (i - 1) * stepWidth, yOffset + height - lastGroupY[j], xOffset + i *
+            stepWidth,
+            yOffset + height - (int) (height * (double) bitwiseNeighbourCounts[j][i] / (double) max));
+            lastGroupY[j] = (int) (height * (double) bitwiseNeighbourCounts[j][i] / (double) max);
 
-                    if (lastGroupY[j] > 0) {
-                        g.setColor(Color.getHSBColor((float) j / (float) 12, 1.0f, 1.0f));
-                        g.fillRect(xOffset + i * stepWidth - 2, yOffset + height - lastGroupY[j] - 2, 5, 5);
-                    }
-                }*/
+            if (lastGroupY[j] > 0) {
+            g.setColor(Color.getHSBColor((float) j / (float) d, 1.0f, 1.0f));
+            g.fillRect(xOffset + i * stepWidth - 2, yOffset + height - lastGroupY[j] - 2, 5, 5);
+            }
+            }*/
 
             g.setColor(Color.BLACK);
             g.drawString(i + "", xOffset + i * stepWidth - 3, yOffset + height + 10);
         }
 
         g.setColor(new Color(255, 255, 255, 128));
-        g.fillRect((int) (xOffset + idnetManager.gett_l() * stepWidth), yOffset, (int) ((idnetManager.gett_u() -
-                idnetManager.gett_l()) * stepWidth), height);
+        g.fillRect((int) (xOffset + idnetManager.gett_l() * stepWidth), yOffset, (int) ((idnetManager.gett_u()
+                - idnetManager.gett_l()) * stepWidth), height);
 
         g.setFont(new Font("Arial", 0, 12));
         if (detBits != null) {
@@ -197,13 +218,12 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
                 g.drawString("S_" + j, xOffset + MAX_NEIGHBOUR_COUNT * stepWidth + 72, yOffset + 163 + 30 * j);
             }
         }/* else
-            for (int j = 0; j < 12; j++) {
-                g.setColor(Color.getHSBColor((float) j / (float) 12, 1.0f, 1.0f));
-                g.fillRect(xOffset + MAX_NEIGHBOUR_COUNT * stepWidth + 50, yOffset + 150 + 30 * j, 18, 18);
-                g.setColor(Color.BLACK);
-                g.drawString(j + "", xOffset + MAX_NEIGHBOUR_COUNT * stepWidth + 72, yOffset + 163 + 30 * j);
-            }*/
+        for (int j = 0; j < d; j++) {
+        g.setColor(Color.getHSBColor((float) j / (float) d, 1.0f, 1.0f));
+        g.fillRect(xOffset + MAX_NEIGHBOUR_COUNT * stepWidth + 50, yOffset + 150 + 30 * j, 18, 18);
+        g.setColor(Color.BLACK);
+        g.drawString(j + "", xOffset + MAX_NEIGHBOUR_COUNT * stepWidth + 72, yOffset + 163 + 30 * j);
+        }*/
 
     }
-
 }

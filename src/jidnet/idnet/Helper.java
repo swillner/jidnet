@@ -15,23 +15,28 @@ public final class Helper {
      */
     public static int hammingWeight(int i) {
         int weight = 0;
-        for (int j = 0; j < 12; j++)
+        for (int j = 0; j < 32; j++) // int is 32 bit
             if ((i & (1 << j)) != 0)
                 weight++;
         return weight;
     }
 
     /**
-     * Gets the bitstring <code>v</code> as a string object with 12 bits according to the values of <code>v</code>
+     * Gets the bitstring <code>v</code> as a string object with <code>d</code> bits according to the values of <code>v</code>
      *
      * @param v
      * @return
      */
-    public static String getBitString(int v) {
+    public static String getBitString(int v, int d) {
         String str = Integer.toString(v, 2);
-        if (str.length() < 12)
-            str = "000000000000".substring(str.length()) + str;
+        int l = str.length();
+        for (int i = 0; i < d - l; i++)
+            str = "0" + str;
         return str;
+    }
+
+    public static String printInteger100(int i) {
+        return (i < 100 ? " " : "") + (i < 10 ? " " : "") + i;
     }
 
     /**
@@ -66,5 +71,4 @@ public final class Helper {
             res /= i;
         return res;
     }
-
 }

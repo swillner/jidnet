@@ -285,22 +285,7 @@ public class IdiotypicNetwork extends Observable {
         return calcGroupOccupationRec(maskDeterminantBits, valuesDeterminantBits, l, (1 << d));
     }
 
-    /**
-     * Creates new IdiotypicNetwork with given parameters
-     *
-     * @param d Length of bitstrings (cannot be changed afterwards)
-     * @param p Influx propability
-     * @param t_l Lower range of update window rule
-     * @param t_u Upper range of update window rule
-     * @param N highest possible occupation
-     */
-    public IdiotypicNetwork(int d, double p, int t_l, int t_u, int N) {
-        this.d = d;
-        this.p = p;
-        this.t_l = t_l;
-        this.t_u = t_u;
-        this.N = N;
-
+    protected void initialize() {
         idiotypes = new Idiotype[1 << d];
         idiotypes_ng = new Idiotype[1 << d];
         idiotypes_lg = new Idiotype[1 << d];
@@ -323,7 +308,25 @@ public class IdiotypicNetwork extends Observable {
             linkWeighting[2] = 1;
 
         reset();
+    }
 
+    /**
+     * Creates new IdiotypicNetwork with given parameters
+     *
+     * @param d Length of bitstrings (cannot be changed afterwards)
+     * @param p Influx propability
+     * @param t_l Lower range of update window rule
+     * @param t_u Upper range of update window rule
+     * @param N highest possible occupation
+     */
+    public IdiotypicNetwork(int d, double p, int t_l, int t_u, int N) {
+        this.d = d;
+        this.p = p;
+        this.t_l = t_l;
+        this.t_u = t_u;
+        this.N = N;
+
+        initialize();
     }
 
     /**
@@ -505,5 +508,10 @@ public class IdiotypicNetwork extends Observable {
      */
     public void setN(int N) {
         this.N = N;
+    }
+
+    public void setd(int d) {
+        this.d = d;
+        initialize();
     }
 }

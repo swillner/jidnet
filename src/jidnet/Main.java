@@ -107,7 +107,7 @@ public class Main {
                 idnetManager.iterate(5000);
                 detBits = idnetManager.calcDeterminantBits();
             }
-            String str = Helper.getBitString(detBits.mask) + " / " + Helper.getBitString(detBits.values);
+            String str = Helper.getBitString(detBits.mask, 12) + " / " + Helper.getBitString(detBits.values, 12);
             if (possibleDetBits.containsKey(str))
                 possibleDetBits.put(str, possibleDetBits.get(str) + 1);
             else {

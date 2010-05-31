@@ -17,6 +17,7 @@ import jidnet.idnet.IdnetManager;
 public class COGDiagramPanel extends JPanel implements Observer {
 
     private IdnetManager idnetManager;
+    private int d;
     final static int historySize = 1000;
     private double[][] cogHistory;
 
@@ -24,11 +25,17 @@ public class COGDiagramPanel extends JPanel implements Observer {
         super();
         this.idnetManager = idnetManager;
         idnetManager.addObserver(this);
-        cogHistory = new double[historySize][12];
+        change_d(idnetManager.getd());
+    }
+
+    public void change_d(int d) {
+        this.d = d;
+        cogHistory = new double[historySize][d];
+        repaint();
     }
 
     public void update(Observable o, Object arg) {
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < d; i++)
             cogHistory[Application.getIdnetManager().gett() % historySize][i] =
                     Application.getIdnetManager().getCOG()[i];
     }
@@ -36,10 +43,6 @@ public class COGDiagramPanel extends JPanel implements Observer {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-
-        //if (idnetManager.gett() == 0)
-        //    return;
 
         final int halfHeight = 200;
         int x_offset = 20;
@@ -56,10 +59,10 @@ public class COGDiagramPanel extends JPanel implements Observer {
 
         int y = y_offset + halfHeight;
         int old_y = y;
-        for (int j = 0; j < 12; j++)
+        for (int j = 0; j < d; j++)
             for (int i = 0; i < historySize; i++) {
                 y = y_offset + halfHeight - (int) Math.round(halfHeight * cogHistory[i][j]);
-                g.setColor(Color.getHSBColor((float) j / 12f, 1.0f, 1.0f));
+                g.setColor(Color.getHSBColor((float) j / (float) d, 1.0f, 1.0f));
                 g.drawLine(x_offset + i, old_y, x_offset + i, y);
                 old_y = y;
             }
@@ -67,13 +70,13 @@ public class COGDiagramPanel extends JPanel implements Observer {
 
         /*g.setColor(Color.BLACK);
         for (int i = 0; i < historySize; i++) {
-            double y_ = 0;
-            for (int j = 0; j < 12; j++)
-                for (int k = 0; k < 100; k++)
-                y_ += Math.abs(cogHistory[(i + historySize - k + 1) % historySize][j] - cogHistory[(i + historySize - k) % historySize][j]);
-            y = y_offset + halfHeight - (int) Math.round(halfHeight * y_ / 100);
-            g.drawLine(x_offset + i, old_y, x_offset + i, y);
-            old_y = y;
+        double y_ = 0;
+        for (int j = 0; j < d; j++)
+        for (int k = 0; k < 100; k++)
+        y_ += Math.abs(cogHistory[(i + historySize - k + 1) % historySize][j] - cogHistory[(i + historySize - k) % historySize][j]);
+        y = y_offset + halfHeight - (int) Math.round(halfHeight * y_ / 100);
+        g.drawLine(x_offset + i, old_y, x_offset + i, y);
+        old_y = y;
         }*/
 
         g.setColor(Color.getHSBColor(0.3f, 0.3f, 0.3f));
@@ -81,8 +84,8 @@ public class COGDiagramPanel extends JPanel implements Observer {
                 x_offset + Application.getIdnetManager().gett() % historySize + 1, y_offset + 2 * halfHeight);
 
         DeterminantBits determinantBits = idnetManager.calcDeterminantBits();
-        for (int j = 0; j < 12; j++) {
-            g.setColor(Color.getHSBColor((float) j / 12f, 1.0f, 1.0f));
+        for (int j = 0; j < d; j++) {
+            g.setColor(Color.getHSBColor((float) j / (float) d, 1.0f, 1.0f));
             g.fillRect(25, 20 * j + 2 * halfHeight + 3 * y_offset - 13, 18, 18);
             g.setColor(Color.BLACK);
             g.drawString("cog[" + j + "] = " + Math.round(idnetManager.getCOG()[j] * 1000) / 1000.0, 70, 20 * j + 2
@@ -97,9 +100,9 @@ public class COGDiagramPanel extends JPanel implements Observer {
         }
 
         g.setColor(Color.BLACK);
-        g.drawString("Determinant bits mask  = " + Helper.getBitString(determinantBits.mask), 500, 2 * halfHeight + 3
+        g.drawString("Determinant bits mask  = " + Helper.getBitString(determinantBits.mask, d), 500, 2 * halfHeight + 3
                 * y_offset);
-        g.drawString("Determinant bits values = " + Helper.getBitString(determinantBits.values), 500, 2 * halfHeight
+        g.drawString("Determinant bits values = " + Helper.getBitString(determinantBits.values, d), 500, 2 * halfHeight
                 + 3 * y_offset + 20);
         g.drawString("d_m = " + Helper.hammingWeight(determinantBits.mask), 500, 2 * halfHeight + 3 * y_offset + 40);
     }
