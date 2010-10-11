@@ -21,6 +21,14 @@ public final class Helper {
         return weight;
     }
 
+    public static int hammingWeightL(long i) {
+        int weight = 0;
+        for (int j = 0; j < 32; j++) // long is ?? bit
+            if ((i & (1 << j)) != 0)
+                weight++;
+        return weight;
+    }
+
     /**
      * Gets the bitstring <code>v</code> as a string object with <code>d</code> bits according to the values of <code>v</code>
      *

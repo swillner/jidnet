@@ -82,7 +82,7 @@ public class Test {
         }
 
 
-        int d_m = 6;
+        int d_m = 9;
 
         HashMap<Long, HashMap<Integer, Integer>> stateNeighbours = new HashMap<Long, HashMap<Integer, Integer>>();
         HashMap<Long, HashMap<ArrayList<Integer>, ArrayList<Integer>>> stateVectors = new HashMap<Long, HashMap<ArrayList<Integer>, ArrayList<Integer>>>();
@@ -136,6 +136,9 @@ public class Test {
                 }
             prep = tmp;
         }
+
+        prep = "ccc" + prep.substring(3, prep.length() - 3) + "000";
+
         System.out.println(prep);
 
 
@@ -158,7 +161,7 @@ public class Test {
             }
 
         /*try {
-            FileWriter fw = new FileWriter("dm" + d_m + ".net");
+            FileWriter fw = new FileWriter("dm" + d_m + "_c3.net");
             for (int i = 0; i < (1 << d); i++)
                 fw.write(i + " " + v[i & ((1 << d_m) - 1)] + "\n");
             fw.close();
@@ -169,7 +172,7 @@ public class Test {
         //for (int i = 0; i < (1 << (d_m - 2)); i++)
         //    v[i] = 1;
 
-        //System.out.println(Arrays.toString(v));
+        System.out.println(Arrays.toString(v));
         int maxbit = 0;
         while (true) {
             boolean found = false;
@@ -179,13 +182,19 @@ public class Test {
             for (int j = 0; j < (1 << d_m); j++) {
                 for (int k = 0; k < (1 << d_m); k++)
                     t[j] += b[j][k] * v[k];
+                System.out.println(j + " : " + v[j] + " -> " + t[j]);
                 if (t[j] >= 1 && t[j] <= 10) {
-                    if (v[j] == 0)
+                    if (v[j] == 0) {
+                        System.out.println("!!!!!!!!!!!!!!!!!!!!!!");
                         found = false;
-                } else if (v[j] == 1)
+                    }
+                } else if (v[j] == 1) {
                     found = false;
+                        System.out.println("!!!!!!!!!!!!!!!!!!!!!!");
+                        found = false;
+                    }
             }
-            //System.out.println(Arrays.toString(t));
+            System.out.println(found);
 
             /*if (found) {
             for (int j = 0; j < (1 << (d_m - 1)); j++)

@@ -43,12 +43,13 @@ public class Network1DPanel extends JPanel {
         // Draw mean occupation dots
         g.setColor(Color.BLACK);
         for (int i = 0; i < 4096; i++) {
-            long y = i / 1024 * 200 + 149
+            long y = /*i / 1024 * 200 + */149
                     - Math.round(idiotypicNetwork.getIdiotypes()[i].sum_n
                       / (double)idiotypicNetwork.gett()
                       / (double)idiotypicNetwork.getN() * 150);
             //g.drawLine(i % 1024, (int)y, i % 1024, (int)y);
-            g.drawRect(i % 1024, (int)y, 1, 1);
+            //g.drawRect(i % 1024, (int)y, 1, 1);
+            g.drawRect(i / 4, (int)y, 1, 1);
         }
 
     }

@@ -62,7 +62,7 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
         //if (drawType != DRAW_CURRENT)
         //    setDrawType(DRAW_CURRENT);
         recalc();
-        update(null, null);
+        update(null, "iteration");
         repaint();
     }
 
@@ -77,6 +77,8 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
     }
 
     public void update(Observable o, Object arg) {
+        if (!arg.equals("iteration"))
+            return;
         if (drawType == DRAW_CURRENT)
             if (isShowing())
                 recalc();

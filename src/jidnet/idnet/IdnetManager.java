@@ -306,8 +306,6 @@ public class IdnetManager extends IdiotypicNetwork {
         if (calcMeanGroupOccs)
             for (int l = 0; l <= d_m; l++)
                 totalGroupOccs[l] += getGroupOccupation(l);
-        setChanged();
-        notifyObservers();
     }
 
     /**
@@ -499,6 +497,6 @@ public class IdnetManager extends IdiotypicNetwork {
         }
         reader.close();
         setChanged();
-        notifyObservers();
+        notifyObservers("load");
     }
 }

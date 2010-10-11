@@ -37,7 +37,7 @@ public class LinkMatrix {
     }
 
     public static void main(String[] args) throws Exception {
-        for (int d_m = 0; d_m < d-m; d_m++) //int d_m = 3;
+        for (int d_m = 0; d_m <= 5; d_m++) //int d_m = 3;
         //int d_m = 10;
         {
 
@@ -62,8 +62,19 @@ public class LinkMatrix {
                 //System.out.println(i + " / " + (1 << d_m) + " done");
             }
 
-            String fileName = "d12blockmatrix" + d_m + ".png";
-            //fileName = "";
+                System.out.println();
+                System.out.println("\\begin{bmatrix}");
+                System.out.println("%d_m=" + d_m);
+                for (int i = 0; i < (1 << d_m); i++) {
+                    for (int j = 0; j < (1 << d_m); j++)
+                        System.out.print(b[i][j] + "&");
+                    System.out.println("\\\\");
+                }
+                System.out.println("\\end{bmatrix}");
+
+/*
+                String fileName = "d12blockmatrix" + d_m + ".png";
+            fileName = "";
 
             if (fileName.equals("")) {
                 System.out.print("      ");
@@ -82,7 +93,7 @@ public class LinkMatrix {
                 }
                 System.out.println();
             } else {
-                int squareSize = 1 << (11 - d_m);
+                int squareSize = 1 << (d - d_m);
                 BufferedImage img = new BufferedImage((1 << d_m) * squareSize, (1 << d_m) * squareSize, BufferedImage.TYPE_INT_ARGB);
                 Graphics g = img.createGraphics();
 
@@ -111,7 +122,7 @@ public class LinkMatrix {
                         v_i = 1;
 
                 }*/
-
+/*
                 for (int i = 0; i < (1 << d_m); i++)
                 for (int j = 0; j < (1 << d_m); j++) {
                 g.setColor(getColor(b[i][j], values));
@@ -119,7 +130,7 @@ public class LinkMatrix {
                 }
                 ImageIO.write(img, "png", new File(fileName));
             }
-
+*/
         }
     }
 

@@ -28,7 +28,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         try {
-            config.loadFromXML(new FileInputStream("config.xml"));
+            config.loadFromXML(new FileInputStream("jIdNet/config.xml"));
         } catch (Exception e) {
             System.err.println("Couldn't load config file 'config.xml', terminating");
             System.exit(-1);
@@ -49,6 +49,8 @@ public class Main {
                     showLinkMatrix();
                 else if (config.getProperty("action").equals("stat_from_snapshot"))
                     calcDetBitsFromSnapShot();
+                else if (config.getProperty("action").equals("cog_diagram"))
+                    createCOGDiagram();
                 else
                     System.err.println("Action unknown");
             } catch (Exception e) {
@@ -64,6 +66,21 @@ public class Main {
         if (config.getProperty(name) == null)
             throw new Exception("Configuration property '" + name + "' missing");
         return config.getProperty(name);
+    }
+
+    private static void createCOGDiagram() throws Exception {
+        idnetManager.setp(Double.parseDouble(getConfigProperty("p")));
+        idnetManager.reseed(Long.parseLong(getConfigProperty("first_seed")));
+        int tWindow = Integer.parseInt(getConfigProperty("t_window"));
+        idnetManager.setStatCenterOfGravity(true);
+        FileWriter fw = new FileWriter("cog_diagram.dat");
+        for (int i = 0; i < tWindow; i++) {
+            fw.write(i + " ");
+            for (int j = 0; j < idnetManager.getd(); j++)
+                fw.write((j>0 ? " " : "") + idnetManager.getCOG()[j]);
+            fw.write("\n");
+            idnetManager.iterate();
+        }
     }
 
     private static void calcDetBitsFromSnapShot() throws Exception {

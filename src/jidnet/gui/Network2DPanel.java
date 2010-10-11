@@ -30,8 +30,8 @@ public class Network2DPanel extends JPanel {
     private int[] undetRow, undetCol, detRow, detCol;
     private int undetBlockWidth, undetBlockHeight, undetBlockColCount, undetBlockRowCount;
     private int squareSize = 10; // Width/height of grid's squares
-    private final static int xOffset = 20;
-    private final static int yOffset = 20; // Offsets of grid
+    private int xOffset = 20;
+    private int yOffset = 20; // Offsets of grid
     private int last_i = -1;
 
     public Network2DPanel(IdnetManager idnetManager) {
@@ -108,6 +108,11 @@ public class Network2DPanel extends JPanel {
         });
 
         change_d(idnetManager.getd());
+    }
+
+    public void setOffset(int xOffset, int yOffset) {
+        this.xOffset = xOffset;
+        this.yOffset = yOffset;
     }
 
     public void change_d(int d) {
@@ -208,8 +213,11 @@ public class Network2DPanel extends JPanel {
      *  Generates order-array and blocks to rearrange nodes by determinant bit group (S_0, ...)
      */
     public void arrangeByDetBitGroups(DeterminantBits detBits) {
-        if (Helper.hammingWeight(detBits.mask) == 0)
+        if (Helper.hammingWeight(detBits.mask) == 0) {
+            arrangeDefault();
             return;
+        }
+
         this.detBits = detBits;
         int orderIndexLow = 0, orderIndexHigh = d - 1;
         for (int i = 0; i < d; i++)

@@ -34,11 +34,10 @@ public class IdiotypicNetwork extends Observable {
     protected boolean statNeighbourOccupations = false;
     /** Calculate center of gravity */
     protected boolean statCenterOfGravity = false;
-    /** Array of idiotpye indices to be kept occupied as external influx */
-    protected int[] externalInflux;
     /** Random number generator */
-    protected Random rng;
+    protected RandomGenerator rng;
     //int test;
+    protected int[] response = null;//{-1, 1, -1, +1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     /**
      * Does the influx on the network
@@ -55,16 +54,6 @@ public class IdiotypicNetwork extends Observable {
                 idiotypes[i].n++;
             }
         }
-    }
-
-    /**
-     * Does external influx to keep certain idiotypes occupied
-     */
-    protected final void externalInflux() {
-        if (externalInflux != null)
-            for (int i = 0; i < externalInflux.length; i++)
-                if (idiotypes[externalInflux[i]].n < N)
-                    idiotypes[externalInflux[i]].n++;
     }
 
     /**
@@ -111,6 +100,15 @@ public class IdiotypicNetwork extends Observable {
         return res;
     }
 
+    protected final int inBounds(int n) {
+        if (n < 0)
+            return 0;
+        else if (n > N)
+            return N;
+        else
+            return n;
+    }
+
     /**
      * Does the update on the network
      */
@@ -125,10 +123,16 @@ public class IdiotypicNetwork extends Observable {
 
             // Do window rule (weighted by node's occupation)
             if (idiotypes[i].n > 0)
-                if ((sum_n_d / idiotypes[i].n >= t_l) && (sum_n_d / idiotypes[i].n <= t_u))
-                    idiotypes_ng[i].n = idiotypes[i].n;
+                if (response == null)
+                    if ((sum_n_d / idiotypes[i].n >= t_l) && (sum_n_d / idiotypes[i].n <= t_u))
+                        idiotypes_ng[i].n = idiotypes[i].n;
+                    else
+                        idiotypes_ng[i].n = idiotypes[i].n - 1;
                 else
-                    idiotypes_ng[i].n = idiotypes[i].n - 1;
+                    if (Math.round(sum_n_d / idiotypes[i].n) < response.length)
+                        idiotypes_ng[i].n = inBounds(idiotypes[i].n + response[(int)Math.round(sum_n_d / idiotypes[i].n)]);
+                    else
+                        idiotypes_ng[i].n = idiotypes[i].n - 1;
             else
                 idiotypes_ng[i].n = 0;
 
@@ -177,14 +181,14 @@ public class IdiotypicNetwork extends Observable {
                 cog[i] = 0;
 
         influx();
-        /**
+        setChanged();
+        notifyObservers("influx");
+       /**
          * At this point:
          *      <code>idiotypes_lg</code> = last generation (<code>t</code>)
          *      <code>idiotypes</code>    = last generation (<code>t</code>) + influx
          *      <code>idiotypes_ng</code> = prelast generation (<code>t-1</code>)
          */
-        if (externalInflux != null)
-            externalInflux();
         update();
 
         // Norm center of gravity
@@ -199,6 +203,9 @@ public class IdiotypicNetwork extends Observable {
         idiotypes = idiotypes_ng;
         idiotypes_ng = tmp;
 
+        setChanged();
+        notifyObservers("update");
+
         // if extra statistics of neighbour occupation is needed, calculate new neighbour occupations (weighted)
         if (statNeighbourOccupations)
             for (int i = 0; i < (1 << d); i++) {
@@ -209,6 +216,8 @@ public class IdiotypicNetwork extends Observable {
 
         // Next timestep
         t++;
+        setChanged();
+        notifyObservers("iteration");
     }
 
     /**
@@ -297,7 +306,7 @@ public class IdiotypicNetwork extends Observable {
             idiotypes_lg[i] = new Idiotype(i);
         }
 
-        rng = new Random();
+        rng = new RandomGeneratorMT();
 
         linkWeighting = new double[d];
         // Normally apply unweighted two-mismatch links
@@ -438,23 +447,6 @@ public class IdiotypicNetwork extends Observable {
         return total_sum_n;
     }
 
-    /**
-     * Gets the external influx
-     *
-     * @return
-     */
-    public int[] getExternalInflux() {
-        return externalInflux;
-    }
-
-    /**
-     * Sets the external influx
-     * 
-     * @param externalInflux
-     */
-//    public void setExternalInflux(int[] externalInflux) {
-//        this.externalInflux = externalInflux;
-//    }
     /**
      * Sets if center of gravity should be calculated
      *

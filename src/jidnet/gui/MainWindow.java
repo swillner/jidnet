@@ -9,7 +9,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,17 +19,17 @@ import java.util.Properties;
 import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
+import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
 import javax.swing.text.MaskFormatter;
+import jidnet.idnet.Antigen;
 import jidnet.idnet.Helper;
 import jidnet.idnet.Idiotype;
 import jidnet.idnet.DeterminantBits;
@@ -159,6 +158,7 @@ public class MainWindow extends javax.swing.JFrame {
         detBitsDownButton = new javax.swing.JButton();
         textCustomBitMask = new javax.swing.JTextField();
         textCustomBitValues = new javax.swing.JTextField();
+        detBitsResetButton = new javax.swing.JButton();
         configurationsPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         configurationsList = new javax.swing.JList();
@@ -169,9 +169,13 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jLabel28 = new javax.swing.JLabel();
         spinnerPrepareGroupCount = new javax.swing.JSpinner();
-        jLabel29 = new javax.swing.JLabel();
         spinnerPrepareFillGroup = new javax.swing.JSpinner();
         prepareNetworkButton = new javax.swing.JButton();
+        prepareNetworkFillGroupButton = new javax.swing.JButton();
+        prepareNetworkAltCheckBox = new javax.swing.JCheckBox();
+        antigenPanel = new javax.swing.JPanel();
+        jButton2 = new javax.swing.JButton();
+        antigenDiagramPanel = new AntigenDiagramPanel();
         statisticsPanel = new javax.swing.JPanel();
         spinnerRedrawDelay = new javax.swing.JSpinner();
         jLabel1 = new javax.swing.JLabel();
@@ -225,6 +229,7 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuItem8 = new javax.swing.JMenuItem();
         menuStat_t = new javax.swing.JMenu();
         menuStatTotalOcc = new javax.swing.JMenu();
+        menuStatEntropy = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Idiotypic Network");
@@ -677,6 +682,12 @@ public class MainWindow extends javax.swing.JFrame {
 
         mainTabbedPane.addTab("Link weighting", linkWeightingPanel);
 
+        detBitsPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentHidden(java.awt.event.ComponentEvent evt) {
+                detBitsPanelComponentHidden(evt);
+            }
+        });
+
         jLabel24.setText("mask = ");
 
         jLabel25.setText("values =");
@@ -704,19 +715,29 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
-        textCustomBitMask.setFont(new java.awt.Font("Courier New", 1, 18)); // NOI18N
+        textCustomBitMask.setFont(new java.awt.Font("Courier New", 1, 18));
         textCustomBitMask.setText("000000000000");
-        textCustomBitMask.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                textCustomBitMaskPropertyChange(evt);
+        textCustomBitMask.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
+        textCustomBitMask.setInputVerifier(new InputVerifier() {
+            public boolean verify(JComponent input) {
+                JTextField tf = (JTextField) input;
+                if (tf.getText().length() != Application.getIdnetManager().getd())
+                return false;
+                for (int i = 0; i < tf.getText().length(); i++)
+                if (tf.getText().charAt(i) != '0' && tf.getText().charAt(i) != '1')
+                return false;
+                return true;
             }
         });
 
-        textCustomBitValues.setFont(new java.awt.Font("Courier New", 1, 18)); // NOI18N
+        textCustomBitValues.setFont(new java.awt.Font("Courier New", 1, 18));
         textCustomBitValues.setText("000000000000");
-        textCustomBitValues.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                textCustomBitMaskPropertyChange(evt);
+        textCustomBitValues.setInputVerifier(textCustomBitMask.getInputVerifier());
+
+        detBitsResetButton.setText("Reset");
+        detBitsResetButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                detBitsResetButtonActionPerformed(evt);
             }
         });
 
@@ -739,6 +760,7 @@ public class MainWindow extends javax.swing.JFrame {
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(detBitsResetButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(detBitsDownButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(detBitsUpButton, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
                 .addContainerGap(108, Short.MAX_VALUE))
@@ -751,7 +773,9 @@ public class MainWindow extends javax.swing.JFrame {
                     .addGroup(detBitsPanelLayout.createSequentialGroup()
                         .addComponent(detBitsUpButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(detBitsDownButton))
+                        .addComponent(detBitsDownButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(detBitsResetButton))
                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 393, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(detBitsPanelLayout.createSequentialGroup()
                         .addGroup(detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -805,8 +829,6 @@ public class MainWindow extends javax.swing.JFrame {
 
         spinnerPrepareGroupCount.setModel(new javax.swing.SpinnerNumberModel(2, 1, 12, 1));
 
-        jLabel29.setText("Fill group S_");
-
         spinnerPrepareFillGroup.setModel(new javax.swing.SpinnerNumberModel(0, 0, 12, 1));
 
         prepareNetworkButton.setText("Prepare network");
@@ -816,6 +838,15 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        prepareNetworkFillGroupButton.setText("Fill group S_");
+        prepareNetworkFillGroupButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                prepareNetworkFillGroupButtonActionPerformed(evt);
+            }
+        });
+
+        prepareNetworkAltCheckBox.setText("Alternative");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -824,18 +855,18 @@ public class MainWindow extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel28)
-                        .addGap(46, 46, 46)
-                        .addComponent(spinnerPrepareGroupCount, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel29)
+                        .addComponent(prepareNetworkButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(spinnerPrepareFillGroup)
-                        .addGap(95, 95, 95))
+                        .addComponent(prepareNetworkAltCheckBox))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(prepareNetworkButton, javax.swing.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
-                        .addGap(95, 95, 95))))
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(prepareNetworkFillGroupButton, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel28))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(spinnerPrepareGroupCount)
+                            .addComponent(spinnerPrepareFillGroup, javax.swing.GroupLayout.DEFAULT_SIZE, 68, Short.MAX_VALUE))))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -845,10 +876,12 @@ public class MainWindow extends javax.swing.JFrame {
                     .addComponent(spinnerPrepareGroupCount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel29)
+                    .addComponent(prepareNetworkFillGroupButton)
                     .addComponent(spinnerPrepareFillGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(prepareNetworkButton)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(prepareNetworkButton)
+                    .addComponent(prepareNetworkAltCheckBox))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -861,13 +894,13 @@ public class MainWindow extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addComponent(removeConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(overwriteConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(loadConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(newConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap(147, Short.MAX_VALUE))
+                        .addComponent(newConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(73, Short.MAX_VALUE))
         );
         configurationsPanelLayout.setVerticalGroup(
             configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -889,6 +922,50 @@ public class MainWindow extends javax.swing.JFrame {
         );
 
         mainTabbedPane.addTab("Configurations", configurationsPanel);
+
+        jButton2.setText("Insert antigen");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        antigenDiagramPanel.setBackground(new java.awt.Color(255, 255, 255));
+        antigenDiagramPanel.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("InternalFrame.borderShadow")));
+
+        javax.swing.GroupLayout antigenDiagramPanelLayout = new javax.swing.GroupLayout(antigenDiagramPanel);
+        antigenDiagramPanel.setLayout(antigenDiagramPanelLayout);
+        antigenDiagramPanelLayout.setHorizontalGroup(
+            antigenDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 543, Short.MAX_VALUE)
+        );
+        antigenDiagramPanelLayout.setVerticalGroup(
+            antigenDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 525, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout antigenPanelLayout = new javax.swing.GroupLayout(antigenPanel);
+        antigenPanel.setLayout(antigenPanelLayout);
+        antigenPanelLayout.setHorizontalGroup(
+            antigenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(antigenPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(antigenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(antigenDiagramPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton2))
+                .addContainerGap())
+        );
+        antigenPanelLayout.setVerticalGroup(
+            antigenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(antigenPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jButton2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(antigenDiagramPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        mainTabbedPane.addTab("Antigen", antigenPanel);
 
         statisticsPanel.setPreferredSize(new java.awt.Dimension(681, 163));
 
@@ -1321,6 +1398,9 @@ public class MainWindow extends javax.swing.JFrame {
         menuStatTotalOcc.setText("total occ. = 0");
         jMenuBar1.add(menuStatTotalOcc);
 
+        menuStatEntropy.setText("S = 0.0");
+        jMenuBar1.add(menuStatEntropy);
+
         setJMenuBar(jMenuBar1);
 
         pack();
@@ -1353,6 +1433,15 @@ public class MainWindow extends javax.swing.JFrame {
         tLabel.setText(Integer.toString(Application.getIdnetManager().gett()));
         menuStat_t.setText("t = " + Integer.toString(Application.getIdnetManager().gett()));
         menuStatTotalOcc.setText("total occ. = " + Integer.toString(Application.getIdnetManager().gettotal_sum_n()));
+        double S = 0;
+        for (int i = 0; i < (1 << Application.getIdnetManager().getd()); i++) {
+            double p1 = (double) Application.getIdnetManager().getIdiotypes()[i].sum_n / (double) Application.getIdnetManager().gett();
+            double p0 = 1 - p1;
+            if (p0 != 0 && p1 != 0)
+                S += p1 * Math.log(p1) + p0 * Math.log(p0);
+        }
+        S = -S / Math.log(2) / (1 << Application.getIdnetManager().getd());
+        menuStatEntropy.setText("S = " + Math.round(S * 10000) / 10000.);
         totalOccLabel.setText(Integer.toString(Application.getIdnetManager().gettotal_sum_n()));
         for (Window w : getWindows())
             w.repaint();
@@ -1437,9 +1526,7 @@ public class MainWindow extends javax.swing.JFrame {
         int s = configurationsList.getSelectedIndex();
         if (s > -1) {
             Application.getIdnetManager().loadParams(Application.getConfigurations().get(s));
-            ((Network2DPanel) network2DPanel).change_d(Application.getIdnetManager().getd());
-            ((LinkMatrixPanel) linkMatrixPanel).change_d(Application.getIdnetManager().getd());
-            ((COGDiagramPanel) cogDiagramPanel).change_d(Application.getIdnetManager().getd());
+            change_d(Application.getIdnetManager().getd());
             Application.getIdnetManager().reset();
             updateParamSpinners();
         }
@@ -1533,9 +1620,12 @@ public class MainWindow extends javax.swing.JFrame {
             int d_m = Application.getIdnetManager().getd_m();
             text = "Group\tMean occ.\n\n";
             for (int i = 0; i <= d_m; i++)
-                text += "S_" + i + "\t" + (double) ((int) (10000 * (double) Application.getIdnetManager().
+                //text += "S_" + i + "\t" + (double) ((int) (10000 * (double) Application.getIdnetManager().
+                //        getTotalGroupOccs()[i] / Application.getIdnetManager().gett() / Application.getIdnetManager().
+                //        calcGroupSize(i, d_m))) / 10000 + "\n";
+                text += "S_" + i + "\t" + (double) ((double) Application.getIdnetManager().
                         getTotalGroupOccs()[i] / Application.getIdnetManager().gett() / Application.getIdnetManager().
-                        calcGroupSize(i, d_m))) / 10000 + "\n";
+                        calcGroupSize(i, d_m)) + "\n";
         }
         groupOccText.setText(text);
     }//GEN-LAST:event_calcGroupOccButtonActionPerformed
@@ -1643,7 +1733,6 @@ public class MainWindow extends javax.swing.JFrame {
                 try {
                     BufferedImage i = new BufferedImage(mainTabbedPane.getSelectedComponent().getWidth(), mainTabbedPane.getSelectedComponent().getHeight(), BufferedImage.TYPE_INT_ARGB);
                     mainTabbedPane.getSelectedComponent().paint(i.createGraphics());
-                    //cogDiagramPanel.paint(i.createGraphics());
                     ImageIO.write(i, "png", new File(fileName));
                 } catch (IOException io) {
                     io.printStackTrace();
@@ -1653,15 +1742,69 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void prepareNetworkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prepareNetworkButtonActionPerformed
         int d_m = (Integer) spinnerPrepareGroupCount.getValue();
-        int k = (Integer) spinnerPrepareFillGroup.getValue();
-        int mask = (1 << d_m) - 1;
-        Application.getIdnetManager().reset();
-        Idiotype[] idiotypes = Application.getIdnetManager().getIdiotypes();
+
+        if (d_m < 4)
+            return;
+
+        int[] v = new int[1 << d_m];
+        String prep = "31";
+        for (int j = 0; j < d_m - 4; j++) {
+            String tmp = "";
+            for (int i = 0; i < prep.length(); i++)
+                switch (prep.charAt(i)) {
+                    case '1':
+                        if (i > 0 && (i % 2 == 1) && prep.charAt(i - 1) == '3')
+                            tmp += "21";
+                        else
+                            tmp += "11";
+                        break;
+                    case '2':
+                        tmp += "31";
+                        break;
+                    case '3':
+                        if (i < prep.length() - 1 && (i % 2 == 0) && prep.charAt(i + 1) == '1')
+                            tmp += "32";
+                        else
+                            tmp += "33";
+                        break;
+                    case 'c':
+                        tmp += "c3";
+                        break;
+                }
+            prep = tmp;
+        }
+
+        if (prepareNetworkAltCheckBox.isSelected())
+            prep = "c" + prep.substring(1, prep.length() - 1) + "0";
+
+        for (int i = 0; i < prep.length(); i++)
+            switch (prep.charAt(i)) {
+                case '1':
+                    v[8 * i] = 1;
+                    break;
+                case '2':
+                    v[8 * i] = v[8 * i + 4] = 1;
+                    break;
+                case '3':
+                    v[8 * i + 1] = v[8 * i + 2] = v[8 * i + 4] = 1;
+                    break;
+                case 'c':
+                    v[8 * i + 3] = v[8 * i + 5] = v[8 * i + 6] = 1;
+                    break;
+            }
+
         for (int i = 0; i < (1 << Application.getIdnetManager().getd()); i++)
-            if (Helper.hammingWeight(i & mask) == k)
-                idiotypes[i].n = 1;
-        textCustomBitMask.setText(Helper.getBitString(mask, Application.getIdnetManager().getd()));
+            Application.getIdnetManager().getIdiotypes()[i].n = v[i & ((1 << d_m) - 1)];
+
+        String s = "";
+        for (int i = 0; i < Application.getIdnetManager().getd(); i++)
+            if (i < Application.getIdnetManager().getd() - d_m)
+                s += "0";
+            else
+                s += "1";
+        textCustomBitMask.setText(s);
         textCustomBitValues.setText(Helper.getBitString(0, Application.getIdnetManager().getd()));
+        menuItemDrawDetBitsActionPerformed(null);
     }//GEN-LAST:event_prepareNetworkButtonActionPerformed
 
     private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
@@ -1755,6 +1898,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void menuItemRecalcActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemRecalcActionPerformed
         Application.getIdnetManager().recalc();
+        ((COGDiagramPanel) cogDiagramPanel).recalc();
         updateIdnetStatistics();
     }//GEN-LAST:event_menuItemRecalcActionPerformed
 
@@ -1829,6 +1973,29 @@ public class MainWindow extends javax.swing.JFrame {
         requestFocus();
     }//GEN-LAST:event_jMenuItem8ActionPerformed
 
+    private void change_d(int d) {
+        Application.getIdnetManager().setd(d);
+        if (menuItemDrawDetBits.isSelected()) {
+            menuItemDrawDetBits.setSelected(false);
+            menuItemDrawDetBitsActionPerformed(null);
+        }
+        if (menuItemExtNeighbourStat.isSelected()) {
+            menuItemExtNeighbourStat.setSelected(false);
+            menuItemExtNeighbourStatActionPerformed(null);
+        }
+
+        ((LinkMatrixPanel) linkMatrixPanel).change_d(d);
+        ((Network2DPanel) network2DPanel).change_d(d);
+        ((COGDiagramPanel) cogDiagramPanel).change_d(d);
+        ((DefaultListModel) detBitsList.getModel()).clear();
+        for (int i = 0; i < Application.getIdnetManager().getd(); i++)
+            ((DefaultListModel) detBitsList.getModel()).addElement(i + "");
+
+        textCustomBitMask.setText(Helper.getBitString(0, Application.getIdnetManager().getd()));
+        textCustomBitValues.setText(Helper.getBitString(0, Application.getIdnetManager().getd()));
+        updateParamSpinners();
+    }
+
     private void jMenuItem9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem9ActionPerformed
         if (timer.isRunning()) {
             menuItemRun.setSelected(false);
@@ -1838,26 +2005,7 @@ public class MainWindow extends javax.swing.JFrame {
         if (nStr != null && !nStr.equals(""))
             try {
                 final int d = Integer.parseInt(nStr);
-                Application.getIdnetManager().setd(d);
-                if (menuItemDrawDetBits.isSelected()) {
-                    menuItemDrawDetBits.setSelected(false);
-                    menuItemDrawDetBitsActionPerformed(evt);
-                }
-                if (menuItemExtNeighbourStat.isSelected()) {
-                    menuItemExtNeighbourStat.setSelected(false);
-                    menuItemExtNeighbourStatActionPerformed(evt);
-                }
-
-                ((LinkMatrixPanel) linkMatrixPanel).change_d(d);
-                ((Network2DPanel) network2DPanel).change_d(d);
-                ((COGDiagramPanel) cogDiagramPanel).change_d(d);
-                ((DefaultListModel) detBitsList.getModel()).clear();
-                for (int i = 0; i < Application.getIdnetManager().getd(); i++)
-                    ((DefaultListModel) detBitsList.getModel()).addElement(i + "");
-
-                textCustomBitMask.setText(Helper.getBitString(0, Application.getIdnetManager().getd()));
-                textCustomBitValues.setText(Helper.getBitString(0, Application.getIdnetManager().getd()));
-                updateParamSpinners();
+                change_d(d);
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this, "Not an integer!");
             }
@@ -1905,10 +2053,37 @@ public class MainWindow extends javax.swing.JFrame {
         linkMatrixText.setText(text);
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void textCustomBitMaskPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_textCustomBitMaskPropertyChange
+    private void prepareNetworkFillGroupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prepareNetworkFillGroupButtonActionPerformed
+        int d_m = (Integer) spinnerPrepareGroupCount.getValue();
+        int k = (Integer) spinnerPrepareFillGroup.getValue();
+        int mask = (1 << d_m) - 1;
+        Application.getIdnetManager().reset();
+        Idiotype[] idiotypes = Application.getIdnetManager().getIdiotypes();
+        for (int i = 0; i < (1 << Application.getIdnetManager().getd()); i++)
+            if (Helper.hammingWeight(i & mask) == k)
+                idiotypes[i].n = 1;
+        textCustomBitMask.setText(Helper.getBitString(mask, Application.getIdnetManager().getd()));
+        textCustomBitValues.setText(Helper.getBitString(0, Application.getIdnetManager().getd()));
+    }//GEN-LAST:event_prepareNetworkFillGroupButtonActionPerformed
+
+    private void detBitsPanelComponentHidden(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_detBitsPanelComponentHidden
         menuItemDrawDetBitsActionPerformed(null);
-    }//GEN-LAST:event_textCustomBitMaskPropertyChange
+    }//GEN-LAST:event_detBitsPanelComponentHidden
+
+    private void detBitsResetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_detBitsResetButtonActionPerformed
+        for (int i = 0; i < Application.getIdnetManager().getd(); i++)
+            ((DefaultListModel) detBitsList.getModel()).setElementAt(i, i);
+        detBitsList.setSelectedIndex(-1);
+        menuItemDrawDetBitsActionPerformed(evt);
+    }//GEN-LAST:event_detBitsResetButtonActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        ((AntigenDiagramPanel)antigenDiagramPanel).setAntigen(new Antigen(Application.getIdnetManager(), 0));
+    }//GEN-LAST:event_jButton2ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel antigenDiagramPanel;
+    private javax.swing.JPanel antigenPanel;
     private javax.swing.JButton calcClustersButton;
     private javax.swing.JButton calcGroupOccButton;
     private javax.swing.JPanel clusterPanel;
@@ -1919,10 +2094,12 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JButton detBitsDownButton;
     private javax.swing.JList detBitsList;
     private javax.swing.JPanel detBitsPanel;
+    private javax.swing.JButton detBitsResetButton;
     private javax.swing.JButton detBitsUpButton;
     private javax.swing.ButtonGroup drawTypeButtonGroup;
     private javax.swing.JTextArea groupOccText;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -1945,7 +2122,6 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel28;
-    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
     private javax.swing.JLabel jLabel4;
@@ -1995,6 +2171,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem menuItemRun;
     private javax.swing.JMenuItem menuItemSaveSnapshot;
     private javax.swing.JMenuItem menuItemStep;
+    private javax.swing.JMenu menuStatEntropy;
     private javax.swing.JMenu menuStatTotalOcc;
     private javax.swing.JMenu menuStat_d;
     private javax.swing.JMenu menuStat_p;
@@ -2004,7 +2181,9 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel networkTopologyPanel;
     private javax.swing.JButton newConfigButton;
     private javax.swing.JButton overwriteConfigButton;
+    private javax.swing.JCheckBox prepareNetworkAltCheckBox;
     private javax.swing.JButton prepareNetworkButton;
+    private javax.swing.JButton prepareNetworkFillGroupButton;
     private javax.swing.JButton removeConfigButton;
     private javax.swing.JButton setp_deadlyButton;
     private javax.swing.JSpinner spinnerLinkW0;

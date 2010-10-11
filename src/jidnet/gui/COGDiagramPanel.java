@@ -20,6 +20,7 @@ public class COGDiagramPanel extends JPanel implements Observer {
     private int d;
     final static int historySize = 1000;
     private double[][] cogHistory;
+    private double[] means;
 
     public COGDiagramPanel(IdnetManager idnetManager) {
         super();
@@ -31,13 +32,22 @@ public class COGDiagramPanel extends JPanel implements Observer {
     public void change_d(int d) {
         this.d = d;
         cogHistory = new double[historySize][d];
+        means = new double[d];
         repaint();
     }
 
     public void update(Observable o, Object arg) {
-        for (int i = 0; i < d; i++)
+        if (!arg.equals("iteration"))
+            return;
+        for (int i = 0; i < d; i++) {
             cogHistory[Application.getIdnetManager().gett() % historySize][i] =
                     Application.getIdnetManager().getCOG()[i];
+            means[i] += Application.getIdnetManager().getCOG()[i];
+        }
+    }
+
+    public void recalc() {
+        means = new double[d];
     }
 
     @Override
@@ -88,10 +98,12 @@ public class COGDiagramPanel extends JPanel implements Observer {
             g.setColor(Color.getHSBColor((float) j / (float) d, 1.0f, 1.0f));
             g.fillRect(25, 20 * j + 2 * halfHeight + 3 * y_offset - 13, 18, 18);
             g.setColor(Color.BLACK);
-            g.drawString("cog[" + j + "] = " + Math.round(idnetManager.getCOG()[j] * 1000) / 1000.0, 70, 20 * j + 2
+            g.drawString("cog[" + j + "] = " + Math.round(idnetManager.getCOG()[j] * 1000000000) / 1000000000.0, 70, 20 * j + 2
                     * halfHeight + 3 * y_offset);
             g.drawString("s(" + j + ") = " + Math.round(idnetManager.getCOGStandardDeviation(j) * 10000) / 10000.0,
-                    200, 20 * j + 2 * halfHeight + 3 * y_offset);
+                    235, 20 * j + 2 * halfHeight + 3 * y_offset);
+            g.drawString("mean[" + j + "] = " + Math.round(means[j] / idnetManager.gett() * 1000000000) / 1000000000.0, 360, 20 * j + 2
+                    * halfHeight + 3 * y_offset);
             if ((determinantBits.mask & (1 << j)) != 0)
                 if ((determinantBits.values & (1 << j)) != 0)
                     g.drawString("1", 50, 20 * j + 2 * halfHeight + 3 * y_offset);
@@ -100,10 +112,10 @@ public class COGDiagramPanel extends JPanel implements Observer {
         }
 
         g.setColor(Color.BLACK);
-        g.drawString("Determinant bits mask  = " + Helper.getBitString(determinantBits.mask, d), 500, 2 * halfHeight + 3
+        g.drawString("Determinant bits mask  = " + Helper.getBitString(determinantBits.mask, d), 550, 2 * halfHeight + 3
                 * y_offset);
-        g.drawString("Determinant bits values = " + Helper.getBitString(determinantBits.values, d), 500, 2 * halfHeight
+        g.drawString("Determinant bits values = " + Helper.getBitString(determinantBits.values, d), 550, 2 * halfHeight
                 + 3 * y_offset + 20);
-        g.drawString("d_m = " + Helper.hammingWeight(determinantBits.mask), 500, 2 * halfHeight + 3 * y_offset + 40);
+        g.drawString("d_m = " + Helper.hammingWeight(determinantBits.mask), 550, 2 * halfHeight + 3 * y_offset + 40);
     }
 }
