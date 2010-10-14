@@ -182,6 +182,9 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel29 = new javax.swing.JLabel();
         spinnerAntigenGroup = new javax.swing.JSpinner();
         buttonAntigenRemove = new javax.swing.JButton();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        textAreaAntigen = new javax.swing.JTextArea();
+        jButton3 = new javax.swing.JButton();
         blocksViewPanel = new javax.swing.JPanel();
         networkBlockPanel = new NetworkBlockPanel(Application.getIdnetManager());
         blocksPanel = new javax.swing.JPanel();
@@ -234,6 +237,7 @@ public class MainWindow extends javax.swing.JFrame {
         menuItemDrawDetBits = new javax.swing.JCheckBoxMenuItem();
         menuItemFullscreen = new javax.swing.JCheckBoxMenuItem();
         jMenuItem10 = new javax.swing.JMenuItem();
+        menuItemViewShowNeighbourMeans = new javax.swing.JCheckBoxMenuItem();
         jMenu4 = new javax.swing.JMenu();
         menuStat_d = new javax.swing.JMenu();
         jMenuItem9 = new javax.swing.JMenuItem();
@@ -275,7 +279,7 @@ public class MainWindow extends javax.swing.JFrame {
         cogDiagramPanel.setLayout(cogDiagramPanelLayout);
         cogDiagramPanelLayout.setHorizontalGroup(
             cogDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 573, Short.MAX_VALUE)
+            .addGap(0, 583, Short.MAX_VALUE)
         );
         cogDiagramPanelLayout.setVerticalGroup(
             cogDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -295,7 +299,7 @@ public class MainWindow extends javax.swing.JFrame {
         network2DPanel.setLayout(network2DPanelLayout);
         network2DPanelLayout.setHorizontalGroup(
             network2DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 573, Short.MAX_VALUE)
+            .addGap(0, 583, Short.MAX_VALUE)
         );
         network2DPanelLayout.setVerticalGroup(
             network2DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -310,7 +314,7 @@ public class MainWindow extends javax.swing.JFrame {
         linkMatrixPanel.setLayout(linkMatrixPanelLayout);
         linkMatrixPanelLayout.setHorizontalGroup(
             linkMatrixPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 573, Short.MAX_VALUE)
+            .addGap(0, 583, Short.MAX_VALUE)
         );
         linkMatrixPanelLayout.setVerticalGroup(
             linkMatrixPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -330,7 +334,7 @@ public class MainWindow extends javax.swing.JFrame {
         networkTopologyPanel.setLayout(networkTopologyPanelLayout);
         networkTopologyPanelLayout.setHorizontalGroup(
             networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 573, Short.MAX_VALUE)
+            .addGap(0, 583, Short.MAX_VALUE)
         );
         networkTopologyPanelLayout.setVerticalGroup(
             networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -351,7 +355,7 @@ public class MainWindow extends javax.swing.JFrame {
         network1DPanel.setLayout(network1DPanelLayout);
         network1DPanelLayout.setHorizontalGroup(
             network1DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 573, Short.MAX_VALUE)
+            .addGap(0, 583, Short.MAX_VALUE)
         );
         network1DPanelLayout.setVerticalGroup(
             network1DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -410,7 +414,7 @@ public class MainWindow extends javax.swing.JFrame {
                         .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(calcGroupOccButton, 0, 0, Short.MAX_VALUE)
                             .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE))))
-                .addContainerGap(167, Short.MAX_VALUE))
+                .addContainerGap(177, Short.MAX_VALUE))
         );
         clusterPanelLayout.setVerticalGroup(
             clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -677,7 +681,7 @@ public class MainWindow extends javax.swing.JFrame {
                         .addComponent(spinnerp_deadly, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(6, 6, 6)
                         .addComponent(setp_deadlyButton, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(153, Short.MAX_VALUE))
+                .addContainerGap(163, Short.MAX_VALUE))
         );
         linkWeightingPanelLayout.setVerticalGroup(
             linkWeightingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -775,7 +779,7 @@ public class MainWindow extends javax.swing.JFrame {
                     .addComponent(detBitsResetButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(detBitsDownButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(detBitsUpButton, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
-                .addContainerGap(112, Short.MAX_VALUE))
+                .addContainerGap(122, Short.MAX_VALUE))
         );
         detBitsPanelLayout.setVerticalGroup(
             detBitsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -912,7 +916,7 @@ public class MainWindow extends javax.swing.JFrame {
                         .addComponent(loadConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(newConfigButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(75, Short.MAX_VALUE))
+                .addContainerGap(85, Short.MAX_VALUE))
         );
         configurationsPanelLayout.setVerticalGroup(
             configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -949,11 +953,11 @@ public class MainWindow extends javax.swing.JFrame {
         antigenDiagramPanel.setLayout(antigenDiagramPanelLayout);
         antigenDiagramPanelLayout.setHorizontalGroup(
             antigenDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 547, Short.MAX_VALUE)
+            .addGap(0, 557, Short.MAX_VALUE)
         );
         antigenDiagramPanelLayout.setVerticalGroup(
             antigenDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 533, Short.MAX_VALUE)
+            .addGap(0, 390, Short.MAX_VALUE)
         );
 
         jLabel29.setText("in Group S_");
@@ -967,22 +971,36 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        textAreaAntigen.setColumns(20);
+        textAreaAntigen.setRows(5);
+        jScrollPane7.setViewportView(textAreaAntigen);
+
+        jButton3.setText("Insert from clipboard");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout antigenPanelLayout = new javax.swing.GroupLayout(antigenPanel);
         antigenPanel.setLayout(antigenPanelLayout);
         antigenPanelLayout.setHorizontalGroup(
             antigenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(antigenPanelLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, antigenPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(antigenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(antigenDiagramPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(antigenPanelLayout.createSequentialGroup()
+                .addGroup(antigenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(antigenDiagramPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane7, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, antigenPanelLayout.createSequentialGroup()
                         .addComponent(buttonAntigenInsert)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel29)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(spinnerAntigenGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(buttonAntigenRemove)))
+                        .addComponent(buttonAntigenRemove)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton3)))
                 .addContainerGap())
         );
         antigenPanelLayout.setVerticalGroup(
@@ -993,8 +1011,11 @@ public class MainWindow extends javax.swing.JFrame {
                     .addComponent(buttonAntigenInsert)
                     .addComponent(jLabel29)
                     .addComponent(spinnerAntigenGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(buttonAntigenRemove))
+                    .addComponent(buttonAntigenRemove)
+                    .addComponent(jButton3))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(antigenDiagramPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -1007,7 +1028,7 @@ public class MainWindow extends javax.swing.JFrame {
         networkBlockPanel.setLayout(networkBlockPanelLayout);
         networkBlockPanelLayout.setHorizontalGroup(
             networkBlockPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 573, Short.MAX_VALUE)
+            .addGap(0, 583, Short.MAX_VALUE)
         );
         networkBlockPanelLayout.setVerticalGroup(
             networkBlockPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1045,7 +1066,7 @@ public class MainWindow extends javax.swing.JFrame {
             .addGroup(blocksPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(blocksPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                    .addComponent(jScrollPane6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE)
                     .addComponent(jButton2))
                 .addContainerGap())
         );
@@ -1237,7 +1258,7 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addComponent(mainTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE)
+                .addComponent(mainTabbedPane)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(statisticsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -1448,6 +1469,14 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         jMenu3.add(jMenuItem10);
+
+        menuItemViewShowNeighbourMeans.setText("Show neighbour means");
+        menuItemViewShowNeighbourMeans.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuItemViewShowNeighbourMeansActionPerformed(evt);
+            }
+        });
+        jMenu3.add(menuItemViewShowNeighbourMeans);
 
         jMenuBar1.add(jMenu3);
 
@@ -2208,19 +2237,35 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_detBitsResetButtonActionPerformed
 
     private void buttonAntigenInsertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAntigenInsertActionPerformed
-        int a = 0;
-        if (menuItemDrawDetBits.isSelected()) {
-            DeterminantBits detBits = Application.getIdnetManager().calcDeterminantBits();
-            int m = 1;
-            for (int i = 0; i < (1 << Application.getIdnetManager().getd()); i++) {
-                if (Helper.hammingWeight(i & detBits.mask) == (Integer) spinnerAntigenGroup.getValue()) {
-                    m = i;
-                    break;
+        if (textAreaAntigen.getText().length() == 0) {
+            int a = 0;
+            if (menuItemDrawDetBits.isSelected()) {
+                DeterminantBits detBits = Application.getIdnetManager().calcDeterminantBits();
+                int m = 1;
+                for (int i = 0; i < (1 << Application.getIdnetManager().getd()); i++) {
+                    if (Helper.hammingWeight(i & detBits.mask) == (Integer) spinnerAntigenGroup.getValue()) {
+                        m = i;
+                        break;
+                    }
+                }
+                a = detBits.values ^ m;
+            }
+            ((AntigenDiagramPanel) antigenDiagramPanel).addAntigen(new Antigen(Application.getIdnetManager(), new int[]{a}));
+        } else {
+            if (!textAreaAntigen.getText().endsWith("\n")) {
+                textAreaAntigen.setText(textAreaAntigen.getText() + "\n");
+            }
+            String str[] = textAreaAntigen.getText().split("\n");
+            int[] a = new int[str.length];
+            for (int i = 0; i < str.length; i++) {
+                try {
+                    a[i] = Integer.parseInt(str[i], 2);
+                } catch(NumberFormatException e) {
+                    return;
                 }
             }
-            a = detBits.values ^ m;
+            ((AntigenDiagramPanel) antigenDiagramPanel).addAntigen(new Antigen(Application.getIdnetManager(), a));
         }
-        ((AntigenDiagramPanel) antigenDiagramPanel).addAntigen(new Antigen(Application.getIdnetManager(), a));
     }//GEN-LAST:event_buttonAntigenInsertActionPerformed
 
     private void buttonAntigenRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAntigenRemoveActionPerformed
@@ -2229,12 +2274,25 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         ArrayList<Integer> s = new ArrayList<Integer>();
+        if (!blocksArea.getText().endsWith("\n")) {
+            blocksArea.setText(blocksArea.getText() + "\n");
+        }
         String str[] = blocksArea.getText().split("\n");
         for (int i = 0; i < str.length; i++) {
             s.add(Integer.parseInt(str[i], 2));
         }
         ((NetworkBlockPanel) networkBlockPanel).setSubgroupCreators(s);
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        textAreaAntigen.setText(Application.getClipboardContents());
+        buttonAntigenInsertActionPerformed(evt);
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void menuItemViewShowNeighbourMeansActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemViewShowNeighbourMeansActionPerformed
+        ((Network2DPanel)network2DPanel).setShowNeighbourMeans(menuItemViewShowNeighbourMeans.isSelected());
+    }//GEN-LAST:event_menuItemViewShowNeighbourMeansActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel antigenDiagramPanel;
     private javax.swing.JPanel antigenPanel;
@@ -2259,6 +2317,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JTextArea groupOccText;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -2315,6 +2374,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPanel linkMatrixPanel;
     private javax.swing.JTextArea linkMatrixText;
@@ -2332,6 +2392,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem menuItemRun;
     private javax.swing.JMenuItem menuItemSaveSnapshot;
     private javax.swing.JMenuItem menuItemStep;
+    private javax.swing.JCheckBoxMenuItem menuItemViewShowNeighbourMeans;
     private javax.swing.JMenu menuStatEntropy;
     private javax.swing.JMenu menuStatTotalOcc;
     private javax.swing.JMenu menuStat_d;
@@ -2374,6 +2435,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JSpinner spinnert_u;
     private javax.swing.JPanel statisticsPanel;
     private javax.swing.JLabel tLabel;
+    private javax.swing.JTextArea textAreaAntigen;
     private javax.swing.JTextField textCustomBitMask;
     private javax.swing.JTextField textCustomBitValues;
     private javax.swing.ButtonGroup topologyDrawTypeButtonGroup;

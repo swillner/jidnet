@@ -1,7 +1,13 @@
 package jidnet.gui;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -68,7 +74,6 @@ public final class Application {
                     mainWindow.setState(JFrame.MAXIMIZED_BOTH);
                     mainWindow.setVisible(true);
                 }
-
             });
         } catch (InterruptedException e1) {
         } catch (InvocationTargetException e2) {
@@ -119,4 +124,26 @@ public final class Application {
         return configurations;
     }
 
+    public static String getClipboardContents() {
+        String result = "";
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        //odd: the Object param of getContents is not currently used
+        Transferable contents = clipboard.getContents(null);
+        boolean hasTransferableText =
+                (contents != null)
+                && contents.isDataFlavorSupported(DataFlavor.stringFlavor);
+        if (hasTransferableText) {
+            try {
+                result = (String) contents.getTransferData(DataFlavor.stringFlavor);
+            } catch (UnsupportedFlavorException ex) {
+                //highly unlikely since we are using a standard DataFlavor
+                System.out.println(ex);
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                System.out.println(ex);
+                ex.printStackTrace();
+            }
+        }
+        return result;
+    }
 }

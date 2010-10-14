@@ -48,7 +48,7 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
         this.drawType = drawType;
         switch (drawType) {
             case DRAW_CURRENT:
-                update(null, null);
+                update(null, "iteration");
                 break;
             case DRAW_TOTAL_MEANS:
                 recalc();

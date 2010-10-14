@@ -209,6 +209,9 @@ public class LinkMatrixPanel extends JPanel {
         if (detBits == null)
             return;
 
+        if(Helper.hammingWeight(detBits.mask) > 7)
+            return;
+
         // Draw grid outline
         g.setColor(Color.GRAY);
         int squareSize = 1 << (12 - (d + d_m) / 2 - (d + d_m) % 2);

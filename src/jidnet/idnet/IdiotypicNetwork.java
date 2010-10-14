@@ -37,7 +37,8 @@ public class IdiotypicNetwork extends Observable {
     /** Random number generator */
     protected RandomGenerator rng;
     //int test;
-    protected int[] response = null;//{-1, 1, -1, +1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    protected int[] response = null;
+    //protected int[] response = {-2, -1, 0, 2, 2, 1, 1, 1, 0};
 
     /**
      * Does the influx on the network
@@ -129,10 +130,10 @@ public class IdiotypicNetwork extends Observable {
                     else
                         idiotypes_ng[i].n = idiotypes[i].n - 1;
                 else
-                    if (Math.round(sum_n_d / idiotypes[i].n) < response.length)
-                        idiotypes_ng[i].n = inBounds(idiotypes[i].n + response[(int)Math.round(sum_n_d / idiotypes[i].n)]);
+                    if (Math.round(sum_n_d) < response.length)
+                        idiotypes_ng[i].n = inBounds(idiotypes[i].n + response[(int)Math.round(sum_n_d)]);
                     else
-                        idiotypes_ng[i].n = idiotypes[i].n - 1;
+                        idiotypes_ng[i].n = inBounds(idiotypes[i].n - 2);
             else
                 idiotypes_ng[i].n = 0;
 
