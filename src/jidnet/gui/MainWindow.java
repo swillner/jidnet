@@ -12,11 +12,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
 import javax.swing.InputVerifier;
@@ -1529,7 +1528,7 @@ public class MainWindow extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    public void updateParamSpinners() {
+    public final void updateParamSpinners() {
         menuStat_d.setText("d = " + Application.getIdnetManager().getd());
         menuStat_p.setText("p = " + Math.round(Application.getIdnetManager().getp() * 100000) / 100000.);
         spinnerp.setValue(Application.getIdnetManager().getp());
@@ -1717,9 +1716,9 @@ public class MainWindow extends javax.swing.JFrame {
             }
         }
 
-        Vector<Vector<Idiotype>> clusters = Application.getIdnetManager().calcClusters();
-        Hashtable<Integer, Integer> clusterSizes = new Hashtable<Integer, Integer>();
-        for (Vector<Idiotype> cluster : clusters) {
+        ArrayList<ArrayList<Idiotype>> clusters = Application.getIdnetManager().calcClusters();
+        HashMap<Integer, Integer> clusterSizes = new HashMap<Integer, Integer>();
+        for (ArrayList<Idiotype> cluster : clusters) {
             if (clusterSizes.containsKey(cluster.size())) {
                 clusterSizes.put(cluster.size(), clusterSizes.get(cluster.size()) + 1);
             } else {
@@ -1818,7 +1817,7 @@ public class MainWindow extends javax.swing.JFrame {
             try {
                 Application.getIdnetManager().saveNetwork(fileName);
             } catch (IOException io) {
-                io.printStackTrace();
+                JOptionPane.showMessageDialog(this, io);
             }
         }
         requestFocus();
@@ -1868,7 +1867,7 @@ public class MainWindow extends javax.swing.JFrame {
                     mainTabbedPane.getSelectedComponent().paint(i.createGraphics());
                     ImageIO.write(i, "png", new File(fileName));
                 } catch (IOException io) {
-                    io.printStackTrace();
+                    JOptionPane.showMessageDialog(this, io);
                 }
             }
         }
@@ -2260,7 +2259,7 @@ public class MainWindow extends javax.swing.JFrame {
             for (int i = 0; i < str.length; i++) {
                 try {
                     a[i] = Integer.parseInt(str[i], 2);
-                } catch(NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     return;
                 }
             }
@@ -2290,9 +2289,8 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void menuItemViewShowNeighbourMeansActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemViewShowNeighbourMeansActionPerformed
-        ((Network2DPanel)network2DPanel).setShowNeighbourMeans(menuItemViewShowNeighbourMeans.isSelected());
+        ((Network2DPanel) network2DPanel).setShowNeighbourMeans(menuItemViewShowNeighbourMeans.isSelected());
     }//GEN-LAST:event_menuItemViewShowNeighbourMeansActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel antigenDiagramPanel;
     private javax.swing.JPanel antigenPanel;

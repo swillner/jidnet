@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -104,8 +104,8 @@ public class Main {
             }
         }
 
-        Hashtable<String, Integer> possibleDetBits = new Hashtable<String, Integer>();
-        Hashtable<String, Long> possibleDetBitsSeeds = new Hashtable<String, Long>();
+        HashMap<String, Integer> possibleDetBits = new HashMap<String, Integer>();
+        HashMap<String, Long> possibleDetBitsSeeds = new HashMap<String, Long>();
         int tWait = Integer.parseInt(getConfigProperty("t_wait"));
         idnetManager.setp(Double.parseDouble(getConfigProperty("p")));
         idnetManager.setmax_s(Double.parseDouble(getConfigProperty("max_s")));

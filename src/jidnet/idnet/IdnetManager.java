@@ -6,14 +6,12 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Hashtable;
 import java.util.Map;
-import java.util.Observable;
 import java.util.Properties;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Extended IdiotypicNetwork, implements analysis of determinant bits, 
@@ -77,7 +75,7 @@ public class IdnetManager extends IdiotypicNetwork {
     }
 
     @Override
-    protected void initialize() {
+    protected final void initialize() {
         super.initialize();
         cogWindow = new double[cogWindowSize][d];
     }
@@ -301,8 +299,7 @@ public class IdnetManager extends IdiotypicNetwork {
     @Override
     public void iterate() {
         super.iterate();
-        for (int i = 0; i < d; i++)
-            cogWindow[t % cogWindowSize][i] = cog[i];
+        System.arraycopy(cog, 0, cogWindow[t % cogWindowSize], 0, d);
         if (calcMeanGroupOccs)
             for (int l = 0; l <= d_m; l++)
                 totalGroupOccs[l] += getGroupOccupation(l);
@@ -358,7 +355,7 @@ public class IdnetManager extends IdiotypicNetwork {
         }
 
         DeterminantBits result = new DeterminantBits();
-        Hashtable<Integer, Double> order = new Hashtable<Integer, Double>();
+        HashMap<Integer, Double> order = new HashMap<Integer, Double>();
         for (int j = 0; j < d; j++) {
             double s = getCOGStandardDeviation(j);
             if (s < max_s) {
@@ -416,7 +413,7 @@ public class IdnetManager extends IdiotypicNetwork {
      * @param mismatchMask Missmatches to last <code>j</code>
      * @param dist Distance to original <code>j</code>
      */
-    private void calcClusterRecIntern(int j, Vector<Idiotype> cluster, int mismatchMask, int dist) {
+    private void calcClusterRecIntern(int j, ArrayList<Idiotype> cluster, int mismatchMask, int dist) {
         while (mismatchMask != 0) {
             mismatchMask >>= 1;
             calcClusterRec(j ^ mismatchMask, cluster);
@@ -431,7 +428,7 @@ public class IdnetManager extends IdiotypicNetwork {
      * @param j
      * @param cluster Cluster of <code>j</code>
      */
-    private void calcClusterRec(int j, Vector<Idiotype> cluster) {
+    private void calcClusterRec(int j, ArrayList<Idiotype> cluster) {
         if (idiotypes[j].n > 0 && idiotypes[j].cluster == null) {
             idiotypes[j].cluster = cluster;
             cluster.add(idiotypes[j]);
@@ -446,13 +443,13 @@ public class IdnetManager extends IdiotypicNetwork {
      *
      * @return Vector of all clusters in network
      */
-    public Vector<Vector<Idiotype>> calcClusters() {
-        Vector<Vector<Idiotype>> res = new Vector<Vector<Idiotype>>();
+    public ArrayList<ArrayList<Idiotype>> calcClusters() {
+        ArrayList<ArrayList<Idiotype>> res = new ArrayList<ArrayList<Idiotype>>();
         for (int i = 0; i < (1 << d); i++)
             idiotypes[i].cluster = null;
         for (int i = 0; i < (1 << d); i++)
             if (idiotypes[i].n > 0 && idiotypes[i].cluster == null) {
-                Vector<Idiotype> cluster = new Vector<Idiotype>();
+                ArrayList<Idiotype> cluster = new ArrayList<Idiotype>();
                 res.add(cluster);
                 calcClusterRec(i, cluster);
 

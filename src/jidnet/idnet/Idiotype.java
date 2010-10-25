@@ -1,6 +1,6 @@
 package jidnet.idnet;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * represents one idiotype
@@ -24,7 +24,7 @@ public class Idiotype {
     /** Number of births (n==0 -> n>0) by influx */
     public int b;
     /** Cluster this idiotype lives in */
-    public Vector<Idiotype> cluster;
+    public ArrayList<Idiotype> cluster;
 
     public Idiotype(int i) {
         this.i = i;

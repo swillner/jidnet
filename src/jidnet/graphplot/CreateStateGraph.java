@@ -2,7 +2,6 @@ package jidnet.graphplot;
 
 import java.io.FileWriter;
 import java.util.HashMap;
-import java.util.Hashtable;
 import jidnet.idnet.Helper;
 
 public class CreateStateGraph {

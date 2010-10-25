@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Properties;
-import java.util.Vector;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -27,7 +27,7 @@ public final class Application {
     private static IdnetManager idnetManager;
     private static MainWindow mainWindow;
     private static Properties config;
-    private static Vector<Properties> configurations;
+    private static ArrayList<Properties> configurations;
 
     public static void main(String args[]) {
 
@@ -49,7 +49,7 @@ public final class Application {
         try {
             loadConfigurations("jIdNet/configs.dat");
         } catch (Exception e) {
-            configurations = new Vector<Properties>();
+            configurations = new ArrayList<Properties>();
         }
 
         try {
@@ -83,7 +83,7 @@ public final class Application {
 
     private static void loadConfigurations(String fileName) throws Exception {
         ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName));
-        configurations = (Vector) ois.readObject();
+        configurations = (ArrayList) ois.readObject();
     }
 
     private static void saveConfigurations(String fileName) throws Exception {
@@ -120,7 +120,7 @@ public final class Application {
         return config;
     }
 
-    public static Vector<Properties> getConfigurations() {
+    public static ArrayList<Properties> getConfigurations() {
         return configurations;
     }
 
