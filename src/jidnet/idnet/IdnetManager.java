@@ -389,7 +389,7 @@ public class IdnetManager extends IdiotypicNetwork {
         prop.setProperty("seed", Long.toString(seed));
         prop.setProperty("t_l", Double.toString(t_l));
         prop.setProperty("t_u", Double.toString(t_u));
-        prop.setProperty("comments", comments);
+        prop.setProperty("comment", comments);
         for (int i = 0; i < linkWeighting.length; i++) {
             if (linkWeighting[i] > 0) {
                 prop.setProperty("lw" + i, Double.toString(linkWeighting[i]));

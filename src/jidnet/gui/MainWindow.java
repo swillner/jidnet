@@ -105,6 +105,7 @@ public class MainWindow extends javax.swing.JFrame {
         calcGroupOccButton = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         clustersText = new javax.swing.JTextArea();
+        jPanel6 = new javax.swing.JPanel();
         antigenPanel = new javax.swing.JPanel();
         buttonAntigenInsert = new javax.swing.JButton();
         antigenDiagramPanel = new AntigenDiagramPanel();
@@ -124,15 +125,17 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         configurationFilesList = new javax.swing.JList();
-        configurationCommentLabel = new javax.swing.JLabel();
         jButton4 = new javax.swing.JButton();
         jButton5 = new javax.swing.JButton();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        configurationCommentLabel = new javax.swing.JTextArea();
         jPanel5 = new javax.swing.JPanel();
         jScrollPane8 = new javax.swing.JScrollPane();
         networkFilesList = new javax.swing.JList();
-        networkCommentLabel = new javax.swing.JLabel();
         jButton6 = new javax.swing.JButton();
         jButton7 = new javax.swing.JButton();
+        jScrollPane9 = new javax.swing.JScrollPane();
+        networkCommentLabel = new javax.swing.JTextArea();
         parameterPanel = new javax.swing.JPanel();
         parameterTabPane = new javax.swing.JTabbedPane();
         paramaterDetailsPanel = new javax.swing.JPanel();
@@ -265,7 +268,7 @@ public class MainWindow extends javax.swing.JFrame {
         linkMatrixPanel.setLayout(linkMatrixPanelLayout);
         linkMatrixPanelLayout.setHorizontalGroup(
             linkMatrixPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 565, Short.MAX_VALUE)
+            .addGap(0, 736, Short.MAX_VALUE)
         );
         linkMatrixPanelLayout.setVerticalGroup(
             linkMatrixPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -285,7 +288,7 @@ public class MainWindow extends javax.swing.JFrame {
         cogDiagramPanel.setLayout(cogDiagramPanelLayout);
         cogDiagramPanelLayout.setHorizontalGroup(
             cogDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 565, Short.MAX_VALUE)
+            .addGap(0, 736, Short.MAX_VALUE)
         );
         cogDiagramPanelLayout.setVerticalGroup(
             cogDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -305,7 +308,7 @@ public class MainWindow extends javax.swing.JFrame {
         network2DPanel.setLayout(network2DPanelLayout);
         network2DPanelLayout.setHorizontalGroup(
             network2DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 565, Short.MAX_VALUE)
+            .addGap(0, 736, Short.MAX_VALUE)
         );
         network2DPanelLayout.setVerticalGroup(
             network2DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -325,7 +328,7 @@ public class MainWindow extends javax.swing.JFrame {
         networkTopologyPanel.setLayout(networkTopologyPanelLayout);
         networkTopologyPanelLayout.setHorizontalGroup(
             networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 565, Short.MAX_VALUE)
+            .addGap(0, 736, Short.MAX_VALUE)
         );
         networkTopologyPanelLayout.setVerticalGroup(
             networkTopologyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -340,7 +343,7 @@ public class MainWindow extends javax.swing.JFrame {
         networkBlockPanel.setLayout(networkBlockPanelLayout);
         networkBlockPanelLayout.setHorizontalGroup(
             networkBlockPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 565, Short.MAX_VALUE)
+            .addGap(0, 736, Short.MAX_VALUE)
         );
         networkBlockPanelLayout.setVerticalGroup(
             networkBlockPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -372,7 +375,7 @@ public class MainWindow extends javax.swing.JFrame {
         network1DPanel.setLayout(network1DPanelLayout);
         network1DPanelLayout.setHorizontalGroup(
             network1DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 565, Short.MAX_VALUE)
+            .addGap(0, 736, Short.MAX_VALUE)
         );
         network1DPanelLayout.setVerticalGroup(
             network1DPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -403,33 +406,50 @@ public class MainWindow extends javax.swing.JFrame {
         clustersText.setEditable(false);
         jScrollPane2.setViewportView(clustersText);
 
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 286, Short.MAX_VALUE)
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout clusterPanelLayout = new javax.swing.GroupLayout(clusterPanel);
         clusterPanel.setLayout(clusterPanelLayout);
         clusterPanelLayout.setHorizontalGroup(
             clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(clusterPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
-                    .addComponent(calcClustersButton, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE))
+                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(calcClustersButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
-                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(calcGroupOccButton, 0, 0, Short.MAX_VALUE))
-                .addContainerGap(159, Short.MAX_VALUE))
+                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(calcGroupOccButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         clusterPanelLayout.setVerticalGroup(
             clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(clusterPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(calcClustersButton)
-                    .addComponent(calcGroupOccButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane3)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE))
-                .addContainerGap(383, Short.MAX_VALUE))
+                .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(clusterPanelLayout.createSequentialGroup()
+                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(570, 570, 570))
+                    .addGroup(clusterPanelLayout.createSequentialGroup()
+                        .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(calcClustersButton)
+                            .addComponent(calcGroupOccButton)))))
         );
 
         mainTabbedPane.addTab("Clusters / Groups", clusterPanel);
@@ -448,7 +468,7 @@ public class MainWindow extends javax.swing.JFrame {
         antigenDiagramPanel.setLayout(antigenDiagramPanelLayout);
         antigenDiagramPanelLayout.setHorizontalGroup(
             antigenDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 539, Short.MAX_VALUE)
+            .addGap(0, 710, Short.MAX_VALUE)
         );
         antigenDiagramPanelLayout.setVerticalGroup(
             antigenDiagramPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -483,7 +503,7 @@ public class MainWindow extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(antigenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(antigenDiagramPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane7, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
+                    .addComponent(jScrollPane7, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 712, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, antigenPanelLayout.createSequentialGroup()
                         .addComponent(buttonAntigenInsert)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -588,8 +608,6 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(configurationFilesList);
 
-        configurationCommentLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-
         jButton4.setText("Reset & Load");
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -604,6 +622,13 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        configurationCommentLabel.setColumns(20);
+        configurationCommentLabel.setEditable(false);
+        configurationCommentLabel.setLineWrap(true);
+        configurationCommentLabel.setRows(5);
+        configurationCommentLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jScrollPane5.setViewportView(configurationCommentLabel);
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -615,9 +640,9 @@ public class MainWindow extends javax.swing.JFrame {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(jButton4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 144, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 150, Short.MAX_VALUE)
                         .addComponent(jButton5))
-                    .addComponent(configurationCommentLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE))
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -626,7 +651,7 @@ public class MainWindow extends javax.swing.JFrame {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                        .addComponent(configurationCommentLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton4)
@@ -646,8 +671,6 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jScrollPane8.setViewportView(networkFilesList);
 
-        networkCommentLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-
         jButton6.setText("Reset & Load");
         jButton6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -662,6 +685,12 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        networkCommentLabel.setColumns(20);
+        networkCommentLabel.setEditable(false);
+        networkCommentLabel.setRows(5);
+        networkCommentLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jScrollPane9.setViewportView(networkCommentLabel);
+
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
@@ -673,9 +702,9 @@ public class MainWindow extends javax.swing.JFrame {
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addComponent(jButton6)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 144, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 150, Short.MAX_VALUE)
                         .addComponent(jButton7))
-                    .addComponent(networkCommentLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE))
+                    .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
@@ -684,7 +713,7 @@ public class MainWindow extends javax.swing.JFrame {
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                        .addComponent(networkCommentLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
+                        .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton6)
@@ -698,12 +727,11 @@ public class MainWindow extends javax.swing.JFrame {
             configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(configurationsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE))
+                .addContainerGap(156, Short.MAX_VALUE))
         );
         configurationsPanelLayout.setVerticalGroup(
             configurationsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1155,7 +1183,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         jLabel30.setText("order =");
 
-        detBitsList.setFont(new java.awt.Font("Courier New", 1, 18)); // NOI18N
+        detBitsList.setFont(new java.awt.Font("Courier New", 1, 18));
         detBitsList.setModel(new DefaultListModel());
         detBitsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane4.setViewportView(detBitsList);
@@ -1305,7 +1333,7 @@ public class MainWindow extends javax.swing.JFrame {
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addComponent(mainTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
+                .addComponent(mainTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 744, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(parameterPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -2245,6 +2273,7 @@ public class MainWindow extends javax.swing.JFrame {
                 return name.endsWith(".conf");
             }
         });
+        ((DefaultListModel) configurationFilesList.getModel()).clear();
         for (int i = 0; i < files.length; i++) {
             ((DefaultListModel) configurationFilesList.getModel()).addElement(files[i].getName().substring(0, files[i].getName().length() - 5));
         }
@@ -2254,6 +2283,7 @@ public class MainWindow extends javax.swing.JFrame {
                 return name.endsWith(".net");
             }
         });
+        ((DefaultListModel) networkFilesList.getModel()).clear();
         for (int i = 0; i < files.length; i++) {
             ((DefaultListModel) networkFilesList.getModel()).addElement(files[i].getName().substring(0, files[i].getName().length() - 4));
         }
@@ -2275,11 +2305,11 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_mainTabbedPaneComponentShown
 
     private void configurationFilesListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_configurationFilesListValueChanged
-        if (evt.getFirstIndex() < 0) {
+        if (configurationFilesList.getSelectedIndex() < 0) {
             configurationCommentLabel.setText("");
             return;
         }
-        String fileName = "jIdNet/" + (String) ((DefaultListModel) configurationFilesList.getModel()).get(evt.getFirstIndex()) + ".conf";
+        String fileName = "jIdNet/" + (String) ((DefaultListModel) configurationFilesList.getModel()).get(configurationFilesList.getSelectedIndex()) + ".conf";
         try {
             Properties prop = new Properties();
             prop.loadFromXML(new FileInputStream(fileName));
@@ -2290,11 +2320,11 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_configurationFilesListValueChanged
 
     private void networkFilesListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_networkFilesListValueChanged
-        if (evt.getFirstIndex() < 0) {
+        if (networkFilesList.getSelectedIndex() < 0) {
             configurationCommentLabel.setText("");
             return;
         }
-        String fileName = "jIdNet/" + (String) ((DefaultListModel) networkFilesList.getModel()).get(evt.getFirstIndex()) + ".net";
+        String fileName = "jIdNet/" + (String) ((DefaultListModel) networkFilesList.getModel()).get(networkFilesList.getSelectedIndex()) + ".net";
         try {
             Properties prop = new Properties();
             prop.loadFromXML(new FileInputStream(fileName));
@@ -2325,6 +2355,7 @@ public class MainWindow extends javax.swing.JFrame {
                 try {
                     Application.getIdnetManager().saveStartConfiguration(fileName, comment);
                     JOptionPane.showMessageDialog(this, "Saved");
+                    configurationsPanelComponentShown(null);
                 } catch(IOException e) {
                     JOptionPane.showMessageDialog(this, "Failed");
                 }
@@ -2341,6 +2372,7 @@ public class MainWindow extends javax.swing.JFrame {
                 try {
                     Application.getIdnetManager().saveNetwork(fileName, comment);
                     JOptionPane.showMessageDialog(this, "Saved");
+                    configurationsPanelComponentShown(null);
                 } catch(IOException e) {
                     JOptionPane.showMessageDialog(this, "Failed");
                 }
@@ -2361,7 +2393,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel clusterPanel;
     private javax.swing.JTextArea clustersText;
     private javax.swing.JPanel cogDiagramPanel;
-    private javax.swing.JLabel configurationCommentLabel;
+    private javax.swing.JTextArea configurationCommentLabel;
     private javax.swing.JList configurationFilesList;
     private javax.swing.JPanel configurationsPanel;
     private javax.swing.JButton detBitsDownButton;
@@ -2425,13 +2457,16 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
+    private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPanel linkMatrixPanel;
     private javax.swing.JPanel linkWeightingPanel;
@@ -2456,7 +2491,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JPanel network1DPanel;
     private javax.swing.JPanel network2DPanel;
     private javax.swing.JPanel networkBlockPanel;
-    private javax.swing.JLabel networkCommentLabel;
+    private javax.swing.JTextArea networkCommentLabel;
     private javax.swing.JList networkFilesList;
     private javax.swing.JPanel networkTopologyPanel;
     private javax.swing.JPanel paramaterDetailsPanel;
