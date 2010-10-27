@@ -98,6 +98,15 @@ public class IdiotypicNetwork extends Observable {
         //    System.out.println(test);
         //    System.exit(-1);
         //}
+        // For shifts:
+//        double w = 1;
+//        int a1 = (complement & ((1 << (d-1)) - 1)) << 1; // Rechter Teil
+//        res += idiotypes[a1].n * w;
+//        res += idiotypes[a1 | 1].n * w;
+//        int a2 = (complement >> 1); // Linker Teil nach rechts verschoben
+//        res += idiotypes[a2].n * w;
+//        res += idiotypes[a2 | (1 << (d-1))].n * w;
+
         return res;
     }
 

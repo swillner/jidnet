@@ -21,8 +21,6 @@ import java.util.HashMap;
  */
 public class IdnetManager extends IdiotypicNetwork {
 
-    /** Parameters (for saving / loading) */
-    private Properties params;
     /** History of center of gravity */
     private double[][] cogWindow;
     /** Size of center of gravity history */
@@ -51,77 +49,12 @@ public class IdnetManager extends IdiotypicNetwork {
         setStatCenterOfGravity(true);
 
         initialize();
-
-        params = new Properties();
-        params.setProperty("d", "12");
-        params.setProperty("p", "0.027");
-        params.setProperty("t_l", "1");
-        params.setProperty("t_u", "10");
-        params.setProperty("N", "1");
-        params.setProperty("max_s", "0.04");
-        params.setProperty("seed", "0");
-        params.setProperty("lw0", "1");
-        params.setProperty("lw1", "1");
-        params.setProperty("lw2", "1");
-        params.setProperty("lw3", "0");
-        params.setProperty("lw4", "0");
-        params.setProperty("lw5", "0");
-        params.setProperty("lw6", "0");
-        params.setProperty("lw7", "0");
-        params.setProperty("lw8", "0");
-        params.setProperty("lw9", "0");
-        params.setProperty("lw10", "0");
-        params.setProperty("lw11", "0");
     }
 
     @Override
     protected final void initialize() {
         super.initialize();
         cogWindow = new double[cogWindowSize][d];
-    }
-
-    /**
-     * Loads parameters from file
-     *
-     * @param fileName
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
-    public void loadParams(String fileName) throws FileNotFoundException,
-            IOException {
-        params.loadFromXML(new FileInputStream(fileName));
-        loadParams(params);
-    }
-
-    /**
-     * Loads parameters from other <code>Properties</code>-Object
-     * @param params
-     */
-    public void loadParams(Properties params) {
-        this.params.putAll(params);
-        d = Integer.parseInt(params.getProperty("d"));
-        initialize();
-
-        this.setp(Double.parseDouble(params.getProperty("p")));
-        this.sett_l(Double.parseDouble(params.getProperty("t_l")));
-        this.sett_u(Double.parseDouble(params.getProperty("t_u")));
-        this.setN(Integer.parseInt(params.getProperty("N")));
-        this.setmax_s(Double.parseDouble(params.getProperty("max_s")));
-        this.reseed(Long.parseLong(params.getProperty("seed")));
-        if (d == 12) {
-            linkWeighting[0] = Double.parseDouble(params.getProperty("lw0"));
-            linkWeighting[1] = Double.parseDouble(params.getProperty("lw1"));
-            linkWeighting[2] = Double.parseDouble(params.getProperty("lw2"));
-            linkWeighting[3] = Double.parseDouble(params.getProperty("lw3"));
-            linkWeighting[4] = Double.parseDouble(params.getProperty("lw4"));
-            linkWeighting[5] = Double.parseDouble(params.getProperty("lw5"));
-            linkWeighting[6] = Double.parseDouble(params.getProperty("lw6"));
-            linkWeighting[7] = Double.parseDouble(params.getProperty("lw7"));
-            linkWeighting[8] = Double.parseDouble(params.getProperty("lw8"));
-            linkWeighting[9] = Double.parseDouble(params.getProperty("lw9"));
-            linkWeighting[10] = Double.parseDouble(params.getProperty("lw10"));
-            linkWeighting[11] = Double.parseDouble(params.getProperty("lw11"));
-        }
     }
 
     /**
@@ -145,8 +78,9 @@ public class IdnetManager extends IdiotypicNetwork {
      * @return
      */
     public int calcGroupSize(int l, int d_m) {
-        if (l > d_m || l < 0)
+        if (l > d_m || l < 0) {
             return 0;
+        }
         return (1 << (d - d_m)) * Helper.binomial(d_m, l);
     }
 
@@ -159,36 +93,30 @@ public class IdnetManager extends IdiotypicNetwork {
             int l_max = Math.min(d - d_m, m);
             for (int l = 0; l <= l_max; l++) {
                 int k_max = Math.min(i - 1, Math.min(d_m - i + 1, (m - l) / 2));
-                for (int k = 0; k <= k_max; k++)
+                for (int k = 0; k <= k_max; k++) {
                     sum += Helper.binomial(d - d_m, l) * Helper.binomial(i - 1, k) * Helper.binomial(d_m - i + 1, k);
+                }
             }
         } else if (delta_i_j > 0) {
             int l_max = Math.min(d - d_m, m - delta_i_j);
             for (int l = 0; l <= l_max; l++) {
                 int k_max = Math.min(i - 1, Math.min(d_m - i + 1 - delta_i_j, (m - l - delta_i_j) / 2));
-                for (int k = 0; k <= k_max; k++)
+                for (int k = 0; k <= k_max; k++) {
                     sum += Helper.binomial(d - d_m, l) * Helper.binomial(i - 1, k) * Helper.binomial(d_m - i + 1, k
                             + delta_i_j);
+                }
             }
         } else { // delta_i_j < 0
             int l_max = Math.min(d - d_m, m + delta_i_j);
             for (int l = 0; l <= l_max; l++) {
                 int k_max = Math.min(i - 1 + delta_i_j, Math.min(d_m - i + 1, (m - l + delta_i_j) / 2));
-                for (int k = 0; k <= k_max; k++)
+                for (int k = 0; k <= k_max; k++) {
                     sum += Helper.binomial(d - d_m, l) * Helper.binomial(i - 1, k - delta_i_j) * Helper.binomial(
                             d_m - i + 1, k);
+                }
             }
         }
         return sum;
-    }
-
-    /**
-     * Gets parameters
-     * 
-     * @return
-     */
-    public Properties getParams() {
-        return params;
     }
 
     /**
@@ -224,62 +152,12 @@ public class IdnetManager extends IdiotypicNetwork {
         }
     }
 
-    @Override
-    public void setp(double p) {
-        super.setp(p);
-        params.setProperty("p", Double.toString(p));
-    }
-
-    @Override
-    public void sett_l(double t_l) {
-        super.sett_l(t_l);
-        params.setProperty("t_l", Double.toString(t_l));
-    }
-
-    @Override
-    public void sett_u(double t_u) {
-        super.sett_u(t_u);
-        params.setProperty("t_u", Double.toString(t_u));
-    }
-
-    @Override
-    public void setN(int N) {
-        super.setN(N);
-        params.setProperty("N", Integer.toString(N));
-    }
-
-    @Override
-    public void setd(int d) {
-        super.setd(d);
-        params.setProperty("d", Integer.toString(d));
-    }
-
-    @Override
-    public void setLinkWeighting(int component, double weighting) {
-        if (component < d) {
-            super.setLinkWeighting(component, weighting);
-            params.setProperty("lw" + component, Double.toString(weighting));
-        }
-    }
-
-    /**
-     * Saves parameters to XML-file
-     *
-     * @param fileName File name
-     * @throws IOException
-     */
-    public void saveParams(String fileName) throws IOException {
-        params.storeToXML(new FileOutputStream(fileName),
-                "Idiotypic network parameters");
-    }
-
     /**
      * Sets <code>seed</code> of random number generator
      *
      * @param seed Seed
      */
     public void reseed(long seed) {
-        params.setProperty("seed", Long.toString(seed));
         rng.setSeed(seed);
         this.seed = seed;
     }
@@ -300,9 +178,11 @@ public class IdnetManager extends IdiotypicNetwork {
     public void iterate() {
         super.iterate();
         System.arraycopy(cog, 0, cogWindow[t % cogWindowSize], 0, d);
-        if (calcMeanGroupOccs)
-            for (int l = 0; l <= d_m; l++)
+        if (calcMeanGroupOccs) {
+            for (int l = 0; l <= d_m; l++) {
                 totalGroupOccs[l] += getGroupOccupation(l);
+            }
+        }
     }
 
     /**
@@ -314,16 +194,18 @@ public class IdnetManager extends IdiotypicNetwork {
     public double getCOGStandardDeviation(int c) {
         double mean = getCOGMean(c);
         double s = 0;
-        for (int i = 0; i < cogWindowSize; i++)
+        for (int i = 0; i < cogWindowSize; i++) {
             s += (cogWindow[i][c] - mean) * (cogWindow[i][c] - mean);
+        }
         s = Math.sqrt(s / (cogWindowSize - 1));
         return s;
     }
 
     public double getCOGMean(int c) {
         double mean = 0;
-        for (int i = 0; i < cogWindowSize; i++)
+        for (int i = 0; i < cogWindowSize; i++) {
             mean += cogWindow[i][c];
+        }
         mean /= cogWindowSize;
         return mean;
     }
@@ -347,8 +229,9 @@ public class IdnetManager extends IdiotypicNetwork {
                     Integer int1 = (Integer) e1.getKey();
                     Integer int2 = (Integer) e2.getKey();
                     result = int1.compareTo(int2);
-                } else
+                } else {
                     result = value2.compareTo(value1);
+                }
 
                 return result;
             }
@@ -367,10 +250,12 @@ public class IdnetManager extends IdiotypicNetwork {
                 } else if (mean < -max_s) {
                     result.mask |= 1 << j;
                     order.put(j, -cog[j]);
-                } else
+                } else {
                     order.put(j, Double.NEGATIVE_INFINITY);
-            } else
+                }
+            } else {
                 order.put(j, Double.NEGATIVE_INFINITY);
+            }
         }
 
         ArrayList<Map.Entry<Integer, Double>> myArrayList = new ArrayList<Map.Entry<Integer, Double>>(order.entrySet());
@@ -402,7 +287,6 @@ public class IdnetManager extends IdiotypicNetwork {
      */
     public void setmax_s(double max_s) {
         this.max_s = max_s;
-        params.setProperty("max_s", Double.toString(max_s));
     }
 
     /**
@@ -417,8 +301,9 @@ public class IdnetManager extends IdiotypicNetwork {
         while (mismatchMask != 0) {
             mismatchMask >>= 1;
             calcClusterRec(j ^ mismatchMask, cluster);
-            if (linkWeighting[dist + 1] > 0)
+            if (linkWeighting[dist + 1] > 0) {
                 calcClusterRecIntern(j ^ mismatchMask, cluster, mismatchMask, dist + 1);
+            }
         }
     }
 
@@ -433,8 +318,9 @@ public class IdnetManager extends IdiotypicNetwork {
             idiotypes[j].cluster = cluster;
             cluster.add(idiotypes[j]);
             int complement = ~j & ((1 << d) - 1);
-            if (linkWeighting[0] > 0)
+            if (linkWeighting[0] > 0) {
                 calcClusterRecIntern(complement, cluster, 1 << d, 1);
+            }
         }
     }
 
@@ -445,15 +331,17 @@ public class IdnetManager extends IdiotypicNetwork {
      */
     public ArrayList<ArrayList<Idiotype>> calcClusters() {
         ArrayList<ArrayList<Idiotype>> res = new ArrayList<ArrayList<Idiotype>>();
-        for (int i = 0; i < (1 << d); i++)
+        for (int i = 0; i < (1 << d); i++) {
             idiotypes[i].cluster = null;
-        for (int i = 0; i < (1 << d); i++)
+        }
+        for (int i = 0; i < (1 << d); i++) {
             if (idiotypes[i].n > 0 && idiotypes[i].cluster == null) {
                 ArrayList<Idiotype> cluster = new ArrayList<Idiotype>();
                 res.add(cluster);
                 calcClusterRec(i, cluster);
 
             }
+        }
         return res;
     }
 
@@ -463,37 +351,66 @@ public class IdnetManager extends IdiotypicNetwork {
      * @param fileName File name
      * @throws IOException
      */
-    public void saveNetwork(String fileName) throws IOException {
-        FileWriter writer = new FileWriter(fileName);
-        for (int i = 0; i < (1 << d); i++)
-            writer.write(i + " " + idiotypes[i].n + "\n");
-        writer.close();
+    public void saveNetwork(String fileName, String comment) throws IOException {
+        Properties prop = new Properties();
+        prop.setProperty("d", Integer.toString(d));
+        prop.setProperty("comment", comment);
+        for (int i = 0; i < (1 << d); i++) {
+            if (idiotypes[i].n > 0) {
+                prop.setProperty(Integer.toString(i), Integer.toString(idiotypes[i].n));
+            }
+        }
+        prop.storeToXML(new FileOutputStream(fileName), "jIdNet network snapshot");
     }
 
     /**
      * Loads network snapshot from file
-     *
-     * TODO : Proper parsing, read out d
      *
      * @param fileName File name
      * @throws IOException
      */
     public void loadNetwork(String fileName) throws IOException {
         reset();
-        if (d != 12)
-            return;
-        FileReader reader = new FileReader(fileName);
+        Properties prop = new Properties();
+        prop.loadFromXML(new FileInputStream(fileName));
+        setd(Integer.parseInt(prop.getProperty("d")));
         for (int i = 0; i < (1 << d); i++) {
-            while (reader.read() != ' ') {
-            }
-            String s = "";
-            char c;
-            while ((c = (char) reader.read()) != '\n')
-                s += c;
-            idiotypes[i].n = Integer.parseInt(s);
+            idiotypes[i].n = Integer.parseInt(prop.getProperty(fileName, "0"));
         }
-        reader.close();
         setChanged();
         notifyObservers("load");
+    }
+
+    public void saveStartConfiguration(String fileName, String comments) throws IOException {
+        Properties prop = new Properties();
+        prop.setProperty("d", Integer.toString(d));
+        prop.setProperty("N", Integer.toString(N));
+        prop.setProperty("p", Double.toString(p));
+        prop.setProperty("seed", Long.toString(seed));
+        prop.setProperty("t_l", Double.toString(t_l));
+        prop.setProperty("t_u", Double.toString(t_u));
+        prop.setProperty("comments", comments);
+        for (int i = 0; i < linkWeighting.length; i++) {
+            if (linkWeighting[i] > 0) {
+                prop.setProperty("lw" + i, Double.toString(linkWeighting[i]));
+            }
+        }
+        prop.storeToXML(new FileOutputStream(fileName), "jIdNet start configuration");
+    }
+
+    public void loadStartConfiguration(String fileName) throws IOException {
+        Properties prop = new Properties();
+        prop.loadFromXML(new FileInputStream(fileName));
+        d = Integer.parseInt(prop.getProperty("d"));
+        initialize();
+
+        setp(Double.parseDouble(prop.getProperty("p")));
+        sett_l(Double.parseDouble(prop.getProperty("t_l")));
+        sett_u(Double.parseDouble(prop.getProperty("t_u")));
+        setN(Integer.parseInt(prop.getProperty("N")));
+        reseed(Long.parseLong(prop.getProperty("seed")));
+        for (int i = 0; i < d; i++) {
+            linkWeighting[i] = Double.parseDouble(prop.getProperty("lw" + i, "0"));
+        }
     }
 }

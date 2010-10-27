@@ -85,7 +85,7 @@ public class LinkMatrixPanel extends JPanel {
         change_d(idnetManager.getd());
     }
 
-    public void change_d(int d) {
+    public final void change_d(int d) {
         this.d = d;
         order = new int[d];
 
@@ -144,8 +144,7 @@ public class LinkMatrixPanel extends JPanel {
             }
 
         if (detBits.order != null)
-            for (int i = 0; i < d; i++)
-                order[i] = detBits.order[i];
+            System.arraycopy(detBits.order, 0, order, 0, d);
 
         // Set number of determinant bits (d_m) and determine size of blocks, that differ only in not det. bits
         d_m = Helper.hammingWeight(detBits.mask);

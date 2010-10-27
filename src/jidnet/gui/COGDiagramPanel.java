@@ -29,7 +29,7 @@ public class COGDiagramPanel extends JPanel implements Observer {
         change_d(idnetManager.getd());
     }
 
-    public void change_d(int d) {
+    public final void change_d(int d) {
         this.d = d;
         cogHistory = new double[historySize][d];
         means = new double[d];

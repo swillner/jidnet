@@ -66,7 +66,7 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
         repaint();
     }
 
-    public void recalc() {
+    public final void recalc() {
         int d_m = 0;
         if (detBits != null)
             d_m = Helper.hammingWeight(detBits.mask);

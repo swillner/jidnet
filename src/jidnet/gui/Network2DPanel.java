@@ -148,7 +148,7 @@ public class Network2DPanel extends JPanel {
         repaint();
     }
 
-    public void change_d(int d) {
+    public final void change_d(int d) {
         this.d = d;
         order = new int[d];
 

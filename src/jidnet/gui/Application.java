@@ -27,7 +27,6 @@ public final class Application {
     private static IdnetManager idnetManager;
     private static MainWindow mainWindow;
     private static Properties config;
-    private static ArrayList<Properties> configurations;
 
     public static void main(String args[]) {
 
@@ -35,22 +34,17 @@ public final class Application {
         config = new Properties();
 
         try {
-            idnetManager.loadParams("jIdNet/params.xml");
+            idnetManager.loadStartConfiguration("jIdNet/default.conf");
         } catch (Exception e) {
             //
         }
 
         try {
-            config.loadFromXML(new FileInputStream("jIdNet/config.xml"));
+            config.loadFromXML(new FileInputStream("jIdNet/jIdNet.xml"));
         } catch (Exception e) {
             //
         }
-
-        try {
-            loadConfigurations("jIdNet/configs.dat");
-        } catch (Exception e) {
-            configurations = new ArrayList<Properties>();
-        }
+        idnetManager.setmax_s(Double.parseDouble(config.getProperty("max_s", "0.04")));
 
         try {
             java.awt.EventQueue.invokeAndWait(new Runnable() {
@@ -76,36 +70,23 @@ public final class Application {
                 }
             });
         } catch (InterruptedException e1) {
+            e1.printStackTrace();
         } catch (InvocationTargetException e2) {
+            e2.printStackTrace();
         }
 
     }
 
-    private static void loadConfigurations(String fileName) throws Exception {
-        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName));
-        configurations = (ArrayList) ois.readObject();
-    }
-
-    private static void saveConfigurations(String fileName) throws Exception {
-        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName));
-        oos.writeObject(configurations);
-        oos.close();
-    }
-
     public static void closing() {
         try {
-            idnetManager.saveParams("jIdNet/params.xml");
+            idnetManager.saveStartConfiguration("jIdNet/default.conf", "Last configuration");
         } catch (Exception ex) {
             //
         }
 
         try {
-            config.storeToXML(new FileOutputStream("jIdNet/config.xml"), "Configuration of jIdNet Application");
-        } catch (Exception e) {
-            //
-        }
-        try {
-            saveConfigurations("jIdNet/configs.dat");
+            config.setProperty("max_s", Double.toString(idnetManager.getmax_s()));
+            config.storeToXML(new FileOutputStream("jIdNet/jIdNet.xml"), "Configuration of jIdNet Application");
         } catch (Exception e) {
             //
         }
@@ -118,10 +99,6 @@ public final class Application {
 
     public static Properties getConfiguration() {
         return config;
-    }
-
-    public static ArrayList<Properties> getConfigurations() {
-        return configurations;
     }
 
     public static String getClipboardContents() {
