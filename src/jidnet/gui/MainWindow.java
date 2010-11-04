@@ -439,9 +439,7 @@ public class MainWindow extends javax.swing.JFrame {
             .addGroup(clusterPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(clusterPanelLayout.createSequentialGroup()
-                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(570, 570, 570))
+                    .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(clusterPanelLayout.createSequentialGroup()
                         .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING)
@@ -449,7 +447,8 @@ public class MainWindow extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(clusterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(calcClustersButton)
-                            .addComponent(calcGroupOccButton)))))
+                            .addComponent(calcGroupOccButton))))
+                .addGap(329, 329, 329))
         );
 
         mainTabbedPane.addTab("Clusters / Groups", clusterPanel);
@@ -860,11 +859,10 @@ public class MainWindow extends javax.swing.JFrame {
                             .addComponent(spinnerMax_s, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(spinnerRedrawDelay, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, paramaterDetailsPanelLayout.createSequentialGroup()
-                        .addContainerGap(120, Short.MAX_VALUE)
-                        .addComponent(spinnerSeed, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(paramaterDetailsPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jLabel26)))
+                        .addComponent(jLabel26)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 62, Short.MAX_VALUE)
+                        .addComponent(spinnerSeed, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         paramaterDetailsPanelLayout.setVerticalGroup(
@@ -902,10 +900,10 @@ public class MainWindow extends javax.swing.JFrame {
                 .addGroup(paramaterDetailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(spinnerMax_s, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 241, Short.MAX_VALUE)
-                .addComponent(jLabel26)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spinnerSeed, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 264, Short.MAX_VALUE)
+                .addGroup(paramaterDetailsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(spinnerSeed, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel26))
                 .addContainerGap())
         );
 

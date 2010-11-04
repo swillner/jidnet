@@ -69,12 +69,12 @@ public class NetworkBlockPanel extends JPanel {
         blockRowCount = (1 << ((d - dimSubgroup) / 2));
         innerBlockRowCount = (1 << (dimSubgroup / 2 + dimSubgroup % 2));
         innerBlockColCount = (1 << (dimSubgroup / 2));
-        System.out.println("blockRowCount = " + blockRowCount);
-        System.out.println("blockColCount = " + blockColCount);
-        System.out.println("innerBlockRowCount = " + innerBlockRowCount);
-        System.out.println("innerBlockColCount = " + innerBlockColCount);
-        System.out.println("RowCount = " + blockRowCount * innerBlockRowCount);
-        System.out.println("ColCount = " + blockColCount * innerBlockColCount);
+        //System.out.println("blockRowCount = " + blockRowCount);
+        //System.out.println("blockColCount = " + blockColCount);
+        //System.out.println("innerBlockRowCount = " + innerBlockRowCount);
+        //System.out.println("innerBlockColCount = " + innerBlockColCount);
+        //System.out.println("RowCount = " + blockRowCount * innerBlockRowCount);
+        //System.out.println("ColCount = " + blockColCount * innerBlockColCount);
         blocks = new HashMap<Integer, ArrayList<Integer>>();
         blocks.put(0, new ArrayList<Integer>());
         blocks.get(0).add(0);
@@ -180,11 +180,12 @@ public class NetworkBlockPanel extends JPanel {
                     int v = coordsToNode(x, y);
                     int diff = Helper.hammingWeight(v ^ c);
                     if (idnetManager.getLinkWeighting(diff) > 0) {
-                        if (((x / innerBlockColCount) + (y / innerBlockRowCount)) % 2 == 0) {
+                        /*if (((x / innerBlockColCount) + (y / innerBlockRowCount)) % 2 == 0) {
                             g.setColor(Color.getHSBColor(0f, 1f - (float) idnetManager.getLinkWeighting(diff), 1f));
                         } else {
                             g.setColor(Color.getHSBColor(0.3f, 1f - (float) idnetManager.getLinkWeighting(diff), 1f));
-                        }
+                        }*/
+                        g.setColor(Color.getHSBColor(0f, 0f, 1f - (float) idnetManager.getLinkWeighting(diff)));
                         g.fillRect(x * squareSize + xOffset, y * squareSize + yOffset, squareSize, squareSize);
                     }
                 }
@@ -214,7 +215,7 @@ public class NetworkBlockPanel extends JPanel {
                     check[i] = true;
                 }
                 if (idnetManager.getIdiotypes()[i].n > 0) {
-                    int size = (idnetManager.getIdiotypes()[i].n * (squareSize - 2)) / idnetManager.getN();
+                    int size = (idnetManager.getIdiotypes()[i].n * (squareSize - 3)) / idnetManager.getN();
                     g.fillRect(x * squareSize + xOffset + (squareSize - size) / 2, y * squareSize + yOffset
                             + (squareSize - size) / 2, size, size);
                 }

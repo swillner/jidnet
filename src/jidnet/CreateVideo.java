@@ -9,8 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import jidnet.gui.Network2DPanel;
-import jidnet.idnet.DeterminantBits;
-import jidnet.idnet.Helper;
 import jidnet.idnet.IdnetManager;
 
 /**
@@ -25,7 +23,7 @@ public class CreateVideo {
     public static void main(String[] args) {
         IdnetManager idnetManager = new IdnetManager();
         try {
-            idnetManager.loadParams("jIdNet/params.xml");
+            idnetManager.loadStartConfiguration("jIdNet/params.xml");
         } catch (Exception e) {
             //
         }
