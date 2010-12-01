@@ -67,7 +67,7 @@ public class IdiotypicNetwork extends Observable {
      * @param dist
      * @return
      */
-    private double calcWeightedNeighboutOccSumRec(int j, int mismatchMask, int dist) {
+    private double calcWeightedNeighbourOccSumRec(int j, int mismatchMask, int dist) {
         double res = 0;
         if (dist >= d)
             return 0;
@@ -78,8 +78,8 @@ public class IdiotypicNetwork extends Observable {
             //test++;
             //System.out.println(Helper.getBitString(j ^mismatchMask) + " " + dist);
             res += idiotypes[j ^ mismatchMask].n * linkWeighting[dist];
-            if (linkWeighting[dist + 1] > 0) // Stop, when link weighting of larger distance == 0
-                res += calcWeightedNeighboutOccSumRec(j ^ mismatchMask, mismatchMask, dist + 1);
+            if (dist < d - 1 && linkWeighting[dist + 1] > 0) // Stop, when link weighting of larger distance == 0
+                res += calcWeightedNeighbourOccSumRec(j ^ mismatchMask, mismatchMask, dist + 1);
         }
         return res;
     }
@@ -93,20 +93,28 @@ public class IdiotypicNetwork extends Observable {
     protected final double calcWeightedNeighbourOccSum(int i) {
         int complement = ~i & ((1 << d) - 1);
         //test = 1;
-        double res = idiotypes[complement].n * linkWeighting[0] + calcWeightedNeighboutOccSumRec(complement, 1 << d, 1);
+        double res = idiotypes[complement].n * linkWeighting[0] + calcWeightedNeighbourOccSumRec(complement, 1 << d, 1);
         //if (test != 79) {
         //    System.out.println(test);
         //    System.exit(-1);
         //}
         // For shifts:
-//        double w = 1;
-//        int a1 = (complement & ((1 << (d-1)) - 1)) << 1; // Rechter Teil
-//        res += idiotypes[a1].n * w;
-//        res += idiotypes[a1 | 1].n * w;
-//        int a2 = (complement >> 1); // Linker Teil nach rechts verschoben
-//        res += idiotypes[a2].n * w;
-//        res += idiotypes[a2 | (1 << (d-1))].n * w;
-
+        /*double w = 1;
+        int a1 = (complement & ((1 << (d-1)) - 1)) << 1; // Rechter Teil
+        int mismatchMask = 1 << (d-1);
+        do {
+          mismatchMask = mismatchMask >> 1;
+          res += idiotypes[a1 ^ mismatchMask].n * w;
+          res += idiotypes[a1 ^ mismatchMask | 1].n * w;
+        } while (mismatchMask!=0);
+        int a2 = (complement >> 1); // Linker Teil nach rechts verschoben
+        mismatchMask = 1 << (d-1);
+        do {
+          mismatchMask = mismatchMask >> 1;
+          res += idiotypes[a2 ^ mismatchMask].n * w;
+          res += idiotypes[a2 ^ mismatchMask | (1 << (d-1))].n * w;
+        } while (mismatchMask!=0);
+*/
         return res;
     }
 
