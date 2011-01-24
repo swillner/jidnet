@@ -3,6 +3,8 @@ package jidnet.gui;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JPanel;
@@ -48,6 +50,17 @@ public class COGDiagramPanel extends JPanel implements Observer {
 
     public void recalc() {
         means = new double[d];
+    }
+
+    public void saveDataToFile(String fileName) throws IOException {
+        FileWriter fw = new FileWriter(fileName);
+        for (int i = 0; i < historySize; i++) {
+            fw.write(i + " ");
+            for (int j = 0; j < idnetManager.getd(); j++)
+                fw.write (cogHistory[i][j] + " ");
+            fw.write("\n");
+        }
+        fw.close();
     }
 
     @Override

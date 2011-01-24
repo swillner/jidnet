@@ -217,6 +217,10 @@ public class MainWindow extends javax.swing.JFrame {
         jMenu2 = new javax.swing.JMenu();
         menuItemExtNeighbourStat = new javax.swing.JCheckBoxMenuItem();
         jMenuItem11 = new javax.swing.JMenuItem();
+        jMenuItem5 = new javax.swing.JMenuItem();
+        jMenuItem6 = new javax.swing.JMenuItem();
+        jMenuItem12 = new javax.swing.JMenuItem();
+        jMenuItem13 = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         jCheckBoxMenuItem1 = new javax.swing.JCheckBoxMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -1442,6 +1446,38 @@ public class MainWindow extends javax.swing.JFrame {
         });
         jMenu2.add(jMenuItem11);
 
+        jMenuItem5.setText("Add vector...");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem5ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem5);
+
+        jMenuItem6.setText("Permute bits...");
+        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem6ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem6);
+
+        jMenuItem12.setText("Metaswap");
+        jMenuItem12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem12ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem12);
+
+        jMenuItem13.setText("Export COG data...");
+        jMenuItem13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem13ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem13);
+
         jMenuBar1.add(jMenu2);
 
         jMenu3.setText("View");
@@ -2252,6 +2288,7 @@ public class MainWindow extends javax.swing.JFrame {
             s.add(Integer.parseInt(str[i], 2));
         }
         ((NetworkBlockPanel) networkBlockPanel).setSubgroupCreators(s);
+        ((NetworkTopologyPanel) networkTopologyPanel).setSubgroupCreators(s);
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
@@ -2354,7 +2391,7 @@ public class MainWindow extends javax.swing.JFrame {
                     Application.getIdnetManager().saveStartConfiguration(fileName, comment);
                     JOptionPane.showMessageDialog(this, "Saved");
                     configurationsPanelComponentShown(null);
-                } catch(IOException e) {
+                } catch (IOException e) {
                     JOptionPane.showMessageDialog(this, "Failed");
                 }
             }
@@ -2371,13 +2408,79 @@ public class MainWindow extends javax.swing.JFrame {
                     Application.getIdnetManager().saveNetwork(fileName, comment);
                     JOptionPane.showMessageDialog(this, "Saved");
                     configurationsPanelComponentShown(null);
-                } catch(IOException e) {
+                } catch (IOException e) {
                     JOptionPane.showMessageDialog(this, "Failed");
                 }
             }
         }
     }//GEN-LAST:event_jButton7ActionPerformed
 
+    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+        String v_str = JOptionPane.showInputDialog("v = ");
+        if (v_str != null && !v_str.equals("")) {
+            int v = Integer.parseInt(v_str, 2);
+            int[] it = new int[1 << Application.getIdnetManager().getd()];
+            for (int i = 0; i < (1 << Application.getIdnetManager().getd()); i++) {
+                it[i ^ v] = Application.getIdnetManager().getIdiotypes()[i].n;
+            }
+            for (int i = 0; i < (1 << Application.getIdnetManager().getd()); i++) {
+                Application.getIdnetManager().getIdiotypes()[i].n = it[i];
+            }
+        }
+    }//GEN-LAST:event_jMenuItem5ActionPerformed
+
+    private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+        String p1_str = JOptionPane.showInputDialog("p1 = ");
+        String p2_str = JOptionPane.showInputDialog("p2 = ");
+        if (p1_str != null && !p1_str.equals("") && p2_str != null && !p2_str.equals("")) {
+            int p1 = Integer.parseInt(p1_str);
+            int p2 = Integer.parseInt(p2_str);
+            int[] it = new int[1 << Application.getIdnetManager().getd()];
+            for (int i = 0; i < (1 << Application.getIdnetManager().getd()); i++) {
+                int j = i;
+                boolean b1 = ((1 << p1) & i) != 0;
+                boolean b2 = ((1 << p2) & i) != 0;
+                if (b2 != b1) {
+                    j = i ^ (1 << p1) ^ (1 << p2);
+                }
+                it[j] = Application.getIdnetManager().getIdiotypes()[i].n;
+            }
+            for (int i = 0; i < (1 << Application.getIdnetManager().getd()); i++) {
+                Application.getIdnetManager().getIdiotypes()[i].n = it[i];
+            }
+        }
+    }//GEN-LAST:event_jMenuItem6ActionPerformed
+
+    private void jMenuItem12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem12ActionPerformed
+        String p1_str = JOptionPane.showInputDialog("swapping bit position = ");
+        String p2_str = JOptionPane.showInputDialog("non-counting bit position = ");
+        if (p1_str != null && !p1_str.equals("") && p2_str != null && !p2_str.equals("")) {
+            int p1 = Integer.parseInt(p1_str);
+            int p2 = Integer.parseInt(p2_str);
+            int[] it = new int[1 << Application.getIdnetManager().getd()];
+            for (int i = 0; i < (1 << Application.getIdnetManager().getd()); i++) {
+                int j = i;
+                if (Helper.hammingWeight(i & (((1 << Application.getIdnetManager().getd()) - 1) ^ (1 << p1) ^ (1 << p2))) % 2 == 1) {
+                    j = i ^ (1 << p1);
+                }
+                it[j] = Application.getIdnetManager().getIdiotypes()[i].n;
+            }
+            for (int i = 0; i < (1 << Application.getIdnetManager().getd()); i++) {
+                Application.getIdnetManager().getIdiotypes()[i].n = it[i];
+            }
+        }
+    }//GEN-LAST:event_jMenuItem12ActionPerformed
+
+    private void jMenuItem13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem13ActionPerformed
+        String fileName = JOptionPane.showInputDialog("Filename:");
+        if (fileName != null && !fileName.isEmpty()) {
+            try {
+                ((COGDiagramPanel) cogDiagramPanel).saveDataToFile(fileName);
+            } catch (IOException io) {
+                io.printStackTrace();
+            }
+        }
+    }//GEN-LAST:event_jMenuItem13ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel antigenDiagramPanel;
     private javax.swing.JPanel antigenPanel;
@@ -2444,9 +2547,13 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem10;
     private javax.swing.JMenuItem jMenuItem11;
+    private javax.swing.JMenuItem jMenuItem12;
+    private javax.swing.JMenuItem jMenuItem13;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JMenuItem jMenuItem9;

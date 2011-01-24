@@ -7,6 +7,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import jidnet.idnet.Helper;
 import jidnet.idnet.IdnetManager;
@@ -53,9 +55,15 @@ public class Network2DPanel extends JPanel {
                         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                                 new StringSelection(Helper.getBitString(i, d)), null);
                     } else {
-                        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                        if (e.isShiftDown()) {
+                            JOptionPane.showMessageDialog(null, "Mean occupation: "
+                                    + (double)Application.getIdnetManager().getIdiotypes()[i].sum_n / Application.getIdnetManager().gett()
+                                    + "\nMean eighbour occ.: " + Application.getIdnetManager().getIdiotypes()[i].sum_n_d / Application.getIdnetManager().gett());
+                        } else {
+                            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                                 new StringSelection(Application.getClipboardContents()
                                 + "\n" + Helper.getBitString(i, d)), null);
+                        }
                     }
                 }
             }

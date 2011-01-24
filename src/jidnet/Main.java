@@ -41,11 +41,13 @@ public class Main {
             long t0 = System.currentTimeMillis();
 
             try {
-                System.out.println("#Performing action '" + config.getProperty("action") + "'");
+                System.out.println("#Version 13, Performing action '" + config.getProperty("action") + "'");
                 if (config.getProperty("action").equals("histogram")) {
                     createHistogram();
                 } else if (config.getProperty("action").equals("topology_histogram")) {
                     createTopologyHistogram();
+                } else if (config.getProperty("action").equals("entropy_histogram2")) {
+                    entropyHistogram2();
                 } else if (config.getProperty("action").equals("show_link_matrix")) {
                     showLinkMatrix();
                 } else if (config.getProperty("action").equals("stat_from_snapshot")) {
@@ -62,6 +64,8 @@ public class Main {
                     testDecay2();
                 } else if (config.getProperty("action").equals("pattern_decay")) {
                     patternDecay();
+                } else if (config.getProperty("action").equals("pattern_stat")) {
+                    patternStat();
                 } else if (config.getProperty("action").equals("entropy_histogram")) {
                     entropyHistogram();
                 } else {
@@ -72,21 +76,8 @@ public class Main {
             }
 
             long t1 = System.currentTimeMillis();
-            System.out.println("Time needed: " + (t1 - t0) / 60000 + "min");
+            System.out.println("#Time needed: " + (t1 - t0) / 60000 + "min");
         }
-    }
-
-    public static double calcS(IdnetManager idnetManager) {
-        double S = 0;
-        for (int j = 0; j < (1 << idnetManager.getd()); j++) {
-            double p1 = (double) idnetManager.getIdiotypes()[j].sum_n / (double) idnetManager.gett();
-            double p0 = 1 - p1;
-            if (p0 != 0 && p1 != 0) {
-                S += p1 * Math.log(p1) + p0 * Math.log(p0);
-            }
-        }
-        S = -S / Math.log(2) / (1 << idnetManager.getd());
-        return S;
     }
 
     private static Antigen insertAntigen(IdnetManager idnetManager) {
@@ -137,7 +128,7 @@ public class Main {
             idnetManager.reset();
             idnetManager.iterate(wait);
             if (Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) == 1) {
-                if (calcS(idnetManager) > 0.5) {
+                if (idnetManager.calcS() > 0.5) {
                     wo++;
                     if (wait2 > 0) {
                         if (enableAntigen) {
@@ -145,7 +136,7 @@ public class Main {
                         }
                         idnetManager.iterate(wait2);
                         if (Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) == 1) {
-                            if (calcS(idnetManager) <= 0.5) {
+                            if (idnetManager.calcS() <= 0.5) {
                                 wo_to_wi++;
                             }
                         }
@@ -158,7 +149,7 @@ public class Main {
                     if (wait2 > 0) {
                         idnetManager.iterate(wait2);
                         if (Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) == 1) {
-                            if (calcS(idnetManager) > 0.5) {
+                            if (idnetManager.calcS() > 0.5) {
                                 wi_to_wo++;
                             }
                         }
@@ -211,7 +202,7 @@ public class Main {
             idnetManager.recalc();
             idnetManager.iterate(wait3);
             if (Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) == 1) {
-                if (calcS(idnetManager) > 0.5) {
+                if (idnetManager.calcS() > 0.5) {
                     wo++;
                     if (wait2 > 0) {
                         if (enableAntigen) {
@@ -221,7 +212,7 @@ public class Main {
                         idnetManager.recalc();
                         idnetManager.iterate(wait3);
                         if (Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) == 1) {
-                            if (calcS(idnetManager) <= 0.5) {
+                            if (idnetManager.calcS() <= 0.5) {
                                 wo_to_wi++;
                             }
                         }
@@ -236,7 +227,7 @@ public class Main {
                         idnetManager.recalc();
                         idnetManager.iterate(wait3);
                         if (Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) == 1) {
-                            if (calcS(idnetManager) > 0.5) {
+                            if (idnetManager.calcS() > 0.5) {
                                 wi_to_wo++;
                             }
                         }
@@ -250,6 +241,134 @@ public class Main {
         System.out.println("\nFrom " + max + " simulations: " + wi + " with, " + wo + " without subpattern");
         System.out.println(wi_to_wo + " turned from with to without");
         System.out.println(wo_to_wi + " turned from without to with");
+    }
+
+    private static void patternStat() throws Exception {
+        Antigen antigen = null;
+        idnetManager.setStatCenterOfGravity(true);
+        idnetManager.setStatNeighbourOccupations(true);
+
+        idnetManager.setd(Integer.parseInt(config.getProperty("d", "12")));
+        idnetManager.setp(Double.parseDouble(getConfigProperty("p")));
+        idnetManager.setmax_s(Double.parseDouble(getConfigProperty("max_s")));
+        idnetManager.sett_l(Double.parseDouble(getConfigProperty("t_l")));
+        idnetManager.sett_u(Double.parseDouble(getConfigProperty("t_u")));
+        for (int i = 0; i < idnetManager.getd(); i++) {
+            idnetManager.setLinkWeighting(i, Double.parseDouble(config.getProperty("lw" + i, "0")));
+        }
+
+        final int wait = Integer.parseInt(getConfigProperty("wait"));
+        final int wait2 = Integer.parseInt(getConfigProperty("wait2"));
+        final int wait3 = Integer.parseInt(getConfigProperty("wait3"));
+        final boolean enableAntigen = Boolean.parseBoolean(getConfigProperty("enable_antigen"));
+
+        System.out.println("#wait=" + wait + "; wait2=" + wait2 + "; wait3=" + wait3 + "; antigen " + (enableAntigen ? "enabled" : "disabled"));
+        int a = 0;
+
+        System.out.print("#Preparing");
+        //do {
+        //    idnetManager.reseed(System.currentTimeMillis());
+        idnetManager.reseed(Long.parseLong(getConfigProperty("seed")));
+        idnetManager.reset();
+        idnetManager.iterate(wait);
+        idnetManager.recalc();
+        //idnetManager.iterate(wait2);
+        // } while (!(Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) == 1 && idnetManager.calcS() > 0.5));
+        Antigen ag = null;
+        if (enableAntigen) {
+            DeterminantBits detBits = idnetManager.calcDeterminantBits();
+            a = detBits.values ^ detBits.mask;
+            ag = new Antigen(idnetManager, new int[]{a});
+        }
+        idnetManager.iterate(wait2);
+        /*do { // BUGGY
+        System.out.print(".");
+        idnetManager.recalc();
+        idnetManager.iterate(2500);//%
+        } while (!(Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) == 1 && idnetManager.calcS() < 0.5));//%
+         */
+        if (enableAntigen) {
+            ag.kill();
+        }
+        idnetManager.recalc();//%
+        idnetManager.iterate(wait3);//%
+        System.out.println();
+        DeterminantBits detBits = idnetManager.calcDeterminantBits();
+        for (int i = 0; i < 2; i++) {
+            double mo = 0, mno = 0, mo_s = 0, mno_s = 0, b = 0, b_s = 0;
+            System.out.println("#S_" + i);
+            System.out.println("#node\tmean occ.\tmean neighbour occ\tmean births");
+            for (Idiotype it : idnetManager.getIdiotypes()) {
+                if (Helper.hammingWeight((it.i & detBits.mask) ^ detBits.values) == i) {
+                    System.out.println(Helper.getBitString(it.i, idnetManager.getd()) + "\t"
+                            + (double) it.sum_n / (double) idnetManager.gett() + "\t"
+                            + (double) it.sum_n_d / (double) idnetManager.gett() + "\t"
+                            + (double) it.b / (double) idnetManager.gett());
+                    mo += (double) it.sum_n / (double) idnetManager.gett();
+                    mno += (double) it.sum_n_d / (double) idnetManager.gett();
+                    b += (double) it.b / (double) idnetManager.gett();
+                }
+            }
+            mo /= (1 << (idnetManager.getd() - 1));
+            mno /= (1 << (idnetManager.getd() - 1));
+            b /= (1 << (idnetManager.getd() - 1));
+            for (Idiotype it : idnetManager.getIdiotypes()) {
+                if (Helper.hammingWeight((it.i & detBits.mask) ^ detBits.values) == i) {
+                    mo_s += Math.pow((double) it.sum_n / (double) idnetManager.gett() - mo, 2);
+                    mno_s += Math.pow((double) it.sum_n_d / (double) idnetManager.gett() - mno, 2);
+                    b_s += Math.pow((double) it.b / (double) idnetManager.gett() - b, 2);
+                }
+            }
+            mo_s = Math.sqrt(mo_s / (1 << (idnetManager.getd() - 1)));
+            mno_s = Math.sqrt(mno_s / (1 << (idnetManager.getd() - 1)));
+            b_s = Math.sqrt(b_s / (1 << (idnetManager.getd() - 1)));
+            System.out.println("# Mean occ. in group: " + mo + " +/- " + mo_s);
+            System.out.println("# Mean neighbour occ. in group: " + mno + " +/- " + mno_s);
+            System.out.println("# Mean birth in group: " + b + " +/- " + b_s);
+            System.out.println();
+        }
+        if (enableAntigen) {
+            System.out.println("#antigen at" + Helper.hammingWeight(a));
+            System.out.println("#node\tgroup\tdist\tmean occ.\tmean neighbour occ\tmean births");
+            for (Idiotype it : idnetManager.getIdiotypes()) {
+                if (Helper.hammingWeight(it.i ^ a) >= idnetManager.getd() - 3) {
+                    System.out.println("#" + Helper.getBitString(it.i, idnetManager.getd()) + "\t"
+                            + Helper.hammingWeight((it.i & detBits.mask) ^ detBits.values) + "\t"
+                            + (idnetManager.getd() - Helper.hammingWeight(it.i ^ a)) + "\t"
+                            + (double) it.sum_n / (double) idnetManager.gett() + "\t"
+                            + (double) it.sum_n_d / (double) idnetManager.gett() + "\t"
+                            + (double) it.b / (double) idnetManager.gett());
+                }
+            }
+            System.out.println();
+            for (Idiotype it : idnetManager.getIdiotypes()) {
+                if (Helper.hammingWeight(it.i ^ a) >= idnetManager.getd() - 1) {
+                    System.out.println("#neighbours of antigen neighbour " + Helper.getBitString(it.i, idnetManager.getd()) + " (dist to antigen "
+                            + (idnetManager.getd() - Helper.hammingWeight(it.i ^ a)) + ", group S_"
+                            + Helper.hammingWeight((it.i & detBits.mask) ^ detBits.values) + ")");
+                    System.out.println("#node\tgroup\tdist\tmean occ.\tmean neighbour occ\tmean births");
+
+                    for (Idiotype it2 : idnetManager.getIdiotypes()) {
+                        if (Helper.hammingWeight(it.i ^ it2.i) >= idnetManager.getd() - 3) {
+                            System.out.println("#" + Helper.getBitString(it2.i, idnetManager.getd()) + "\t"
+                                    + Helper.hammingWeight((it2.i & detBits.mask) ^ detBits.values) + "\t"
+                                    + (idnetManager.getd() - Helper.hammingWeight(it.i ^ it2.i)) + "\t"
+                                    + (double) it2.sum_n / (double) idnetManager.gett() + "\t"
+                                    + (double) it2.sum_n_d / (double) idnetManager.gett() + "\t"
+                                    + (double) it2.b / (double) idnetManager.gett());
+                        }
+                    }
+                }
+            }
+
+        }
+        idnetManager.recalc();
+        idnetManager.iterate(wait2);
+        if (!(Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) == 1 && idnetManager.calcS() > 0.5)) {
+            System.out.println("#Simulation NOT valid (pattern changed)");
+        } else {
+            System.out.println("#Simulation valid");
+        }
     }
 
     private static void testDecay() throws Exception {
@@ -279,7 +398,7 @@ public class Main {
                 idnetManager[i].reseed(System.currentTimeMillis());
                 idnetManager[i].reset();
                 idnetManager[i].iterate(wait);
-            } while (!(Helper.hammingWeight(idnetManager[i].calcDeterminantBits().mask) == 1 && calcS(idnetManager[i]) > 0.5));
+            } while (!(Helper.hammingWeight(idnetManager[i].calcDeterminantBits().mask) == 1 && idnetManager[i].calcS() > 0.5));
             if (enableAntigen) {
                 insertAntigen(idnetManager[i]);
             }
@@ -291,7 +410,7 @@ public class Main {
             int num = 0;
             for (int i = 0; i < max; i++) {
                 idnetManager[i].iterate();
-                if (Helper.hammingWeight(idnetManager[i].calcDeterminantBits().mask) == 1 && calcS(idnetManager[i]) > 0.5) {
+                if (Helper.hammingWeight(idnetManager[i].calcDeterminantBits().mask) == 1 && idnetManager[i].calcS() > 0.5) {
                     num++;
                 }
             }
@@ -305,12 +424,17 @@ public class Main {
         final int wait2 = Integer.parseInt(getConfigProperty("wait2"));
         final int num_loops = Integer.parseInt(getConfigProperty("num_loops"));
         final boolean enableAntigen = Boolean.parseBoolean(getConfigProperty("enable_antigen"));
-        final boolean secondAntigen = (config.getProperty("close_antigen") != null);
-        final boolean closeAntigen = Boolean.parseBoolean(config.getProperty("close_antigen", "false"));
+        //final boolean secondAntigen = (config.getProperty("close_antigen") != null);
+        final boolean secondAntigen = (config.getProperty("antigen_dist") != null);
+        //final boolean closeAntigen = Boolean.parseBoolean(config.getProperty("close_antigen", "false"));
+        int secondAntigenDist = 0;
 
         System.out.println("#antigen " + (enableAntigen ? "enabled" : "disabled") + " max=" + max + " wait=" + wait + " wait2=" + wait2);
-        if (secondAntigen)
-            System.out.println("#second antigen " + (closeAntigen ? "close" : "distant") + " antigen (in hamming distance)");
+        if (secondAntigen) {
+            //System.out.println("#second antigen " + (closeAntigen ? "close" : "distant") + " antigen (in hamming distance)");
+            secondAntigenDist = Integer.parseInt(getConfigProperty("antigen_dist"));
+            System.out.println("#second antigen distant from first one by " + secondAntigenDist + " (in hamming distance)");
+        }
 
         IdnetManager[] idnetManager = new IdnetManager[max];
 
@@ -333,21 +457,28 @@ public class Main {
                 idnetManager[i].iterate(wait);
                 idnetManager[i].recalc();
                 idnetManager[i].iterate(wait2);
-            } while (!(Helper.hammingWeight(idnetManager[i].calcDeterminantBits().mask) == 1 && calcS(idnetManager[i]) > 0.5));
+            } while (!(Helper.hammingWeight(idnetManager[i].calcDeterminantBits().mask) == 1 && idnetManager[i].calcS() > 0.5));
             if (enableAntigen) {
                 int a = 0;
                 DeterminantBits detBits = idnetManager[i].calcDeterminantBits();
                 a = detBits.values ^ detBits.mask;
                 new Antigen(idnetManager[i], new int[]{a});
                 if (secondAntigen) {
-                    if (closeAntigen) {
-                        if (detBits.mask == 1)
-                            a = a ^ 2;
-                        else
-                            a = a ^ 1;
+                    /*if (closeAntigen) {
+                    if (detBits.mask == 1)
+                    a = a ^ 2;
+                    else
+                    a = a ^ 1;
                     } else {
-                        a = ~a & ((1 << idnetManager[i].getd()) - 1);
-                        a = a ^ detBits.mask;
+                    a = ~a & ((1 << idnetManager[i].getd()) - 1);
+                    a = a ^ detBits.mask;
+                    }
+                     */
+                    for (int j = 0; j < (1 << idnetManager[i].getd()); j++) {
+                        if ((j & detBits.mask) != detBits.values && Helper.hammingWeight(j ^ a) == secondAntigenDist) {
+                            a = j;
+                            break;
+                        }
                     }
                     new Antigen(idnetManager[i], new int[]{a});
                 }
@@ -356,12 +487,14 @@ public class Main {
             System.out.flush();
         }
 
+        System.out.println("0 " + max);
+
         for (int loop = 0; loop < num_loops; loop++) {
             int num = 0;
             for (int i = 0; i < max; i++) {
                 idnetManager[i].recalc();
                 idnetManager[i].iterate(wait2);
-                if (Helper.hammingWeight(idnetManager[i].calcDeterminantBits().mask) == 1 && calcS(idnetManager[i]) > 0.5) {
+                if (Helper.hammingWeight(idnetManager[i].calcDeterminantBits().mask) == 1 && idnetManager[i].calcS() > 0.5) {
                     num++;
                 }
             }
@@ -464,14 +597,14 @@ public class Main {
                 idnetManager.iterate(wait);
                 idnetManager.recalc();
                 idnetManager.iterate(wait2);
-            } while (!(Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) == 1 && calcS(idnetManager) > 0.5));
+            } while (!(Helper.hammingWeight(idnetManager.calcDeterminantBits().mask) == 1 && idnetManager.calcS() > 0.5));
             if (enableAntigen) {
                 insertAntigen(idnetManager);
             }
             idnetManager.iterate(wait3);
             idnetManager.recalc();
             idnetManager.iterate(wait4);
-            System.out.println(i + " " + calcS(idnetManager));
+            System.out.println(i + " " + idnetManager.calcS());
             System.out.flush();
         }
     }
@@ -710,6 +843,49 @@ public class Main {
 
             System.out.println(i_p);
 
+        }
+    }
+
+    private static void entropyHistogram2() throws Exception {
+        double pFrom = Double.parseDouble(getConfigProperty("p_from"));
+        double pTo = Double.parseDouble(getConfigProperty("p_to"));
+        int pSteps = Integer.parseInt(getConfigProperty("p_steps"));
+        int numLoops = Integer.parseInt(getConfigProperty("num_loops"));
+        int ySteps = Integer.parseInt(getConfigProperty("y_steps"));
+        int tWait = Integer.parseInt(getConfigProperty("t_wait"));
+        int tWindow = Integer.parseInt(getConfigProperty("t_window"));
+
+        idnetManager.setStatCenterOfGravity(true);
+        idnetManager.setd(Integer.parseInt(config.getProperty("d", "12")));
+        idnetManager.setp(Double.parseDouble(getConfigProperty("p")));
+        idnetManager.setmax_s(Double.parseDouble(getConfigProperty("max_s")));
+        idnetManager.sett_l(Double.parseDouble(getConfigProperty("t_l")));
+        idnetManager.sett_u(Double.parseDouble(getConfigProperty("t_u")));
+        for (int j = 0; j < idnetManager.getd(); j++) {
+            idnetManager.setLinkWeighting(j, Double.parseDouble(config.getProperty("lw" + j, "0")));
+        }
+        System.out.println("#pFrom=" + pFrom + " pTo=" + pTo + " pSteps=" + pSteps + " num_loops=" + numLoops + " ySteps=" + ySteps + " tWait=" + tWait + " tWindow=" + tWindow);
+
+        int[] histogram = new int[ySteps];
+        for (int i_p = 0; i_p < pSteps; i_p++) {
+            double p = pFrom + i_p * (pTo - pFrom) / pSteps;
+            idnetManager.setp(p);
+
+            for (int i_loop = 0; i_loop < numLoops; i_loop++) {
+                idnetManager.reseed(System.currentTimeMillis());
+                idnetManager.reset();
+                idnetManager.iterate(tWait);
+                idnetManager.recalc();
+                idnetManager.iterate(tWindow);
+                histogram[(int) ((double) idnetManager.calcS() * (double) (ySteps
+                        - 1))]++;
+            }
+            for (int i = 0; i < ySteps; i++) {
+                System.out.println(p + " " + (double) i / (double) ySteps + " " + histogram[i]);
+                histogram[i] = 0;
+            }
+
+            System.out.println();
         }
     }
 

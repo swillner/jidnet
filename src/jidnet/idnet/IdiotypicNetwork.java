@@ -38,7 +38,7 @@ public class IdiotypicNetwork extends Observable {
     protected RandomGenerator rng;
     //int test;
     protected int[] response = null;
-    //protected int[] response = {-5, -1, 0, 2, 2, 1, 1, 1, 0};
+    //protected int[] response = {0, 2, 4, 3, 2, 2, 1, 1, 1, 1, 1, 1};
 
     /**
      * Does the influx on the network
@@ -78,7 +78,7 @@ public class IdiotypicNetwork extends Observable {
             //test++;
             //System.out.println(Helper.getBitString(j ^mismatchMask) + " " + dist);
             res += idiotypes[j ^ mismatchMask].n * linkWeighting[dist];
-            if (dist < d - 1 && linkWeighting[dist + 1] > 0) // Stop, when link weighting of larger distance == 0
+            if (dist < d - 2 && linkWeighting[dist + 1] > 0) // Stop, when link weighting of larger distance == 0
                 res += calcWeightedNeighbourOccSumRec(j ^ mismatchMask, mismatchMask, dist + 1);
         }
         return res;
@@ -101,6 +101,15 @@ public class IdiotypicNetwork extends Observable {
         // For shifts:
         /*double w = 1;
         int a1 = (complement & ((1 << (d-1)) - 1)) << 1; // Rechter Teil
+          res += idiotypes[a1].n * w;
+          res += idiotypes[a1 | 1].n * w;
+        int a2 = (complement >> 1); // Linker Teil nach rechts verschoben
+          res += idiotypes[a2].n * w;
+          res += idiotypes[a2 | (1 << (d-1))].n * w;*/
+/*
+        // For shifts:
+        double w = 1;
+        int a1 = (complement & ((1 << (d-1)) - 1)) << 1; // Rechter Teil
         int mismatchMask = 1 << (d-1);
         do {
           mismatchMask = mismatchMask >> 1;
@@ -113,8 +122,8 @@ public class IdiotypicNetwork extends Observable {
           mismatchMask = mismatchMask >> 1;
           res += idiotypes[a2 ^ mismatchMask].n * w;
           res += idiotypes[a2 ^ mismatchMask | (1 << (d-1))].n * w;
-        } while (mismatchMask!=0);
-*/
+        } while (mismatchMask!=0);*/
+
         return res;
     }
 
@@ -147,10 +156,14 @@ public class IdiotypicNetwork extends Observable {
                     else
                         idiotypes_ng[i].n = idiotypes[i].n - 1;
                 else
+//                    if (Math.round(sum_n_d) < response.length)
+//                        idiotypes_ng[i].n = inBounds(idiotypes[i].n + response[(int)Math.round(sum_n_d)]);
+//                    else
+//                        idiotypes_ng[i].n = inBounds(idiotypes[i].n - 5);
                     if (Math.round(sum_n_d) < response.length)
-                        idiotypes_ng[i].n = inBounds(idiotypes[i].n + response[(int)Math.round(sum_n_d)]);
+                        idiotypes_ng[i].n = inBounds(response[(int)Math.round(sum_n_d)]);
                     else
-                        idiotypes_ng[i].n = inBounds(idiotypes[i].n - 5);
+                        idiotypes_ng[i].n = 0;
             else
                 idiotypes_ng[i].n = 0;
 
@@ -326,7 +339,9 @@ public class IdiotypicNetwork extends Observable {
 
         rng = new RandomGeneratorMT();
 
-        linkWeighting = new double[d];
+        linkWeighting = new double[d+1];
+        for (int i = 0; i < d+1; i++)
+            linkWeighting[i] = 0;
         // Normally apply unweighted two-mismatch links
         linkWeighting[0] = 1;
         if (d > 1)

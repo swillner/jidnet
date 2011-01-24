@@ -6,6 +6,8 @@ import java.awt.Graphics;
 import java.awt.Polygon;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.JPanel;
@@ -27,6 +29,8 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
     private int[] neighbourCountsOccupied;
     private int[][] groupNeighbourCounts;
     private int[][] bitwiseNeighbourCounts;
+    private HashMap<Integer, ArrayList<Integer>> blocks;
+    private int[][] blockNeighbourCounts;
     private int max;
     public final static int DRAW_CURRENT = 0;
     public final static int DRAW_TOTAL_MEANS = 1;
@@ -74,6 +78,40 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
         neighbourCountsOccupied = new int[MAX_NEIGHBOUR_COUNT + 1];
         groupNeighbourCounts = new int[d_m + 1][MAX_NEIGHBOUR_COUNT + 1];
         bitwiseNeighbourCounts = new int[idnetManager.getd()][MAX_NEIGHBOUR_COUNT + 1];
+        if (blocks != null)
+            blockNeighbourCounts = new int[blocks.size()][MAX_NEIGHBOUR_COUNT + 1];
+    }
+
+    public void setSubgroupCreators(ArrayList<Integer> s) {
+        int dimSubgroup = s.size();
+        blocks = new HashMap<Integer, ArrayList<Integer>>();
+        blocks.put(0, new ArrayList<Integer>());
+        blocks.get(0).add(0);
+        for (int i = 0; i < dimSubgroup; i++) {
+            int size = blocks.get(0).size();
+            for (int j = 0; j < size; j++) {
+                blocks.get(0).add(s.get(i) ^ blocks.get(0).get(j));
+            }
+        }
+        for (int i = 0; i < (1 << idnetManager.getd()); i++) {
+            boolean found = false;
+            for (ArrayList<Integer> b : blocks.values()) {
+                if (b.contains(i)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                ArrayList<Integer> b = new ArrayList<Integer>();
+                for (int j = 0; j < blocks.get(0).size(); j++) {
+                    b.add(i ^ blocks.get(0).get(j));
+                }
+                blocks.put(i, b);
+            }
+        }
+        recalc();
+        update(null, "iterate");
+        repaint();
     }
 
     public void update(Observable o, Object arg) {
@@ -97,6 +135,14 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
                         bitwiseNeighbourCounts[j][(int) i.n_d]++;
                 max = Math.max(max, neighbourCounts[(int) i.n_d]);
             }
+        if (blocks != null) {
+            int c = 0;
+            for (ArrayList<Integer> a : blocks.values()) {
+                for (Integer i : a)
+                    blockNeighbourCounts[c][(int)idnetManager.getIdiotypes()[i].n_d]++;
+                c++;
+            }
+        }
     }
 
     public void saveDataToFile(String fileName) throws IOException {
@@ -113,6 +159,14 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
                 fw.write("# S_" + j + ":\n");
                 for (int i = 0; i <= MAX_NEIGHBOUR_COUNT; i++)
                     fw.write(i + " " + groupNeighbourCounts[j][i] + "\n");
+            }
+        }
+        if (blocks != null) {
+            fw.write("\n# blocks:\n");
+            for (Integer j : blocks.keySet()) {
+                fw.write("# block #" + Helper.getBitString(j, idnetManager.getd()) + ":\n");
+                for (int i = 0; i <= MAX_NEIGHBOUR_COUNT; i++)
+                    fw.write(i + " " + blockNeighbourCounts[j][i] + "\n");
             }
         }
         fw.close();
@@ -142,6 +196,9 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
             lastGroupY = new int[Helper.hammingWeight(detBits.mask) + 1];
         else
             lastGroupY = new int[idnetManager.getd()];
+        int[] lastBlockY = null;
+        if (blocks != null)
+            lastBlockY = new int[blocks.size()];
         g.setFont(new Font("Arial", 0, 8));
         for (int i = 1; i <= MAX_NEIGHBOUR_COUNT; i++) {
             g.setColor(Color.LIGHT_GRAY);
@@ -187,7 +244,27 @@ public class NetworkTopologyPanel extends JPanel implements Observer {
                         g.fillRect(xOffset + i * stepWidth - 2, yOffset + height - lastGroupY[j] - 2, 5, 5);
                     }
                 }
-            }/* else
+            }
+
+
+
+            if (blocks != null) {
+                for (int j = 0; j < blocks.size(); j++) {
+                    g.setColor(Color.getHSBColor((float) j / (float) (blocks.size()), 1.0f, 0.8f));
+                    if (i > 0)
+                        g.drawLine(xOffset + (i - 1) * stepWidth, yOffset + height - lastBlockY[j], xOffset + i
+                                * stepWidth,
+                                yOffset + height - (int) (height * (double) blockNeighbourCounts[j][i] / (double) max));
+                    lastBlockY[j] = (int) (height * (double) blockNeighbourCounts[j][i] / (double) max);
+
+                    if (lastBlockY[j] > 0) {
+                        g.setColor(Color.getHSBColor((float) j / (float) (blocks.size()), 1.0f, 1.0f));
+                        g.fillRect(xOffset + i * stepWidth - 2, yOffset + height - lastBlockY[j] - 2, 5, 5);
+                    }
+                }
+            }
+
+             /* else
             for (int j = 0; j < d; j++) {
             g.setColor(Color.getHSBColor((float) j / (float) d, 1.0f, 0.8f));
             if (i > 0)

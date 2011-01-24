@@ -375,7 +375,7 @@ public class IdnetManager extends IdiotypicNetwork {
         prop.loadFromXML(new FileInputStream(fileName));
         setd(Integer.parseInt(prop.getProperty("d")));
         for (int i = 0; i < (1 << d); i++) {
-            idiotypes[i].n = Integer.parseInt(prop.getProperty(fileName, "0"));
+            idiotypes[i].n = Integer.parseInt(prop.getProperty(""+i, "0"));
         }
         setChanged();
         notifyObservers("load");
@@ -412,5 +412,18 @@ public class IdnetManager extends IdiotypicNetwork {
         for (int i = 0; i < d; i++) {
             linkWeighting[i] = Double.parseDouble(prop.getProperty("lw" + i, "0"));
         }
+    }
+
+    public double calcS() {
+        double S = 0;
+        for (int j = 0; j < (1 << d); j++) {
+            double p1 = (double) idiotypes[j].sum_n / (double) gett();
+            double p0 = 1 - p1;
+            if (p0 != 0 && p1 != 0) {
+                S += p1 * Math.log(p1) + p0 * Math.log(p0);
+            }
+        }
+        S = -S / Math.log(2) / (1 << d);
+        return S;
     }
 }
