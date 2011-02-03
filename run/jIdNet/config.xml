@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<comment>Configuration of jIdNet Application</comment>
-<entry key="redraw_delay">10</entry>
-<entry key="p_from">0.0</entry>
-<entry key="filename_MO">mo.dat</entry>
-<entry key="p_steps">100</entry>
-<entry key="num_loops">50</entry>
-<entry key="t_window">1000</entry>
-<entry key="d_m">11</entry>
-<entry key="p_to">0.1</entry>
-<entry key="first_seed">1274003719199</entry>
-<entry key="wait_for_pattern">true</entry>
-<entry key="t_wait">2000</entry>
-<entry key="y_steps">300</entry>
-<entry key="max_neighbour_count">10</entry>
-<entry key="filename_topology_histogram">topology_dm11c.dat</entry>
-<entry key="p">0.015</entry>
-<entry key="m">2</entry>
-<entry key="snapshot_file">1.dat</entry>
-<entry key="filename_LT">lt.dat</entry>
-<entry key="action">cog_diagram</entry>
-<entry key="filename_ON">on.dat</entry>
-<entry key="d">12</entry>
-<entry key="max_s">0.1</entry>
+<comment>Configuration of jIdNetBatch Application</comment>
+<entry key="action">pattern_stat</entry>
+<entry key="p">0.06</entry>
+<entry key="max_s">0.08</entry>
+<entry key="t_l">2.75</entry>
+<entry key="t_u">10</entry>
+<entry key="lw0">1</entry>
+<entry key="lw1">0.5</entry>
+<entry key="lw2">0.25</entry>
+<entry key="lw3">0.005</entry>
+<entry key="max">10</entry>
+<entry key="num_loops">1000000</entry>
+<entry key="wait">500</entry>
+<entry key="wait2">200</entry>
+<entry key="wait3">1000</entry>
+<entry key="enable_antigen">true</entry>
+<entry key="blocks">100000011000
+000000000100
+000000000010
+000000000001
+010000000000
+001000000000
+000100000000
+000001000000
+000000100000
+</entry>
+<entry key="seed">1291217179939</entry>
 </properties>

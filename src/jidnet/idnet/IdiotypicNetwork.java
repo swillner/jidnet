@@ -38,7 +38,7 @@ public class IdiotypicNetwork extends Observable {
     protected RandomGenerator rng;
     //int test;
     protected int[] response = null;
-    //protected int[] response = {0, 2, 4, 3, 2, 2, 1, 1, 1, 1, 1, 1};
+    //protected int[] response = {0, 2, 4, 3, 2, 2, 1, 1, 1, 1, 1, 1}; // as in thesis
 
     /**
      * Does the influx on the network
@@ -98,7 +98,7 @@ public class IdiotypicNetwork extends Observable {
         //    System.out.println(test);
         //    System.exit(-1);
         //}
-        // For shifts:
+        // For no-mismatch shifts:
         /*double w = 1;
         int a1 = (complement & ((1 << (d-1)) - 1)) << 1; // Rechter Teil
           res += idiotypes[a1].n * w;
@@ -106,9 +106,9 @@ public class IdiotypicNetwork extends Observable {
         int a2 = (complement >> 1); // Linker Teil nach rechts verschoben
           res += idiotypes[a2].n * w;
           res += idiotypes[a2 | (1 << (d-1))].n * w;*/
-/*
-        // For shifts:
-        double w = 1;
+
+        // For up-to-one-mismatch shifts:
+        /*double w = 1;
         int a1 = (complement & ((1 << (d-1)) - 1)) << 1; // Rechter Teil
         int mismatchMask = 1 << (d-1);
         do {

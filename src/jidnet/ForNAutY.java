@@ -4,7 +4,10 @@
  */
 package jidnet;
 
+import java.io.BufferedReader;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
+import java.math.BigInteger;
 import jidnet.idnet.Helper;
 
 /**
@@ -13,41 +16,55 @@ import jidnet.idnet.Helper;
  */
 public class ForNAutY {
 
-    private static long size(int d, int m) {
-        long res = (long) Math.pow(2, d);
-        for (int i = 1; i <= d + ((d - m) % 2); i++) {
-            res *= i;
+    private static BigInteger size(int d, int m) {
+        BigInteger res = new BigInteger("1");//(long) Math.pow(2, d);
+        for (long i = 1; i <= d+((d - m) % 2); i++) {
+            res = res.multiply(new BigInteger("" + i));
         }
-        return res;
+        return res.shiftLeft(d);
     }
 
     public static void main(String[] args) throws Exception {
-        FileWriter o2 = new FileWriter("nauty.out");
+        int min_d = 16;
+        int max_d = 31;
+        FileWriter o2 = new FileWriter("nauty" + max_d + ".out");
         o2.close();
 
-        for (int d = 3; d < 13; d++) {
+        for (int d = min_d; d < 20; d++) {
             for (int m = 1; m < (d - 1); m++) {
-                o2 = new FileWriter("nauty.out", true);
+                o2 = new FileWriter("nauty" + max_d + ".out", true);
                 o2.write("d=" + d + "; m=" + m + "\nI say:   grpsize=" + size(d, m) + "\n");
                 o2.close();
-
-                FileWriter out = new FileWriter("na.input");
-                out.write("n=" + (1 << d) + " g\n");
-                for (int i = 0; i < (1 << d); i++) {
-                    for (int j = 0; j < (1 << d); j++) {
-                        if (Helper.hammingWeight(i ^ j) >= d - m) {
-                            out.write(j + " ");
+                int c = 0;
+                Process p = Runtime.getRuntime().exec("./dreadnaut");
+                p.getOutputStream().write(("n=" + (1<<d) + " g\n").getBytes());
+                p.getOutputStream().flush();
+                for (int i = 0; i < (1<<d); i++) {
+                    for (int j = 0; j < (1<<d); j++) {
+                        if (Helper.hammingWeightL(i ^ j) >= d - m) {
+                            p.getOutputStream().write((j + " ").getBytes());
                         }
                     }
-                    out.write(";\n");
+                    p.getOutputStream().write(";\n".getBytes());
+                    p.getOutputStream().flush();
                 }
-                out.write("x\n");
-                out.close();
-                Process p = Runtime.getRuntime().exec("./append_dreadnaut");
+                p.getOutputStream().write("xq\n".getBytes());
+                p.getOutputStream().flush();
+
+                String res = "", line = "";
+                BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+                while(line!=null) {
+                    line=br.readLine();
+                    if (line !=null && line.startsWith("1 orbit; grpsize=")) {
+                        res = line;
+                    }
+                }
+                br.close();
                 p.waitFor();
 
-                o2 = new FileWriter("nauty.out", true);
-                o2.write("\n");
+                o2 = new FileWriter("nauty" + max_d + ".out", true);
+                o2.write(res + "\n");
                 o2.close();
 
                 System.out.println("d=" + d + "; m=" + m);

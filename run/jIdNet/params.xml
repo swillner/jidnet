@@ -3,23 +3,22 @@
 <properties>
 <comment>Idiotypic network parameters</comment>
 <entry key="t_u">10.0</entry>
-<entry key="lw9">0.0</entry>
-<entry key="lw8">0.0</entry>
-<entry key="lw7">0.0</entry>
-<entry key="lw6">0.0</entry>
-<entry key="lw5">0.0</entry>
-<entry key="lw4">0.0</entry>
-<entry key="lw3">0.0050</entry>
-<entry key="lw2">0.25</entry>
-<entry key="lw1">0.5</entry>
-<entry key="t_l">2.75</entry>
+<entry key="lw9">0</entry>
+<entry key="lw8">0</entry>
+<entry key="lw7">0</entry>
+<entry key="lw6">0</entry>
+<entry key="lw5">0</entry>
+<entry key="lw4">0</entry>
+<entry key="lw3">0</entry>
+<entry key="lw2">1.0</entry>
+<entry key="lw1">1.0</entry>
+<entry key="t_l">1.0</entry>
 <entry key="lw0">1.0</entry>
-<entry key="seed">1287998688000</entry>
+<entry key="seed">0</entry>
 <entry key="N">1</entry>
-<entry key="lw11">0.0</entry>
-<entry key="lw10">0.0</entry>
-<entry key="p">0.06</entry>
+<entry key="lw11">0</entry>
+<entry key="lw10">0</entry>
+<entry key="p">0.027</entry>
 <entry key="d">12</entry>
-<entry key="max_s">0.08</entry>
-<entry key="name">MT d_m=1 Unterstruktur, veränd. Links</entry>
+<entry key="max_s">0.04</entry>
 </properties>
